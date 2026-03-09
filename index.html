@@ -5,11 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tavernetta da Kevin</title>
 <style>
-/* --- COLORI CALDI --- */
 body{
   margin:0;
   font-family:Arial, sans-serif;
-  background:#f7e9d2; /* colore caldo di sfondo generale */
+  background:#f7e9d2;
 }
 
 .hamburger{
@@ -20,6 +19,7 @@ body{
   cursor:pointer;
   z-index:1001;
   color:#6b3e26;
+  transition: color 0.3s;
 }
 
 .sidebar{
@@ -28,7 +28,7 @@ body{
   top:0;
   width:230px;
   height:100%;
-  background:#6b3e26; /* menu laterale caldo */
+  background:#6b3e26;
   color:white;
   padding-top:50px;
   transition:0.3s;
@@ -37,6 +37,10 @@ body{
 
 .sidebar.open{
   left:0;
+}
+
+.sidebar.open ~ .hamburger{
+  color:#fff; /* hamburger visibile quando menu aperto */
 }
 
 .sidebar h2{
@@ -71,7 +75,7 @@ body{
 }
 
 .benvenuti{
-  background:#c48a3a; /* riquadro benvenuto più caldo */
+  background:#c48a3a;
   padding:20px;
   border-radius:10px;
   text-align:center;
@@ -81,7 +85,7 @@ body{
 }
 
 .evento{
-  background:#e8cda5; /* riquadro principale caldo */
+  background:#e8cda5;
   padding:20px;
   border-radius:10px;
   margin-top:20px;
@@ -98,18 +102,41 @@ body{
 }
 
 .evento-expanded{
-  display:none; /* contenuto aggiuntivo nascosto di default */
+  display:none;
 }
 
-.gallery{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
-  gap:15px;
+/* Galleria slider */
+.gallery-container{
+  overflow:hidden;
+  white-space:nowrap;
+  position:relative;
+  margin-top:20px;
 }
 
-.gallery img{
-  width:100%;
+.gallery-container-inner{
+  display:flex;
+  transition: transform 0.3s ease;
+}
+
+.gallery-container img{
+  width:25%; /* 1/4 della dimensione originale */
+  cursor:pointer;
+  border-radius:5px;
+  margin-right:5px;
+  flex-shrink:0;
+}
+
+.gallery-fullscreen{
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%, -50%);
+  max-width:90%;
+  max-height:90%;
+  z-index:2000;
   border-radius:10px;
+  box-shadow:0 0 20px rgba(0,0,0,0.5);
+  cursor:pointer;
 }
 
 .button{
@@ -125,22 +152,20 @@ body{
 </head>
 <body>
 
-<!-- HAMBURGER -->
 <div class="hamburger" onclick="toggleMenu()">☰</div>
 
-<!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
   <h2>Tavernetta<br>da Kevin</h2>
+  <a href="#home">Home</a>
   <a href="#evento">Prossima Serata</a>
-  <a href="#ultima">Ultima Serata</a>
-  <a href="#galleria">Galleria</a>
+  <a href="#calendario">Calendario Serate</a>
+    <a href="#galleria">Galleria</a>
   <a href="#dove">Dove Siamo</a>
   <a href="#contatti">Contattaci</a>
 </div>
 
 <div class="content">
 
-<!-- BENVENUTI -->
 <div class="benvenuti">
 Benvenuti alla Tavernetta da Kevin
 </div>
@@ -148,18 +173,13 @@ Benvenuti alla Tavernetta da Kevin
 <!-- PROSSIMA SERATA -->
 <div id="evento" class="section">
 <h2>Prossima Serata</h2>
-
-<div class="evento" onclick="toggleEvento()">
+<div class="evento" onclick="toggleEvento('eventoDetails')">
 <img src="serata2.jpg" id="locandina">
 <div id="eventoDetails" class="evento-expanded">
 <p>Venerdì 13 Marzo 2026</p>
-<p>Menù:<br>-Fave locali<br>-Piselli di fuori<br>-Pancetta<br>-Pecorino<br>-Olive<br>-Soppressate<br>-Pane Betel<br>-Panettone del 2015<br>-Melanzaneo sott'olio aperte circa 4 anni fa<br>-Vino Locale<br>-Brandy fatto in casa</p>
-<p>Programma della serata:</p>
-<p>Aperitivo ore 19:00:</p>
-<p>Cena ore 20.30:</p>
-<p>Il nostro ospite suonerà la fisarmonica accompagnato dal cantante:</p>
-<p>A seguire Karaoke e scherzi a parte...:</p>
-<a class="button" href="https://www.icloud.com/invites/0d7EPsHXubfMExnHX6kap5-HQ" target="_blank">Evento</a>
+<p><b>Menù:</b><br>-Fave locali<br>-Piselli<br>-Pancetta<br>-Pecorino</p>
+<p><b>Programma della serata:</b><br>Aperitivo ore 19:00<br>Cena ore 20:30<br>Fisarmonica e Karaoke</p>
+<a class="button" href="https://www.icloud.com/invites/0d7EPsHXubfMExnHX6kap5-HQ" target="_blank">Prenota</a>
 </div>
 </div>
 </div>
@@ -167,18 +187,37 @@ Benvenuti alla Tavernetta da Kevin
 <!-- ULTIMA SERATA -->
 <div id="ultima" class="section">
 <h2>Ultima Serata</h2>
-<div class="evento">
+<div class="evento" onclick="toggleEvento('ultimaDetails')">
 <img src="serata1.jpg">
+<div id="ultimaDetails" class="evento-expanded">
+<p><b>Menù e programma ultima serata</b></p>
+</div>
+</div>
+</div>
+
+<!-- CALENDARIO -->
+<div id="calendario" class="section">
+<h2>Calendario Serate</h2>
+<p>13 Marzo 2026 - Fave e Salato.</p>
+<p>20 Marzo 2026 - In Programmazione...</p>
+<p>27 Marzo 2026 - In Programmazione...</p>
+
+</div>
+
+</div>
 </div>
 </div>
 
 <!-- GALLERIA -->
 <div id="galleria" class="section">
 <h2>Galleria</h2>
-<div class="gallery">
-<img src="serata1.jpg">
-<img src="serata2.jpg">
-
+<div class="gallery-container" id="galleryContainer">
+  <div class="gallery-container-inner" id="galleryInner">
+    <img src="serata1.jpg" onclick="toggleFullscreen(this)">
+    <img src="serata2.jpg" onclick="toggleFullscreen(this)">
+    <img src="serata3.jpg" onclick="toggleFullscreen(this)">
+    <img src="serata4.jpg" onclick="toggleFullscreen(this)">
+  </div>
 </div>
 </div>
 
@@ -201,18 +240,49 @@ function toggleMenu(){
   document.getElementById("sidebar").classList.toggle("open");
 }
 
-// PROSSIMA SERATA CLICK
-function toggleEvento(){
-  var details = document.getElementById("eventoDetails");
-  if(details.style.display === "block"){
-    details.style.display = "none";
-  }else{
-    details.style.display = "block";
+function toggleEvento(id){
+  var el = document.getElementById(id);
+  if(el.style.display==='block'){
+    el.style.display='none';
+  } else {
+    el.style.display='block';
   }
 }
+
+// Galleria fullscreen + slider
+let currentIndex = -1;
+let galleryImgs = document.querySelectorAll('#galleryInner img');
+
+function toggleFullscreen(img){
+  if(img.classList.contains('gallery-fullscreen')){
+    img.classList.remove('gallery-fullscreen');
+    currentIndex = -1;
+  } else {
+    img.classList.add('gallery-fullscreen');
+    currentIndex = Array.from(galleryImgs).indexOf(img);
+  }
+}
+
+// Swipe per slider
+let startX = 0;
+document.getElementById('galleryContainer').addEventListener('touchstart', e => {
+  startX = e.touches[0].clientX;
+});
+document.getElementById('galleryContainer').addEventListener('touchend', e => {
+  let endX = e.changedTouches[0].clientX;
+  if(currentIndex<0) return;
+  if(endX < startX - 50){ // swipe a sinistra
+    galleryImgs[currentIndex].classList.remove('gallery-fullscreen');
+    currentIndex = (currentIndex + 1) % galleryImgs.length;
+    galleryImgs[currentIndex].classList.add('gallery-fullscreen');
+  }
+  if(endX > startX + 50){ // swipe a destra
+    galleryImgs[currentIndex].classList.remove('gallery-fullscreen');
+    currentIndex = (currentIndex - 1 + galleryImgs.length) % galleryImgs.length;
+    galleryImgs[currentIndex].classList.add('gallery-fullscreen');
+  }
+});
 </script>
 
 </body>
 </html>
-
-
