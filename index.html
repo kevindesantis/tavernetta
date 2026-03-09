@@ -17,23 +17,23 @@ body{
   top: 0;
   left: 0;
   width: 100%;
-  height: 60px;
+  height: 80px;
   display: flex;
   align-items: center;
   padding: 0 20px;
-  background: #f7e9d2;
+  background: #f7e9d2; /* stesso colore sfondo del sito */
   z-index: 1002;
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 .logo-top {
-  max-height: 50px;
+  max-height: 100px;   /* logo più grande */
   margin-right: 15px;
   transition: max-height 0.3s;
 }
 
 .logo-top.shrink {
-  max-height: 35px;
+  max-height: 70px;    /* ridotto al scroll */
 }
 
 .hamburger{
@@ -66,12 +66,6 @@ body{
   color:#fff;
 }
 
-.sidebar h2{
-  text-align:center;
-  margin-bottom:30px;
-  font-weight:normal;
-}
-
 .sidebar a{
   display:block;
   padding:15px 25px;
@@ -98,22 +92,6 @@ body{
   margin-bottom:60px;
 }
 
-.benvenuti{
-  background:#c48a3a;
-  padding:20px;
-  border-radius:10px;
-  text-align:center;
-  color:white;
-  font-size:24px;
-  font-weight:bold;
-}
-
-.logo-home {
-  max-width: 150px;
-  display: block;
-  margin: 0 auto 10px auto; /* centrato sopra il testo */
-}
-
 .evento{
   background:#e8cda5;
   padding:20px;
@@ -128,55 +106,23 @@ body{
   max-width:400px;
   border-radius:10px;
   margin-top:10px;
-  transition: all 0.3s;
+  transition: transform 0.3s;
 }
 
 .evento-expanded{
   display:none;
 }
 
-.gallery-container{
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
+.gallery{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:15px;
 }
 
-.gallery-container img{
-  width:24%;
-  cursor:pointer;
-  border-radius:5px;
-  transition: all 0.3s;
-}
-
-.overlay{
-  position:fixed;
-  top:0; left:0;
-  width:100%; height:100%;
-  background: rgba(0,0,0,0.8);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:2000;
-}
-
-.overlay img{
-  max-width:400px;
+.gallery img{
+  width:100%;
   border-radius:10px;
 }
-
-.overlay .prev, .overlay .next{
-  position:absolute;
-  top:50%;
-  font-size:40px;
-  color:white;
-  cursor:pointer;
-  user-select:none;
-  transform:translateY(-50%);
-  padding:10px;
-}
-
-.overlay .prev{ left:10px; }
-.overlay .next{ right:10px; }
 
 .button{
   display:inline-block;
@@ -199,23 +145,14 @@ body{
 
 <!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
-  <h2>Tavernetta<br>da Kevin</h2>
-  <a href="#home">Home</a>
   <a href="#evento">Prossima Serata</a>
-  <a href="#calendario">Calendario Serate</a>
   <a href="#ultima">Ultima Serata</a>
   <a href="#galleria">Galleria</a>
   <a href="#dove">Dove Siamo</a>
   <a href="#contatti">Contattaci</a>
 </div>
 
-<!-- CONTENUTO PRINCIPALE -->
-<div class="content" id="home">
-
-<div class="benvenuti">
-  <img src="logo.png" alt="Tavernetta da Kevin" class="logo-home">
-  Benvenuti alla Tavernetta da Kevin
-</div>
+<div class="content">
 
 <!-- PROSSIMA SERATA -->
 <div id="evento" class="section">
@@ -224,47 +161,28 @@ body{
 <img src="serata2.jpg" id="locandina">
 <div id="eventoDetails" class="evento-expanded">
 <p>Venerdì 13 Marzo 2026</p>
-<p><b>Menù:</b><br>-Fave locali<br>-Piselli<br>-Pancetta<br>-Pecorino</p>
+<p><b>Menù:</b><br>-Fave locali<br>-Piselli di fuori<br>-Pancetta<br>-Pecorino<br>-Olive<br>-Soppressate<br>-Pane Betel<br>-Panettone del 2015<br>-Melanzaneo sott'olio aperte circa 4 anni fa<br>-Vino Locale<br>-Brandy fatto in casa</p>
 <p><b>Programma della serata:</b><br>Aperitivo ore 19:00<br>Cena ore 20:30<br>Fisarmonica e Karaoke</p>
 <a class="button" href="https://www.icloud.com/invites/0d7EPsHXubfMExnHX6kap5-HQ" target="_blank">Invito Apple</a>
 </div>
 </div>
 </div>
 
-<!-- CALENDARIO -->
-<div id="calendario" class="section">
-<h2>Calendario Serate</h2>
-<p>Prossime date in programma...</p>
-</div>
-
 <!-- ULTIMA SERATA -->
 <div id="ultima" class="section">
 <h2>Ultima Serata</h2>
-<div class="evento" onclick="toggleEvento('ultimaDetails')">
+<div class="evento">
 <img src="serata1.jpg">
-<div id="ultimaDetails" class="evento-expanded">
-<p>Data: 6 Marzo 2026</p>
-<p><b>Menù e programma...</b></p>
-</div>
 </div>
 </div>
 
 <!-- GALLERIA -->
 <div id="galleria" class="section">
 <h2>Galleria</h2>
-<div class="gallery-container" id="galleryContainer">
-  <img src="serata1.jpg">
-  <img src="serata2.jpg">
-  <img src="serata3.jpg">
-  <img src="serata4.jpg">
+<div class="gallery">
+<img src="serata1.jpg">
+<img src="serata2.jpg">
 </div>
-</div>
-
-<!-- OVERLAY GALLERIA -->
-<div class="overlay" id="overlay">
-  <span class="prev" onclick="prevImage()">&#10094;</span>
-  <img id="overlayImg" src="">
-  <span class="next" onclick="nextImage()">&#10095;</span>
 </div>
 
 <!-- DOVE SIAMO -->
@@ -289,47 +207,6 @@ function toggleMenu(){
 function toggleEvento(id){
   var el = document.getElementById(id);
   el.style.display = (el.style.display==='block')?'none':'block';
-}
-
-// --- GALLERIA OVERLAY ---
-let galleryImgs, currentIndex;
-window.addEventListener('DOMContentLoaded', () => {
-  galleryImgs = document.querySelectorAll('#galleryContainer img');
-  currentIndex = -1;
-  const overlay = document.getElementById('overlay');
-  const overlayImg = document.getElementById('overlayImg');
-
-  galleryImgs.forEach((img, i)=>{
-    img.addEventListener('click', ()=>{
-      overlay.style.display='flex';
-      overlayImg.src = img.src;
-      currentIndex=i;
-    });
-  });
-
-  overlay.addEventListener('click', (e)=>{
-    if(e.target.id==='overlayImg') return;
-    overlay.style.display='none';
-  });
-
-  // Swipe touch mobile
-  let startX=0;
-  overlay.addEventListener('touchstart', e => { startX=e.touches[0].clientX; });
-  overlay.addEventListener('touchend', e => {
-    let endX = e.changedTouches[0].clientX;
-    if(endX < startX - 50){ nextImage(); }
-    if(endX > startX + 50){ prevImage(); }
-  });
-});
-
-// Next/Prev galleria
-function nextImage(){
-  currentIndex = (currentIndex + 1) % galleryImgs.length;
-  document.getElementById('overlayImg').src = galleryImgs[currentIndex].src;
-}
-function prevImage(){
-  currentIndex = (currentIndex - 1 + galleryImgs.length) % galleryImgs.length;
-  document.getElementById('overlayImg').src = galleryImgs[currentIndex].src;
 }
 
 // --- RIDUZIONE LOGO ALLO SCROLL ---
