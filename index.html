@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tavernetta da Kevin</title>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+background:#f4f1ec;
+}
+
+/* MENU */
+
+.sidebar{
+position:fixed;
+left:0;
+top:0;
+width:230px;
+height:100%;
+background:#2f2118;
+color:white;
+padding-top:30px;
+}
+
+.sidebar h2{
+text-align:center;
+margin-bottom:30px;
+font-weight:normal;
+}
+
+.sidebar a{
+display:block;
+padding:15px 25px;
+color:white;
+text-decoration:none;
+}
+
+.sidebar a:hover{
+background:#4a3324;
+}
+
+/* CONTENUTO */
+
+.content{
+margin-left:230px;
+padding:40px;
+}
+
+.section{
+margin-bottom:60px;
+}
+
+.evento{
+background:white;
+padding:20px;
+border-radius:10px;
+margin-top:20px;
+box-shadow:0 3px 10px rgba(0,0,0,0.1);
+}
+
+.evento img{
+width:100%;
+max-width:400px;
+border-radius:10px;
+margin-top:10px;
+}
+
+.gallery{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+gap:15px;
+}
+
+.gallery img{
+width:100%;
+border-radius:10px;
+}
+
+.button{
+display:inline-block;
+margin-top:15px;
+padding:12px 20px;
+background:#c48a3a;
+color:white;
+text-decoration:none;
+border-radius:6px;
+}
+
+.calendar{
+background:white;
+padding:20px;
+border-radius:10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="sidebar">
+
+<h2>Tavernetta<br>da Kevin</h2>
+
+<a href="#home">Home</a>
+<a href="#evento">Prossimo Evento</a>
+<a href="#calendario">Calendario Serate</a>
+<a href="#passate">Serate Passate</a>
+<a href="#galleria">Galleria</a>
+<a href="#dove">Dove Siamo</a>
+<a href="#contatti">Contattaci</a>
+
+</div>
+
+
+<div class="content">
+
+<!-- HOME -->
+
+<div id="home" class="section">
+
+<h1>Benvenuti alla Tavernetta da Kevin</h1>
+
+<p>Serate tra amici con buon cibo, birra e divertimento.</p>
+
+</div>
+
+
+<!-- PROSSIMO EVENTO -->
+
+<div id="evento" class="section">
+
+<h2>Prossima Serata</h2>
+
+<div class="evento">
+
+<h3>Fave e Salato</h3>
+
+<p>Venerdì 13 Marzo 2026</p>
+
+<img src="serata2.jpg">
+
+<p>
+Menu:<br>
+Fave fresche<br>
+Pancetta<br>
+Pecorino
+</p>
+
+</div>
+
+</div>
+
+
+<!-- CALENDARIO -->
+
+<div id="calendario" class="section">
+
+<h2>Calendario Serate</h2>
+
+<div class="calendar">
+
+<ul>
+<li>13 Marzo 2026 – Fave e Salato</li>
+<li>20 Marzo 2026 – In programmazione...</li>
+<li>27 Marzo 2026 – In programmazione...</li>
+</ul>
+
+</div>
+
+</div>
+
+
+<!-- SERATE PASSATE -->
+
+<div id="passate" class="section">
+
+<h2>Serate Passate</h2>
+
+<div class="evento">
+
+<h3>Prima serata</h3>
+
+<p>06 Marzo 2026</p>
+
+<img src="serata1.jpg">
+
+<p>
+Menu:<br>
+Vino<br>
+Salumi<br>
+Formaggi
+</p>
+
+</div>
+
+</div>
+
+
+<!-- GALLERIA -->
+
+<div id="galleria" class="section">
+
+<h2>Galleria</h2>
+
+<div class="gallery">
+
+<img src="serata1.jpg">
+<img src="serata2.jpg">
+
+
+</div>
+
+</div>
+
+
+<!-- DOVE SIAMO -->
+
+<div id="dove" class="section">
+
+<h2>Dove Siamo</h2>
+
+<p>Sellia Marina</p>
+
+<a class="button" href="https://maps.app.goo.gl/ZG3epuvoV7NURKs2A">
+Apri su Google Maps
+</a>
+
+</div>
+
+
+<!-- CONTATTI -->
+
+<div id="contatti" class="section">
+
+<h2>Contattaci</h2>
+
+<p>Per informazioni o prenotazioni:</p>
+
+<a class="button" href="https://wa.me/393895820363">
+Scrivici su WhatsApp
+</a>
+
+</div>
+
+
+</div>
+
+</body>
+</html>
