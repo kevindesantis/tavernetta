@@ -11,18 +11,40 @@ body{
   background:#f7e9d2;
 }
 
-/* HAMBURGER */
-.hamburger{
-  position:fixed;
-  top:15px;
-  left:15px;
-  font-size:28px;
-  cursor:pointer;
-  z-index:1001;
-  color:#6b3e26;
+/* --- TOP BAR FISSA CON LOGO E HAMBURGER --- */
+.top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  background: #f7e9d2;
+  z-index: 1002;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-/* SIDEBAR */
+.logo-top {
+  max-height: 50px;
+  margin-right: 15px;
+  transition: max-height 0.3s;
+}
+
+.logo-top.shrink {
+  max-height: 35px;
+}
+
+.hamburger{
+  font-size:28px;
+  cursor:pointer;
+  z-index:1003;
+  color:#6b3e26;
+  transition: color 0.3s;
+}
+
+/* --- MENU LATERALE --- */
 .sidebar{
   position:fixed;
   left:-230px;
@@ -31,13 +53,17 @@ body{
   height:100%;
   background:#6b3e26;
   color:white;
-  padding-top:50px;
+  padding-top:80px; /* spazio top-bar */
   transition:0.3s;
   z-index:1000;
 }
 
 .sidebar.open{
   left:0;
+}
+
+.sidebar.open ~ .top-bar .hamburger{
+  color:#fff;
 }
 
 .sidebar h2{
@@ -57,10 +83,10 @@ body{
   background:#8b5132;
 }
 
-/* CONTENUTO PRINCIPALE */
+/* --- CONTENUTO PRINCIPALE --- */
 .content{
   margin-left:0;
-  padding:40px;
+  padding:100px 40px 40px 40px; /* spazio top-bar */
   transition: margin-left 0.3s;
 }
 
@@ -72,14 +98,22 @@ body{
   margin-bottom:60px;
 }
 
-/* LOGO CENTRATO IN HOME */
-.logo-home {
-  display:block;
-  margin:0 auto 40px auto;
-  max-width:300px;
+.benvenuti{
+  background:#c48a3a;
+  padding:20px;
+  border-radius:10px;
+  text-align:center;
+  color:white;
+  font-size:24px;
+  font-weight:bold;
 }
 
-/* EVENTO */
+.logo-home {
+  max-width: 150px;
+  display: block;
+  margin: 0 auto 10px auto; /* centrato sopra il testo */
+}
+
 .evento{
   background:#e8cda5;
   padding:20px;
@@ -94,23 +128,55 @@ body{
   max-width:400px;
   border-radius:10px;
   margin-top:10px;
-  transition: transform 0.3s;
+  transition: all 0.3s;
 }
 
 .evento-expanded{
   display:none;
 }
 
-.gallery{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
-  gap:15px;
+.gallery-container{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
 }
 
-.gallery img{
-  width:100%;
+.gallery-container img{
+  width:24%;
+  cursor:pointer;
+  border-radius:5px;
+  transition: all 0.3s;
+}
+
+.overlay{
+  position:fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background: rgba(0,0,0,0.8);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:2000;
+}
+
+.overlay img{
+  max-width:400px;
   border-radius:10px;
 }
+
+.overlay .prev, .overlay .next{
+  position:absolute;
+  top:50%;
+  font-size:40px;
+  color:white;
+  cursor:pointer;
+  user-select:none;
+  transform:translateY(-50%);
+  padding:10px;
+}
+
+.overlay .prev{ left:10px; }
+.overlay .next{ right:10px; }
 
 .button{
   display:inline-block;
@@ -125,23 +191,31 @@ body{
 </head>
 <body>
 
-<!-- HAMBURGER -->
-<div class="hamburger" onclick="toggleMenu()">☰</div>
+<!-- TOP BAR CON LOGO E HAMBURGER -->
+<div class="top-bar">
+  <img src="logo.png" alt="Tavernetta da Kevin" class="logo-top">
+  <div class="hamburger" onclick="toggleMenu()">☰</div>
+</div>
 
 <!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
   <h2>Tavernetta<br>da Kevin</h2>
+  <a href="#home">Home</a>
   <a href="#evento">Prossima Serata</a>
+  <a href="#calendario">Calendario Serate</a>
   <a href="#ultima">Ultima Serata</a>
   <a href="#galleria">Galleria</a>
   <a href="#dove">Dove Siamo</a>
   <a href="#contatti">Contattaci</a>
 </div>
 
-<div class="content">
+<!-- CONTENUTO PRINCIPALE -->
+<div class="content" id="home">
 
-<!-- LOGO CENTRATO IN HOME -->
-<img src="logo.png" alt="Tavernetta da Kevin" class="logo-home">
+<div class="benvenuti">
+  <img src="logo.png" alt="Tavernetta da Kevin" class="logo-home">
+  Benvenuti alla Tavernetta da Kevin
+</div>
 
 <!-- PROSSIMA SERATA -->
 <div id="evento" class="section">
@@ -150,28 +224,47 @@ body{
 <img src="serata2.jpg" id="locandina">
 <div id="eventoDetails" class="evento-expanded">
 <p>Venerdì 13 Marzo 2026</p>
-<p><b>Menù:</b><br>-Fave locali<br>-Piselli<br>-Pancetta<br>-Pecorino<br>-Olive<br>-Soppressate<br>-Pane Betel<br>-Panettone del 2015<br>-Melanzaneo sott'olio aperte circa 4 anni fa<br>-Vino Locale<br>-Brandy fatto in casa</p>
+<p><b>Menù:</b><br>-Fave locali<br>-Piselli<br>-Pancetta<br>-Pecorino</p>
 <p><b>Programma della serata:</b><br>Aperitivo ore 19:00<br>Cena ore 20:30<br>Fisarmonica e Karaoke</p>
 <a class="button" href="https://www.icloud.com/invites/0d7EPsHXubfMExnHX6kap5-HQ" target="_blank">Invito Apple</a>
 </div>
 </div>
 </div>
 
+<!-- CALENDARIO -->
+<div id="calendario" class="section">
+<h2>Calendario Serate</h2>
+<p>Prossime date in programma...</p>
+</div>
+
 <!-- ULTIMA SERATA -->
 <div id="ultima" class="section">
 <h2>Ultima Serata</h2>
-<div class="evento">
+<div class="evento" onclick="toggleEvento('ultimaDetails')">
 <img src="serata1.jpg">
+<div id="ultimaDetails" class="evento-expanded">
+<p>Data: 6 Marzo 2026</p>
+<p><b>Menù e programma...</b></p>
+</div>
 </div>
 </div>
 
 <!-- GALLERIA -->
 <div id="galleria" class="section">
 <h2>Galleria</h2>
-<div class="gallery">
-<img src="serata1.jpg">
-<img src="serata2.jpg">
+<div class="gallery-container" id="galleryContainer">
+  <img src="serata1.jpg">
+  <img src="serata2.jpg">
+  <img src="serata3.jpg">
+  <img src="serata4.jpg">
 </div>
+</div>
+
+<!-- OVERLAY GALLERIA -->
+<div class="overlay" id="overlay">
+  <span class="prev" onclick="prevImage()">&#10094;</span>
+  <img id="overlayImg" src="">
+  <span class="next" onclick="nextImage()">&#10095;</span>
 </div>
 
 <!-- DOVE SIAMO -->
@@ -197,6 +290,57 @@ function toggleEvento(id){
   var el = document.getElementById(id);
   el.style.display = (el.style.display==='block')?'none':'block';
 }
+
+// --- GALLERIA OVERLAY ---
+let galleryImgs, currentIndex;
+window.addEventListener('DOMContentLoaded', () => {
+  galleryImgs = document.querySelectorAll('#galleryContainer img');
+  currentIndex = -1;
+  const overlay = document.getElementById('overlay');
+  const overlayImg = document.getElementById('overlayImg');
+
+  galleryImgs.forEach((img, i)=>{
+    img.addEventListener('click', ()=>{
+      overlay.style.display='flex';
+      overlayImg.src = img.src;
+      currentIndex=i;
+    });
+  });
+
+  overlay.addEventListener('click', (e)=>{
+    if(e.target.id==='overlayImg') return;
+    overlay.style.display='none';
+  });
+
+  // Swipe touch mobile
+  let startX=0;
+  overlay.addEventListener('touchstart', e => { startX=e.touches[0].clientX; });
+  overlay.addEventListener('touchend', e => {
+    let endX = e.changedTouches[0].clientX;
+    if(endX < startX - 50){ nextImage(); }
+    if(endX > startX + 50){ prevImage(); }
+  });
+});
+
+// Next/Prev galleria
+function nextImage(){
+  currentIndex = (currentIndex + 1) % galleryImgs.length;
+  document.getElementById('overlayImg').src = galleryImgs[currentIndex].src;
+}
+function prevImage(){
+  currentIndex = (currentIndex - 1 + galleryImgs.length) % galleryImgs.length;
+  document.getElementById('overlayImg').src = galleryImgs[currentIndex].src;
+}
+
+// --- RIDUZIONE LOGO ALLO SCROLL ---
+window.addEventListener('scroll', () => {
+  const logo = document.querySelector('.logo-top');
+  if(window.scrollY > 50){
+    logo.classList.add('shrink');
+  } else {
+    logo.classList.remove('shrink');
+  }
+});
 </script>
 
 </body>
