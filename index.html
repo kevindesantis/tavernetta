@@ -40,6 +40,284 @@ body{
 }
 
 .sidebar.open ~ .hamburger{
+  color:#fff;
+}
+
+.sidebar h2{
+  text-align:center;
+  margin-bottom:30px;
+  font-weight:normal;
+}
+
+.sidebar a{
+  display:block;
+  padding:15px 25px;
+  color:white;
+  text-decoration:none;
+}
+
+.sidebar a:hover{
+  background:#8b5132;
+}
+
+.content{
+  margin-left:0;
+  padding:40px;
+  transition: margin-left 0.3s;
+}
+
+.sidebar.open ~ .content{
+  margin-left:230px;
+}
+
+.section{
+  margin-bottom:60px;
+}
+
+.benvenuti{
+  background:#c48a3a;
+  padding:20px;
+  border-radius:10px;
+  text-align:center;
+  color:white;
+  font-size:24px;
+  font-weight:bold;
+}
+
+.evento{
+  background:#e8cda5;
+  padding:20px;
+  border-radius:10px;
+  margin-top:20px;
+  box-shadow:0 3px 10px rgba(0,0,0,0.1);
+  cursor:pointer;
+}
+
+.evento img{
+  width:100%;
+  max-width:400px;
+  border-radius:10px;
+  margin-top:10px;
+  transition: all 0.3s;
+}
+
+.evento-expanded{
+  display:none;
+}
+
+.gallery-container{
+  overflow:hidden;
+  white-space:nowrap;
+  position:relative;
+  margin-top:20px;
+}
+
+.gallery-container-inner{
+  display:flex;
+  transition: transform 0.3s ease;
+}
+
+.gallery-container img{
+  width:25%;
+  cursor:pointer;
+  border-radius:5px;
+  margin-right:5px;
+  flex-shrink:0;
+  transition: all 0.3s;
+}
+
+.gallery-large{
+  width:400px !important; /* stessa dimensione della prossima serata */
+}
+
+.button{
+  display:inline-block;
+  margin-top:15px;
+  padding:12px 20px;
+  background:#6b3e26;
+  color:white;
+  text-decoration:none;
+  border-radius:6px;
+}
+</style>
+</head>
+<body>
+
+<div class="hamburger" onclick="toggleMenu()">☰</div>
+
+<div class="sidebar" id="sidebar">
+  <h2>Tavernetta<br>da Kevin</h2>
+  <a href="#home">Home</a>
+  <a href="#evento">Prossima Serata</a>
+  <a href="#calendario">Calendario Serate</a>
+  <a href="#ultima">Ultima Serata</a>
+  <a href="#galleria">Galleria</a>
+  <a href="#dove">Dove Siamo</a>
+  <a href="#contatti">Contattaci</a>
+</div>
+
+<div class="content" id="home">
+
+<div class="benvenuti">
+Benvenuti alla Tavernetta da Kevin
+</div>
+
+<!-- PROSSIMA SERATA -->
+<div id="evento" class="section">
+<h2>Prossima Serata</h2>
+<div class="evento" onclick="toggleEvento('eventoDetails')">
+<img src="serata2.jpg" id="locandina">
+<div id="eventoDetails" class="evento-expanded">
+<p>Venerdì 13 Marzo 2026</p>
+<p><b>Menù:</b><br>-Fave locali<br>-Piselli<br>-Pancetta<br>-Pecorino</p>
+<p><b>Programma della serata:</b><br>Aperitivo ore 19:00<br>Cena ore 20:30<br>Fisarmonica e Karaoke</p>
+<a class="button" href="https://www.icloud.com/invites/0d7EPsHXubfMExnHX6kap5-HQ" target="_blank">Invito Apple</a>
+</div>
+</div>
+</div>
+
+<!-- CALENDARIO -->
+<div id="calendario" class="section">
+<h2>Calendario Serate</h2>
+<p>Prossime date in programma...</p>
+</div>
+
+<!-- ULTIMA SERATA -->
+<div id="ultima" class="section">
+<h2>Ultima Serata</h2>
+<div class="evento" onclick="toggleEvento('ultimaDetails')">
+<img src="serata1.jpg">
+<div id="ultimaDetails" class="evento-expanded">
+<p>Data: 6 Marzo 2026</p>
+<p><b>Menù e programma...</b></p>
+</div>
+</div>
+</div>
+
+<!-- GALLERIA -->
+<div id="galleria" class="section">
+<h2>Galleria</h2>
+<div class="gallery-container" id="galleryContainer">
+  <div class="gallery-container-inner" id="galleryInner">
+    <img src="serata1.jpg">
+    <img src="serata2.jpg">
+    <img src="serata3.jpg">
+    <img src="serata4.jpg">
+  </div>
+</div>
+</div>
+
+<!-- DOVE SIAMO -->
+<div id="dove" class="section">
+<h2>Dove Siamo</h2>
+<p>Via La Petrizia 6, Sellia Marina, Catanzaro, Calabria</p>
+<a class="button" href="https://maps.app.goo.gl/ZG3epuvoV7NURKs2A">Apri su Google Maps</a>
+</div>
+
+<!-- CONTATTI -->
+<div id="contatti" class="section">
+<h2>Contattaci</h2>
+<p>Per informazioni o prenotazioni:</p>
+<a class="button" href="https://wa.me/393895820363">Scrivici su WhatsApp</a>
+</div>
+
+<script>
+function toggleMenu(){
+  document.getElementById("sidebar").classList.toggle("open");
+}
+
+function toggleEvento(id){
+  var el = document.getElementById(id);
+  if(el.style.display==='block'){
+    el.style.display='none';
+  } else {
+    el.style.display='block';
+  }
+}
+
+// GALLERIA dimensione grande e slider
+let currentIndex = -1;
+window.addEventListener('DOMContentLoaded', () => {
+  const galleryImgs = document.querySelectorAll('#galleryInner img');
+  const container = document.getElementById('galleryContainer');
+
+  galleryImgs.forEach((img, index) => {
+    img.addEventListener('click', () => {
+      if(img.classList.contains('gallery-large')){
+        img.classList.remove('gallery-large');
+        currentIndex = -1;
+      } else {
+        galleryImgs.forEach(i => i.classList.remove('gallery-large'));
+        img.classList.add('gallery-large');
+        currentIndex = index;
+      }
+    });
+  });
+
+  let startX = 0;
+  container.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+  });
+  container.addEventListener('touchend', e => {
+    let endX = e.changedTouches[0].clientX;
+    if(currentIndex<0) return;
+    if(endX < startX - 50){
+      galleryImgs[currentIndex].classList.remove('gallery-large');
+      currentIndex = (currentIndex + 1) % galleryImgs.length;
+      galleryImgs[currentIndex].classList.add('gallery-large');
+    }
+    if(endX > startX + 50){
+      galleryImgs[currentIndex].classList.remove('gallery-large');
+      currentIndex = (currentIndex - 1 + galleryImgs.length) % galleryImgs.length;
+      galleryImgs[currentIndex].classList.add('gallery-large');
+    }
+  });
+});
+</script>
+
+</body>
+</html><!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tavernetta da Kevin</title>
+<style>
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#f7e9d2;
+}
+
+.hamburger{
+  position:fixed;
+  top:15px;
+  left:15px;
+  font-size:28px;
+  cursor:pointer;
+  z-index:1001;
+  color:#6b3e26;
+  transition: color 0.3s;
+}
+
+.sidebar{
+  position:fixed;
+  left:-230px;
+  top:0;
+  width:230px;
+  height:100%;
+  background:#6b3e26;
+  color:white;
+  padding-top:50px;
+  transition:0.3s;
+  z-index:1000;
+}
+
+.sidebar.open{
+  left:0;
+}
+
+.sidebar.open ~ .hamburger{
   color:#fff; /* hamburger visibile quando menu aperto */
 }
 
@@ -278,3 +556,4 @@ window.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
