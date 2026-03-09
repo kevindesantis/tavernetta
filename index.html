@@ -11,17 +11,40 @@ body{
   background:#f7e9d2;
 }
 
+/* --- TOP BAR FISSA CON LOGO E HAMBURGER --- */
+.top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  background: #f7e9d2;
+  z-index: 1002;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.logo-top {
+  max-height: 50px;
+  margin-right: 15px;
+  transition: max-height 0.3s;
+}
+
+.logo-top.shrink {
+  max-height: 35px;
+}
+
 .hamburger{
-  position:fixed;
-  top:15px;
-  left:15px;
   font-size:28px;
   cursor:pointer;
-  z-index:1001;
+  z-index:1003;
   color:#6b3e26;
   transition: color 0.3s;
 }
 
+/* --- MENU LATERALE --- */
 .sidebar{
   position:fixed;
   left:-230px;
@@ -30,7 +53,7 @@ body{
   height:100%;
   background:#6b3e26;
   color:white;
-  padding-top:50px;
+  padding-top:80px; /* spazio top-bar */
   transition:0.3s;
   z-index:1000;
 }
@@ -39,7 +62,7 @@ body{
   left:0;
 }
 
-.sidebar.open ~ .hamburger{
+.sidebar.open ~ .top-bar .hamburger{
   color:#fff;
 }
 
@@ -60,9 +83,10 @@ body{
   background:#8b5132;
 }
 
+/* --- CONTENUTO PRINCIPALE --- */
 .content{
   margin-left:0;
-  padding:40px;
+  padding:100px 40px 40px 40px; /* spazio top-bar */
   transition: margin-left 0.3s;
 }
 
@@ -161,8 +185,13 @@ body{
 </head>
 <body>
 
-<div class="hamburger" onclick="toggleMenu()">☰</div>
+<!-- TOP BAR CON LOGO E HAMBURGER -->
+<div class="top-bar">
+  <img src="logo.png" alt="Tavernetta da Kevin" class="logo-top">
+  <div class="hamburger" onclick="toggleMenu()">☰</div>
+</div>
 
+<!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
   <h2>Tavernetta<br>da Kevin</h2>
   <a href="#home">Home</a>
@@ -174,6 +203,7 @@ body{
   <a href="#contatti">Contattaci</a>
 </div>
 
+<!-- CONTENUTO PRINCIPALE -->
 <div class="content" id="home">
 
 <div class="benvenuti">
@@ -187,9 +217,9 @@ Benvenuti alla Tavernetta da Kevin
 <img src="serata2.jpg" id="locandina">
 <div id="eventoDetails" class="evento-expanded">
 <p>Venerdì 13 Marzo 2026</p>
-<p><b>Menù:</b><br>-Fave locali<br>-Piselli di fuori<br>-Pancetta<br>-Pecorino<br>-Olive<br>-Soppressata<br>-Pane Betel<br>-Panettone del 2015<br>-Melanzane sott'olio aperte circa 4 anni fa<br>-Vino Locale<br>-Brandy fatto in casa</p>
-<p><b>Programma della serata:</b><br>Aperitivo ore 19:00<br>Cena ore 20:30<br>A seguire fisarmonica, karaoke e scherzi a parte...</p>
-<a class="button" href="https://www.icloud.com/invites/0d7EPsHXubfMExnHX6kap5-HQ" target="_blank">Partecipa</a>
+<p><b>Menù:</b><br>-Fave locali<br>-Piselli<br>-Pancetta<br>-Pecorino</p>
+<p><b>Programma della serata:</b><br>Aperitivo ore 19:00<br>Cena ore 20:30<br>Fisarmonica e Karaoke</p>
+<a class="button" href="https://www.icloud.com/invites/0d7EPsHXubfMExnHX6kap5-HQ" target="_blank">Invito Apple</a>
 </div>
 </div>
 </div>
@@ -197,7 +227,6 @@ Benvenuti alla Tavernetta da Kevin
 <!-- CALENDARIO -->
 <div id="calendario" class="section">
 <h2>Calendario Serate</h2>
-<p>13 Marzo 2026 - Fave e Salato</p>
 <p>Prossime date in programma...</p>
 </div>
 
@@ -208,7 +237,7 @@ Benvenuti alla Tavernetta da Kevin
 <img src="serata1.jpg">
 <div id="ultimaDetails" class="evento-expanded">
 <p>Data: 6 Marzo 2026</p>
-<p><b></b></p>
+<p><b>Menù e programma...</b></p>
 </div>
 </div>
 </div>
@@ -272,7 +301,7 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   overlay.addEventListener('click', (e)=>{
-    if(e.target.id==='overlayImg') return; // clic sull'immagine non chiude
+    if(e.target.id==='overlayImg') return;
     overlay.style.display='none';
   });
 
@@ -286,17 +315,26 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+// Next/Prev galleria
 function nextImage(){
   currentIndex = (currentIndex + 1) % galleryImgs.length;
   document.getElementById('overlayImg').src = galleryImgs[currentIndex].src;
 }
-
 function prevImage(){
   currentIndex = (currentIndex - 1 + galleryImgs.length) % galleryImgs.length;
   document.getElementById('overlayImg').src = galleryImgs[currentIndex].src;
 }
+
+// --- RIDUZIONE LOGO ALLO SCROLL ---
+window.addEventListener('scroll', () => {
+  const logo = document.querySelector('.logo-top');
+  if(window.scrollY > 50){
+    logo.classList.add('shrink');
+  } else {
+    logo.classList.remove('shrink');
+  }
+});
 </script>
 
 </body>
 </html>
-
