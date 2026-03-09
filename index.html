@@ -98,20 +98,10 @@ body{
   margin-bottom:60px;
 }
 
-.benvenuti{
-  background:#c48a3a;
-  padding:20px;
-  border-radius:10px;
-  text-align:center;
-  color:white;
-  font-size:24px;
-  font-weight:bold;
-}
-
 .logo-home {
   max-width: 150px;
   display: block;
-  margin: 0 auto 10px auto; /* centrato sopra il testo */
+  margin: 0 auto 40px auto; /* centrato in home */
 }
 
 .evento{
@@ -191,11 +181,8 @@ body{
 </head>
 <body>
 
-<!-- TOP BAR CON LOGO E HAMBURGER -->
-<div class="top-bar">
-  <img src="logo.png" alt="Tavernetta da Kevin" class="logo-top">
-  <div class="hamburger" onclick="toggleMenu()">☰</div>
-</div>
+<!-- HAMBURGER -->
+<div class="hamburger" onclick="toggleMenu()">☰</div>
 
 <!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
@@ -212,10 +199,8 @@ body{
 <!-- CONTENUTO PRINCIPALE -->
 <div class="content" id="home">
 
-<div class="benvenuti">
-  <img src="logo.png" alt="Tavernetta da Kevin" class="logo-home">
-  Benvenuti alla Tavernetta da Kevin
-</div>
+<!-- LOGO CENTRATO -->
+<img src="logo.png" alt="Tavernetta da Kevin" class="logo-home">
 
 <!-- PROSSIMA SERATA -->
 <div id="evento" class="section">
@@ -226,7 +211,7 @@ body{
 <p>Venerdì 13 Marzo 2026</p>
 <p><b>Menù:</b><br>-Fave locali<br>-Piselli<br>-Pancetta<br>-Pecorino</p>
 <p><b>Programma della serata:</b><br>Aperitivo ore 19:00<br>Cena ore 20:30<br>Fisarmonica e Karaoke</p>
-<a class="button" href="https://www.icloud.com/invites/0d7EPsHXubfMExnHX6kap5-HQ" target="_blank">Invito Apple</a>
+<a class="button" href="https://www.icloud.com/invites/0d7EPsHXubfMExnHX6kap5-HQ" target="_blank">Partecipa</a>
 </div>
 </div>
 </div>
@@ -322,7 +307,6 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// Next/Prev galleria
 function nextImage(){
   currentIndex = (currentIndex + 1) % galleryImgs.length;
   document.getElementById('overlayImg').src = galleryImgs[currentIndex].src;
