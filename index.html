@@ -17,7 +17,7 @@ body{
   top: 0;
   left: 0;
   width: 100%;
-  height: 60px;
+  height: 80px;
   display: flex;
   align-items: center;
   padding: 0 20px;
@@ -27,13 +27,13 @@ body{
 }
 
 .logo-top {
-  max-height: 60px;
+  max-height: 100px;   /* logo più grande */
   margin-right: 15px;
   transition: max-height 0.3s;
 }
 
 .logo-top.shrink {
-  max-height: 40px;
+  max-height: 70px;    /* ridotto al scroll */
 }
 
 .hamburger{
@@ -66,12 +66,6 @@ body{
   color:#fff;
 }
 
-.sidebar h2{
-  text-align:center;
-  margin-bottom:30px;
-  font-weight:normal;
-}
-
 .sidebar a{
   display:block;
   padding:15px 25px;
@@ -96,22 +90,6 @@ body{
 
 .section{
   margin-bottom:60px;
-}
-
-.benvenuti{
-  background:#c48a3a;
-  padding:20px;
-  border-radius:10px;
-  text-align:center;
-  color:white;
-  font-size:24px;
-  font-weight:bold;
-}
-
-.logo-home {
-  max-width: 250px;
-  display: block;
-  margin: 0 auto 10px auto; /* centrato sopra il testo */
 }
 
 .evento{
@@ -193,13 +171,12 @@ body{
 
 <!-- TOP BAR CON LOGO E HAMBURGER -->
 <div class="top-bar">
-  <img src="logo.png" alt=" " class="logo-top">
+  <img src="logo.png" alt="Tavernetta da Kevin" class="logo-top">
   <div class="hamburger" onclick="toggleMenu()">☰</div>
 </div>
 
 <!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
-  <h2> </h2>
   <a href="#home">Home</a>
   <a href="#evento">Prossima Serata</a>
   <a href="#calendario">Calendario Serate</a>
@@ -211,9 +188,6 @@ body{
 
 <!-- CONTENUTO PRINCIPALE -->
 <div class="content" id="home">
-
-
-</div>
 
 <!-- PROSSIMA SERATA -->
 <div id="evento" class="section">
@@ -247,111 +221,4 @@ body{
 </div>
 </div>
 
-<!-- GALLERIA -->
-<div id="galleria" class="section">
-<h2>Galleria</h2>
-<div class="gallery-container" id="galleryContainer">
-  <img src="serata1.jpg">
-  <img src="serata2.jpg">
-  <img src="serata3.jpg">
-  <img src="serata4.jpg">
-</div>
-</div>
-
-<!-- OVERLAY GALLERIA -->
-<div class="overlay" id="overlay">
-  <span class="prev" onclick="prevImage()">&#10094;</span>
-  <img id="overlayImg" src="">
-  <span class="next" onclick="nextImage()">&#10095;</span>
-</div>
-
-<!-- DOVE SIAMO -->
-<div id="dove" class="section">
-<h2>Dove Siamo</h2>
-<p>Via La Petrizia 6, Sellia Marina, Catanzaro, Calabria</p>
-<a class="button" href="https://maps.app.goo.gl/ZG3epuvoV7NURKs2A">Apri su Google Maps</a>
-</div>
-
-<!-- CONTATTI -->
-<div id="contatti" class="section">
-<h2>Contattaci</h2>
-<p>Per informazioni o prenotazioni:</p>
-<a class="button" href="https://wa.me/393895820363">Scrivici su WhatsApp</a>
-</div>
-
-<script>
-function toggleMenu(){
-  document.getElementById("sidebar").classList.toggle("open");
-}
-
-function toggleEvento(id){
-  var el = document.getElementById(id);
-  el.style.display = (el.style.display==='block')?'none':'block';
-}
-
-// --- GALLERIA OVERLAY ---
-let galleryImgs, currentIndex;
-window.addEventListener('DOMContentLoaded', () => {
-  galleryImgs = document.querySelectorAll('#galleryContainer img');
-  currentIndex = -1;
-  const overlay = document.getElementById('overlay');
-  const overlayImg = document.getElementById('overlayImg');
-
-  galleryImgs.forEach((img, i)=>{
-    img.addEventListener('click', ()=>{
-      overlay.style.display='flex';
-      overlayImg.src = img.src;
-      currentIndex=i;
-    });
-  });
-
-  overlay.addEventListener('click', (e)=>{
-    if(e.target.id==='overlayImg') return;
-    overlay.style.display='none';
-  });
-
-  // Swipe touch mobile
-  let startX=0;
-  overlay.addEventListener('touchstart', e => { startX=e.touches[0].clientX; });
-  overlay.addEventListener('touchend', e => {
-    let endX = e.changedTouches[0].clientX;
-    if(endX < startX - 50){ nextImage(); }
-    if(endX > startX + 50){ prevImage(); }
-  });
-});
-
-// Next/Prev galleria
-function nextImage(){
-  currentIndex = (currentIndex + 1) % galleryImgs.length;
-  document.getElementById('overlayImg').src = galleryImgs[currentIndex].src;
-}
-function prevImage(){
-  currentIndex = (currentIndex - 1 + galleryImgs.length) % galleryImgs.length;
-  document.getElementById('overlayImg').src = galleryImgs[currentIndex].src;
-}
-
-// --- RIDUZIONE LOGO ALLO SCROLL ---
-window.addEventListener('scroll', () => {
-  const logo = document.querySelector('.logo-top');
-  if(window.scrollY > 50){
-    logo.classList.add('shrink');
-  } else {
-    logo.classList.remove('shrink');
-  }
-});
-</script>
-
-</body>
-</html>
-
-
-
-
-
-
-
-
-
-
-
-
+<!-- GALL
