@@ -60,8 +60,31 @@ async function loadEvents() {
   return data || [];
 }
 
+function parseEventDate(dateStr) {
+  if (!dateStr) return null;
+
+  // formato standard ISO: yyyy-mm-dd
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    const [y, m, d] = dateStr.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  }
+
+  // formato gg-mm-aaaa o gg/mm/aaaa
+  if (/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(dateStr)) {
+    const parts = dateStr.split(/[-/]/).map(Number);
+    const [d, m, y] = parts;
+    return new Date(y, m - 1, d);
+  }
+
+  // fallback
+  const d = new Date(dateStr);
+  return isNaN(d.getTime()) ? null : d;
+}
+
 function formatDateIT(dateStr) {
-  const d = new Date(dateStr + "T00:00:00");
+  const d = parseEventDate(dateStr);
+  if (!d) return dateStr;
+
   return d.toLocaleDateString("it-IT", {
     day: "numeric",
     month: "long",
@@ -73,8 +96,15 @@ function getNextAndLast(events) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const future = events.filter(e => new Date(e.data + "T00:00:00") >= today);
-  const past = events.filter(e => new Date(e.data + "T00:00:00") < today);
+  const future = events.filter(e => {
+    const d = parseEventDate(e.data);
+    return d && d >= today;
+  });
+
+  const past = events.filter(e => {
+    const d = parseEventDate(e.data);
+    return d && d < today;
+  });
 
   return {
     nextEvent: future.length ? future[0] : null,
@@ -137,96 +167,156 @@ async function renderEventsPage() {
     return;
   }
 
-  events.slice().reverse().forEach(ev => {
-    const article = document.createElement("article");
-    article.className = "event-tile";
-    article.innerHTML = `
-      <img src="img/${ev.locandina}" alt="${ev.titolo}">
-      <div class="inner">
-        <h3 class="event-title">${ev.titolo}</h3>
-        <p class="meta">${formatDateIT(ev.data)}</p>
-        <p><strong>Menù:</strong> ${ev.menu}</p>
-        <div class="button-row">
-          <a class="button" href="evento.html?id=${ev.id}">Apri serata</a>
-          ${ev.link_apple ? `<a class="button secondary" href="${ev.link_apple}" target="_blank" rel="noopener noreferrer">Invito Apple</a>` : ""}
+  events
+    .slice()
+    .sort((a, b) => parseEventDate(b.data) - parseEventDate(a.data))
+    .forEach(ev => {
+      const article = document.createElement("article");
+      article.className = "event-tile";
+      article.innerHTML = `
+        <img src="img/${ev.locandina}" alt="${ev.titolo}">
+        <div class="inner">
+          <h3 class="event-title">${ev.titolo}</h3>
+          <p class="meta">${formatDateIT(ev.data)}</p>
+          <p><strong>Menù:</strong> ${ev.menu}</p>
+          <div class="button-row">
+            <a class="button" href="evento.html?id=${ev.id}">Apri serata</a>
+            ${ev.link_apple ? `<a class="button secondary" href="${ev.link_apple}" target="_blank" rel="noopener noreferrer">Invito Apple</a>` : ""}
+          </div>
         </div>
-      </div>
-    `;
-    list.appendChild(article);
-  });
+      `;
+      list.appendChild(article);
+    });
 }
 
 async function renderCalendarPage() {
   const mount = document.getElementById("calendarMount");
   const detail = document.getElementById("calendarDetail");
-  if (!mount || !detail) return;
+  const title = document.getElementById("calendarTitle");
+  const prevBtn = document.getElementById("prevMonthBtn");
+  const nextBtn = document.getElementById("nextMonthBtn");
+
+  if (!mount || !detail || !title || !prevBtn || !nextBtn) return;
 
   const events = await loadEvents();
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = today.getMonth();
 
-  const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
-  const startWeekday = (firstDay.getDay() + 6) % 7;
-  const totalDays = lastDay.getDate();
+  let current = new Date();
+  let currentYear = current.getFullYear();
+  let currentMonth = current.getMonth();
 
-  const eventMap = new Map();
-  events.forEach(ev => {
-    const d = new Date(ev.data + "T00:00:00");
-    const key = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
-    eventMap.set(key, ev);
-  });
+  const monthNames = [
+    "gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno",
+    "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre"
+  ];
 
-  mount.innerHTML = "";
+  function buildEventMap() {
+    const map = new Map();
 
-  ["Lun","Mar","Mer","Gio","Ven","Sab","Dom"].forEach(label => {
-    const h = document.createElement("div");
-    h.className = "calendar-head";
-    h.textContent = label;
-    mount.appendChild(h);
-  });
+    events.forEach(ev => {
+      const d = parseEventDate(ev.data);
+      if (!d) return;
 
-  for (let i = 0; i < startWeekday; i++) {
-    const empty = document.createElement("div");
-    empty.className = "calendar-day empty";
-    mount.appendChild(empty);
+      const key = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+      map.set(key, ev);
+    });
+
+    return map;
   }
 
-  for (let day = 1; day <= totalDays; day++) {
-    const key = `${year}-${month + 1}-${day}`;
-    const ev = eventMap.get(key);
+  const eventMap = buildEventMap();
 
-    const cell = document.createElement("div");
-    cell.className = "calendar-day" + (ev ? " has-event" : "");
-    cell.innerHTML = `<div class="num">${day}</div>${ev ? `<div class="dot"></div>` : ""}`;
+  function drawCalendar(year, month) {
+    mount.innerHTML = "";
+    title.textContent = `${monthNames[month]} ${year}`;
 
-    if (ev) {
-      cell.addEventListener("click", () => {
-        detail.innerHTML = `
-          <div class="card event-card">
-            <div>
-              <img src="img/${ev.locandina}" alt="${ev.titolo}">
-            </div>
-            <div>
-              <h3 class="event-title">${ev.titolo}</h3>
-              <p class="meta">${formatDateIT(ev.data)}</p>
-              <p><strong>Menù:</strong> ${ev.menu}</p>
-              <p><strong>Programma:</strong> ${ev.programma}</p>
-              <div class="button-row">
-                <a class="button" href="evento.html?id=${ev.id}">Apri serata</a>
-                ${ev.link_apple ? `<a class="button secondary" href="${ev.link_apple}" target="_blank" rel="noopener noreferrer">Invito Apple</a>` : ""}
-              </div>
-            </div>
-          </div>
-        `;
-      });
+    ["Lun","Mar","Mer","Gio","Ven","Sab","Dom"].forEach(label => {
+      const h = document.createElement("div");
+      h.className = "calendar-head";
+      h.textContent = label;
+      mount.appendChild(h);
+    });
+
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startWeekday = (firstDay.getDay() + 6) % 7;
+    const totalDays = lastDay.getDate();
+
+    for (let i = 0; i < startWeekday; i++) {
+      const empty = document.createElement("div");
+      empty.className = "calendar-day empty";
+      mount.appendChild(empty);
     }
 
-    mount.appendChild(cell);
+    for (let day = 1; day <= totalDays; day++) {
+      const key = `${year}-${month + 1}-${day}`;
+      const ev = eventMap.get(key);
+
+      const cell = document.createElement("div");
+      cell.className = "calendar-day" + (ev ? " has-event" : "");
+      cell.innerHTML = `<div class="num">${day}</div>${ev ? `<div class="dot"></div>` : ""}`;
+
+      if (ev) {
+        cell.addEventListener("click", () => {
+          detail.innerHTML = `
+            <div class="card event-card">
+              <div>
+                <img src="img/${ev.locandina}" alt="${ev.titolo}">
+              </div>
+              <div>
+                <h3 class="event-title">${ev.titolo}</h3>
+                <p class="meta">${formatDateIT(ev.data)}</p>
+                <p><strong>Menù:</strong> ${ev.menu}</p>
+                <p><strong>Programma:</strong> ${ev.programma}</p>
+                <div class="button-row">
+                  <a class="button" href="evento.html?id=${ev.id}">Apri serata</a>
+                  ${ev.link_apple ? `<a class="button secondary" href="${ev.link_apple}" target="_blank" rel="noopener noreferrer">Invito Apple</a>` : ""}
+                </div>
+              </div>
+            </div>
+          `;
+        });
+      }
+
+      mount.appendChild(cell);
+    }
+
+    detail.innerHTML = `<div class="card note">Clicca una data evidenziata per vedere la serata.</div>`;
   }
 
-  detail.innerHTML = `<div class="card note">Clicca una data evidenziata per vedere la serata.</div>`;
+  prevBtn.addEventListener("click", () => {
+    currentMonth--;
+    if (currentMonth < 0) {
+      currentMonth = 11;
+      currentYear--;
+    }
+    drawCalendar(currentYear, currentMonth);
+  });
+
+  nextBtn.addEventListener("click", () => {
+    currentMonth++;
+    if (currentMonth > 11) {
+      currentMonth = 0;
+      currentYear++;
+    }
+    drawCalendar(currentYear, currentMonth);
+  });
+
+  // Se c'è almeno una serata futura, apro direttamente il mese della prima futura
+  const upcoming = events
+    .map(ev => ({ ...ev, parsed: parseEventDate(ev.data) }))
+    .filter(ev => ev.parsed)
+    .sort((a, b) => a.parsed - b.parsed);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const firstFuture = upcoming.find(ev => ev.parsed >= today);
+  if (firstFuture) {
+    currentYear = firstFuture.parsed.getFullYear();
+    currentMonth = firstFuture.parsed.getMonth();
+  }
+
+  drawCalendar(currentYear, currentMonth);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
