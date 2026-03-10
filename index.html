@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tavernetta da Kevin</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="top-bar">
+    <img src="img/logo.png" alt="Tavernetta da Kevin" class="logo-top">
+    <button id="hamburger" class="hamburger" aria-label="Apri menu">☰</button>
+  </div>
+
+  <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+
+  <aside id="sidebar" class="sidebar">
+    <img src="img/logo.png" alt="Logo" class="side-logo">
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="serate.html">Serate</a>
+      <a href="calendario.html">Calendario</a>
+      <a href="dove.html">Dove siamo</a>
+      <a href="contatti.html">Contattaci</a>
+    </nav>
+  </aside>
+
+  <main class="page">
+    <section id="heroSlider" class="hero-slider">
+      <div class="hero-slide active"><img src="img/slide1.jpg" alt=""></div>
+      <div class="hero-slide"><img src="img/slide2.jpg" alt=""></div>
+      <div class="hero-slide"><img src="img/slide3.jpg" alt=""></div>
+      <div class="slider-dots">
+        <button class="active" aria-label="Slide 1"></button>
+        <button aria-label="Slide 2"></button>
+        <button aria-label="Slide 3"></button>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Prossima serata</h2>
+      <div id="nextEventBox"></div>
+    </section>
+
+    <section class="section">
+      <h2>Ultima serata</h2>
+      <div id="lastEventBox"></div>
+    </section>
+
+    <section class="section">
+      <h2>Dove siamo</h2>
+      <div class="card map-wrap">
+        <p>Via La Petrizia 6, Sellia Marina, Catanzaro, Calabria</p>
+        <iframe src="https://www.google.com/maps?q=Via%20La%20Petrizia%206%20Sellia%20Marina&output=embed"></iframe>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Contattaci</h2>
+      <div class="contact-grid">
+        <div class="contact-item">
+          <strong>WhatsApp</strong>
+          <div class="button-row">
+            <a class="button" href="https://wa.me/393333117937" target="_blank" rel="noopener noreferrer">Scrivici</a>
+          </div>
+        </div>
+        <div class="contact-item">
+          <strong>Indirizzo</strong>
+          <p>Via La Petrizia 6, Sellia Marina</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/site.js"></script>
+</body>
+</html>
