@@ -1,1 +1,29 @@
-
+[
+  {
+    "titolo": "Fave e Salato",
+    "data": "2026-03-13",
+    "menu": "Fave, pancetta, pecorino, olive, soppressata, vino locale",
+    "programma": "Aperitivo ore 19:00 - Cena ore 20:30 - Fisarmonica e karaoke",
+    "locandina": "serata2.jpg",
+    "linkApple": "https://www.icloud.com/invites/0d7EPsHXubfMExnHX6kap5-HQ",
+    "descrizione": "Serata conviviale alla Tavernetta da Kevin con buon cibo e musica."
+  },
+  {
+    "titolo": "Serata della Tavernetta",
+    "data": "2026-03-06",
+    "menu": "Tagliere misto, vino rosso, prodotti tipici",
+    "programma": "Cena ore 20:30 - Musica e compagnia",
+    "locandina": "serata1.jpg",
+    "linkApple": "",
+    "descrizione": "Una delle ultime serate trascorse in compagnia."
+  },
+  {
+    "titolo": "Serata Rustica",
+    "data": "2026-04-05",
+    "menu": "Salumi, formaggi, pane casereccio, vino",
+    "programma": "Aperitivo ore 19:30 - Cena ore 20:30 - Karaoke",
+    "locandina": "serata3.jpg",
+    "linkApple": "",
+    "descrizione": "Nuovo appuntamento con sapori rustici e musica."
+  }
+]
