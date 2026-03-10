@@ -71,32 +71,15 @@ function formatDateIT(dateStr) {
 
 function getNextAndLast(events) {
   const today = new Date();
-  today.setHours(0,0,0,0);
+  today.setHours(0, 0, 0, 0);
 
-  const future = events.filter(e => {
-    const d = new Date(e.data + "T00:00:00");
-    return d >= today;
-  });
-
-  const past = events.filter(e => {
-    const d = new Date(e.data + "T00:00:00");
-    return d < today;
-  });
+  const future = events.filter(e => new Date(e.data + "T00:00:00") >= today);
+  const past = events.filter(e => new Date(e.data + "T00:00:00") < today);
 
   return {
     nextEvent: future.length ? future[0] : null,
     lastEvent: past.length ? past[past.length - 1] : null
   };
-}
-
-function createWhatsAppLink(eventObj) {
-  const text =
-`Ciao Kevin!
-Vorrei prenotare per la serata del ${formatDateIT(eventObj.data)}.
-
-Nome:
-Posti scelti:`;
-  return `https://wa.me/393333117937?text=${encodeURIComponent(text)}`;
 }
 
 function renderEventCard(container, eventObj, opts = {}) {
@@ -105,9 +88,7 @@ function renderEventCard(container, eventObj, opts = {}) {
     return;
   }
 
-  const {
-    showButtons = true
-  } = opts;
+  const { showButtons = true } = opts;
 
   container.innerHTML = `
     <div class="card event-card">
@@ -119,16 +100,14 @@ function renderEventCard(container, eventObj, opts = {}) {
         <p class="meta">${formatDateIT(eventObj.data)}</p>
         <p><strong>Menù:</strong> ${eventObj.menu}</p>
         <p><strong>Programma:</strong> ${eventObj.programma}</p>
-        ${showButtons ? `
-          <div class="button-row">
-            <a class="button" href="evento.html?id=${eventObj.id}">Apri serata</a>
-            ${eventObj.link_apple ? `<a class="button secondary" href="${eventObj.link_apple}" target="_blank" rel="noopener noreferrer">Partecipa</a>` : ""}
-          </div>
-        ` : `
-          <div class="button-row">
-            <a class="button" href="evento.html?id=${eventObj.id}">Apri serata</a>
-          </div>
-        `}
+        <div class="button-row">
+          <a class="button" href="evento.html?id=${eventObj.id}">Apri serata</a>
+          ${
+            showButtons && eventObj.link_apple
+              ? `<a class="button secondary" href="${eventObj.link_apple}" target="_blank" rel="noopener noreferrer">Invito Apple</a>`
+              : ""
+          }
+        </div>
       </div>
     </div>
   `;
@@ -142,7 +121,7 @@ async function renderHome() {
   const events = await loadEvents();
   const { nextEvent, lastEvent } = getNextAndLast(events);
 
-  renderEventCard(nextBox, nextEvent);
+  renderEventCard(nextBox, nextEvent, { showButtons: true });
   renderEventCard(lastBox, lastEvent, { showButtons: false });
 }
 
@@ -169,7 +148,7 @@ async function renderEventsPage() {
         <p><strong>Menù:</strong> ${ev.menu}</p>
         <div class="button-row">
           <a class="button" href="evento.html?id=${ev.id}">Apri serata</a>
-          ${ev.link_apple ? `<a class="button secondary" href="${ev.link_apple}" target="_blank" rel="noopener noreferrer">Partecipa</a>` : ""}
+          ${ev.link_apple ? `<a class="button secondary" href="${ev.link_apple}" target="_blank" rel="noopener noreferrer">Invito Apple</a>` : ""}
         </div>
       </div>
     `;
@@ -195,7 +174,7 @@ async function renderCalendarPage() {
   const eventMap = new Map();
   events.forEach(ev => {
     const d = new Date(ev.data + "T00:00:00");
-    const key = `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+    const key = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
     eventMap.set(key, ev);
   });
 
@@ -215,7 +194,7 @@ async function renderCalendarPage() {
   }
 
   for (let day = 1; day <= totalDays; day++) {
-    const key = `${year}-${month+1}-${day}`;
+    const key = `${year}-${month + 1}-${day}`;
     const ev = eventMap.get(key);
 
     const cell = document.createElement("div");
@@ -236,7 +215,7 @@ async function renderCalendarPage() {
               <p><strong>Programma:</strong> ${ev.programma}</p>
               <div class="button-row">
                 <a class="button" href="evento.html?id=${ev.id}">Apri serata</a>
-                ${ev.link_apple ? `<a class="button secondary" href="${ev.link_apple}" target="_blank" rel="noopener noreferrer">Partecipa</a>` : ""}
+                ${ev.link_apple ? `<a class="button secondary" href="${ev.link_apple}" target="_blank" rel="noopener noreferrer">Invito Apple</a>` : ""}
               </div>
             </div>
           </div>
