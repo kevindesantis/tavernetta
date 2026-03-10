@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Prenota posti - Tavernetta da Kevin</title>
+  <title>Evento - Tavernetta da Kevin</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
     .booking-wrap{
@@ -188,29 +188,22 @@
         throw new Error("I posti totali devono essere pari e almeno 4.");
       }
       const longSide = (totalSeats - 2) / 2;
-      return {
-        left: 1,
-        right: 1,
-        top: longSide,
-        bottom: longSide
-      };
+      return { left: 1, right: 1, top: longSide, bottom: longSide };
     }
 
     function createSeatButton(num, isTaken){
       const btn = document.createElement("button");
       btn.className = "seat " + (isTaken ? "taken" : "free");
       btn.textContent = num;
-      btn.dataset.seat = num;
 
       if (!isTaken) {
         btn.addEventListener("click", () => {
-          const n = Number(num);
-          if (selectedSeats.includes(n)) {
-            selectedSeats = selectedSeats.filter(x => x !== n);
+          if (selectedSeats.includes(num)) {
+            selectedSeats = selectedSeats.filter(x => x !== num);
             btn.classList.remove("selected");
             btn.classList.add("free");
           } else {
-            selectedSeats.push(n);
+            selectedSeats.push(num);
             selectedSeats.sort((a,b)=>a-b);
             btn.classList.remove("free");
             btn.classList.add("selected");
@@ -301,7 +294,6 @@
       }
 
       currentEvent = eventData;
-
       renderEventCard(document.getElementById("eventDetail"), currentEvent);
 
       const { data: seatRows, error: seatError } = await supabaseClient
