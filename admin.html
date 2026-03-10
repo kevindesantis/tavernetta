@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Tavernetta da Kevin</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .admin-grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:20px;
+    }
+
+    .admin-form label{
+      display:block;
+      margin:12px 0 6px;
+      font-weight:bold;
+      color:var(--brown);
+    }
+
+    .admin-form input,
+    .admin-form textarea{
+      width:100%;
+      padding:12px;
+      border:1px solid rgba(107,62,38,.18);
+      border-radius:10px;
+      font-size:15px;
+      background:#fffaf2;
+    }
+
+    .admin-form textarea{
+      min-height:110px;
+      resize:vertical;
+    }
+
+    .admin-list{
+      display:grid;
+      gap:14px;
+    }
+
+    .admin-item{
+      background:var(--card);
+      border-radius:14px;
+      box-shadow:var(--shadow);
+      padding:14px;
+    }
+
+    .admin-item h3{
+      margin:0 0 8px;
+      color:var(--brown);
+    }
+
+    .admin-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:12px;
+    }
+
+    .small-note{
+      font-size:14px;
+      opacity:.8;
+      margin-top:10px;
+    }
+
+    .danger{
+      background:#b9382f !important;
+      color:#fff !important;
+      border:none !important;
+    }
+
+    @media (max-width: 900px){
+      .admin-grid{
+        grid-template-columns:1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <img src="img/logo.png" alt="Tavernetta da Kevin" class="logo-top">
+    <button id="hamburger" class="hamburger" aria-label="Apri menu">☰</button>
+  </div>
+
+  <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+
+  <aside id="sidebar" class="sidebar">
+    <img src="img/logo.png" alt="Logo" class="side-logo">
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="serate.html">Serate</a>
+      <a href="calendario.html">Calendario</a>
+      <a href="dove.html">Dove siamo</a>
+      <a href="contatti.html">Contattaci</a>
+      <a href="admin.html">Admin</a>
+    </nav>
+  </aside>
+
+  <main class="page">
+    <section class="section">
+      <h2>Admin serate</h2>
+      <div class="admin-grid">
+        <div class="card">
+          <h3 class="event-title">Aggiungi / modifica serata</h3>
+
+          <form id="adminEventForm" class="admin-form">
+            <input type="hidden" id="eventId">
+
+            <label for="titolo">Titolo</label>
+            <input id="titolo" type="text" placeholder="Es. Fave e Salato">
+
+            <label for="data">Data</label>
+            <input id="data" type="date">
+
+            <label for="menu">Menù</label>
+            <textarea id="menu" placeholder="Scrivi il menù della serata"></textarea>
+
+            <label for="programma">Programma</label>
+            <textarea id="programma" placeholder="Scrivi il programma della serata"></textarea>
+
+            <label for="locandina">Locandina</label>
+            <input id="locandina" type="text" placeholder="Es. serata4.jpg">
+
+            <label for="linkApple">Link Invito Apple</label>
+            <input id="linkApple" type="text" placeholder="https://...">
+
+            <label for="postiTotali">Posti totali</label>
+            <input id="postiTotali" type="number" min="4" step="2" placeholder="Es. 14">
+
+            <div class="button-row">
+              <button type="submit" class="button">Salva serata</button>
+              <button type="button" id="resetFormBtn" class="button secondary">Nuova serata</button>
+            </div>
+
+            <p class="small-note">
+              I posti devono essere pari: 14, 16, 18, 20...
+            </p>
+
+            <p id="adminMsg" class="note"></p>
+          </form>
+        </div>
+
+        <div>
+          <div class="card">
+            <h3 class="event-title">Serate salvate</h3>
+            <div id="adminEventsList" class="admin-list"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/site.js"></script>
+
+  <script>
+    const form = document.getElementById("adminEventForm");
+    const adminMsg = document.getElementById("adminMsg");
+    const listBox = document.getElementById("adminEventsList");
+    const resetBtn = document.getElementById("resetFormBtn");
+
+    function clearForm() {
+      document.getElementById("eventId").value = "";
+      document.getElementById("titolo").value = "";
+      document.getElementById("data").value = "";
+      document.getElementById("menu").value = "";
+      document.getElementById("programma").value = "";
+      document.getElementById("locandina").value = "";
+      document.getElementById("linkApple").value = "";
+      document.getElementById("postiTotali").value = "";
+      adminMsg.textContent = "";
+    }
+
+    function fillForm(ev) {
+      document.getElementById("eventId").value = ev.id || "";
+      document.getElementById("titolo").value = ev.titolo || "";
+      document.getElementById("data").value = (ev.data || "").slice(0, 10);
+      document.getElementById("menu").value = ev.menu || "";
+      document.getElementById("programma").value = ev.programma || "";
+      document.getElementById("locandina").value = ev.locandina || "";
+      document.getElementById("linkApple").value = ev.link_apple || "";
+      document.getElementById("postiTotali").value = ev.posti_totali || "";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    async function loadAdminEvents() {
+      const { data, error } = await supabaseClient
+        .from("serate")
+        .select("*")
+        .order("data", { ascending: false });
+
+      if (error) {
+        listBox.innerHTML = `<div class="note">Errore nel caricamento serate.</div>`;
+        return;
+      }
+
+      if (!data || !data.length) {
+        listBox.innerHTML = `<div class="note">Nessuna serata presente.</div>`;
+        return;
+      }
+
+      listBox.innerHTML = "";
+
+      data.forEach(ev => {
+        const item = document.createElement("div");
+        item.className = "admin-item";
+
+        item.innerHTML = `
+          <h3>${ev.titolo || "Senza titolo"}</h3>
+          <p><strong>Data:</strong> ${ev.data}</p>
+          <p><strong>Posti:</strong> ${ev.posti_totali}</p>
+          <p><strong>Locandina:</strong> ${ev.locandina || "-"}</p>
+
+          <div class="admin-actions">
+            <button class="button secondary edit-btn">Modifica</button>
+            <a class="button secondary" href="evento.html?id=${ev.id}">Apri serata</a>
+            <button class="button danger delete-btn">Elimina</button>
+          </div>
+        `;
+
+        item.querySelector(".edit-btn").addEventListener("click", () => {
+          fillForm(ev);
+        });
+
+        item.querySelector(".delete-btn").addEventListener("click", async () => {
+          const conferma = confirm(`Vuoi eliminare la serata "${ev.titolo}"?`);
+          if (!conferma) return;
+
+          const { error: delError } = await supabaseClient
+            .from("serate")
+            .delete()
+            .eq("id", ev.id);
+
+          if (delError) {
+            adminMsg.textContent = "Errore nell'eliminazione della serata.";
+            return;
+          }
+
+          adminMsg.textContent = "Serata eliminata correttamente.";
+          clearForm();
+          loadAdminEvents();
+        });
+
+        listBox.appendChild(item);
+      });
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      adminMsg.textContent = "";
+
+      const id = document.getElementById("eventId").value.trim();
+      const titolo = document.getElementById("titolo").value.trim();
+      const data = document.getElementById("data").value.trim();
+      const menu = document.getElementById("menu").value.trim();
+      const programma = document.getElementById("programma").value.trim();
+      const locandina = document.getElementById("locandina").value.trim();
+      const linkApple = document.getElementById("linkApple").value.trim();
+      const postiTotali = parseInt(document.getElementById("postiTotali").value, 10);
+
+      if (!titolo || !data || !menu || !programma || !locandina || !postiTotali) {
+        adminMsg.textContent = "Compila tutti i campi obbligatori.";
+        return;
+      }
+
+      if (postiTotali < 4 || postiTotali % 2 !== 0) {
+        adminMsg.textContent = "I posti totali devono essere pari e almeno 4.";
+        return;
+      }
+
+      const payload = {
+        titolo,
+        data,
+        menu,
+        programma,
+        locandina,
+        link_apple: linkApple,
+        posti_totali: postiTotali
+      };
+
+      if (id) {
+        const { error } = await supabaseClient
+          .from("serate")
+          .update(payload)
+          .eq("id", id);
+
+        if (error) {
+          adminMsg.textContent = "Errore nella modifica della serata.";
+          return;
+        }
+
+        adminMsg.textContent = "Serata modificata correttamente.";
+      } else {
+        const { error } = await supabaseClient
+          .from("serate")
+          .insert([payload]);
+
+        if (error) {
+          adminMsg.textContent = "Errore nel salvataggio della serata.";
+          return;
+        }
+
+        adminMsg.textContent = "Serata aggiunta correttamente.";
+      }
+
+      clearForm();
+      loadAdminEvents();
+    });
+
+    resetBtn.addEventListener("click", clearForm);
+
+    document.addEventListener("DOMContentLoaded", () => {
+      setupMenu();
+      loadAdminEvents();
+    });
+  </script>
+</body>
+</html>
