@@ -1,477 +1,476 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Evento - Tavernetta da Kevin</title>
-  <link rel="stylesheet" href="css/style.css">
-  <style>
-    .booking-wrap{
-      display:grid;
-      grid-template-columns:1.1fr .9fr;
-      gap:20px;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Serata - Tavernetta da Kevin</title>
 
-    .seat-legend{
-      display:flex;
-      gap:14px;
-      flex-wrap:wrap;
-      margin:10px 0 18px;
-      font-size:14px;
-    }
+<link rel="stylesheet" href="css/style.css">
 
-    .legend-item{
-      display:flex;
-      align-items:center;
-      gap:8px;
-    }
+<style>
 
-    .legend-dot{
-      width:16px;
-      height:16px;
-      border-radius:50%;
-      display:inline-block;
-    }
+.booking-wrap{
+display:grid;
+grid-template-columns:1.1fr .9fr;
+gap:20px;
+}
 
-    .dot-free{ background:#2e9d50; }
-    .dot-taken{ background:#c43b2f; }
-    .dot-selected{ background:#d4a017; }
+.seat-legend{
+display:flex;
+gap:14px;
+flex-wrap:wrap;
+margin:10px 0 18px;
+font-size:14px;
+}
 
-    .table-layout{
-      background:var(--card);
-      border-radius:16px;
-      padding:24px 16px;
-      box-shadow:var(--shadow);
-      overflow:auto;
-    }
+.legend-dot{
+width:16px;
+height:16px;
+border-radius:50%;
+display:inline-block;
+}
 
-    .table-grid{
-      min-width:640px;
-      display:grid;
-      grid-template-columns:64px 1fr 64px;
-      grid-template-rows:auto 120px auto;
-      gap:16px;
-      align-items:center;
-    }
+.dot-free{background:#2e9d50;}
+.dot-taken{background:#c43b2f;}
+.dot-selected{background:#d4a017;}
 
-    .side-seat-wrap{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
+.table-layout{
+background:var(--card);
+border-radius:16px;
+padding:24px 16px;
+box-shadow:var(--shadow);
+overflow:auto;
+}
 
-    .top-seats,
-    .bottom-seats{
-      display:flex;
-      justify-content:center;
-      gap:10px;
-      flex-wrap:nowrap;
-    }
+.table-grid{
+min-width:640px;
+display:grid;
+grid-template-columns:64px 1fr 64px;
+grid-template-rows:auto 120px auto;
+gap:16px;
+align-items:center;
+}
 
-    .rect-table{
-      background:linear-gradient(180deg, #9a6732 0%, #7b4e24 100%);
-      border-radius:22px;
-      height:120px;
-      box-shadow:
-        inset 0 0 0 4px rgba(255,255,255,.14),
-        0 8px 20px rgba(0,0,0,.12);
-    }
+.side-seat-wrap{
+display:flex;
+align-items:center;
+justify-content:center;
+}
 
-    .seat{
-      width:42px;
-      height:42px;
-      border-radius:50%;
-      border:0;
-      color:#fff;
-      font-weight:bold;
-      cursor:pointer;
-      transition:transform .18s ease, box-shadow .18s ease, background .18s ease;
-    }
+.top-seats,
+.bottom-seats{
+display:flex;
+justify-content:center;
+gap:10px;
+}
 
-    .seat.free{
-      background:#2e9d50;
-    }
+.rect-table{
+background:linear-gradient(180deg,#9a6732 0%,#7b4e24 100%);
+border-radius:22px;
+height:120px;
+box-shadow:
+inset 0 0 0 4px rgba(255,255,255,.14),
+0 8px 20px rgba(0,0,0,.12);
+}
 
-    .seat.free:hover{
-      transform:scale(1.08);
-      box-shadow:0 0 0 3px rgba(46,157,80,.18);
-    }
+.seat{
+width:42px;
+height:42px;
+border-radius:50%;
+border:0;
+color:#fff;
+font-weight:bold;
+cursor:pointer;
+transition:.2s;
+}
 
-    .seat.taken{
-      background:#c43b2f;
-      cursor:not-allowed;
-    }
+.seat.free{background:#2e9d50;}
+.seat.taken{background:#c43b2f;cursor:not-allowed;}
+.seat.selected{background:#d4a017;}
 
-    .seat.selected{
-      background:#d4a017;
-      transform:scale(1.08);
-      box-shadow:0 0 0 3px rgba(212,160,23,.18);
-    }
+.seat.free:hover{
+transform:scale(1.08);
+}
 
-    .form-box input{
-      width:100%;
-      padding:12px;
-      margin:0 0 12px;
-      border-radius:10px;
-      border:1px solid #d6b98a;
-      font-size:16px;
-    }
+.form-box input{
+width:100%;
+padding:12px;
+margin-bottom:12px;
+border-radius:10px;
+border:1px solid #d6b98a;
+font-size:16px;
+}
 
-    .selected-box{
-      margin:12px 0;
-      font-size:15px;
-    }
+.selected-box{
+margin:12px 0;
+font-size:15px;
+}
 
-    @media (max-width: 900px){
-      .booking-wrap{
-        grid-template-columns:1fr;
-      }
+@media(max-width:900px){
 
-      .table-grid{
-        min-width:560px;
-      }
-    }
-  </style>
+.booking-wrap{
+grid-template-columns:1fr;
+}
+
+.table-grid{
+min-width:560px;
+}
+
+}
+
+</style>
+
 </head>
+
 <body>
-  <div class="top-bar">
-    <img src="img/logo.png" alt="Tavernetta da Kevin" class="logo-top">
-    <button id="hamburger" class="hamburger" aria-label="Apri menu">☰</button>
-  </div>
 
-  <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+<div class="top-bar">
+<img src="img/logo.png" class="logo-top">
+<button id="hamburger" class="hamburger">☰</button>
+</div>
 
-  <aside id="sidebar" class="sidebar">
-    <img src="img/logo.png" alt="Logo" class="side-logo">
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="serate.html">Serate</a>
-      <a href="calendario.html">Calendario</a>
-      <a href="dove.html">Dove siamo</a>
-      <a href="contatti.html">Contattaci</a>
-      <a href="admin.html">Admin</a>
-    </nav>
-  </aside>
+<div id="sidebarBackdrop" class="sidebar-backdrop"></div>
 
-  <main class="page">
-    <section class="section">
-      <h2>Serata</h2>
-      <div id="eventDetail"></div>
-    </section>
+<aside id="sidebar" class="sidebar">
+<img src="img/logo.png" class="side-logo">
 
-    <section class="section">
-      <h2>Prenota i posti</h2>
+<nav>
+<a href="index.html">Home</a>
+<a href="serate.html">Serate</a>
+<a href="calendario.html">Calendario</a>
+<a href="dove.html">Dove siamo</a>
+<a href="contatti.html">Contattaci</a>
+<a href="admin.html">Admin</a>
+</nav>
 
-      <div class="seat-legend">
-        <div class="legend-item"><span class="legend-dot dot-free"></span> Disponibile</div>
-        <div class="legend-item"><span class="legend-dot dot-selected"></span> Selezionato</div>
-        <div class="legend-item"><span class="legend-dot dot-taken"></span> Occupato</div>
-      </div>
+</aside>
 
-      <div class="booking-wrap">
-        <div class="table-layout">
-          <div id="tableGrid" class="table-grid"></div>
-        </div>
+<main class="page">
 
-        <div class="card form-box">
-          <h3 class="event-title">Completa la prenotazione</h3>
+<section class="section">
 
-          <input id="nomeInput" type="text" placeholder="Nome e cognome">
-          <input id="telefonoInput" type="text" placeholder="Telefono">
+<h2>Serata</h2>
 
-          <div class="selected-box">
-            <strong>Posti disponibili:</strong>
-            <span id="availableSeatsText">0</span>
-          </div>
+<div id="eventDetail"></div>
 
-          <div class="selected-box">
-            <strong>Posti occupati:</strong>
-            <span id="occupiedSeatsText">0</span>
-          </div>
+</section>
 
-          <div class="selected-box">
-            <strong>Posti selezionati:</strong>
-            <span id="selectedSeatsText">nessuno</span>
-          </div>
 
-          <div class="selected-box">
-            <strong>Totale posti selezionati:</strong>
-            <span id="selectedCountText">0</span>
-          </div>
+<section class="section">
 
-          <button id="bookBtn" class="button">Prenota</button>
-          <p id="bookingMsg" class="note"></p>
-        </div>
-      </div>
-    </section>
-  </main>
+<h2>Prenota i posti</h2>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase-client.js"></script>
-  <script src="js/site.js"></script>
+<div class="seat-legend">
 
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const serataId = params.get("id");
+<span class="legend-dot dot-free"></span> disponibile
+<span class="legend-dot dot-selected"></span> selezionato
+<span class="legend-dot dot-taken"></span> occupato
 
-    let currentEvent = null;
-    let occupiedSeats = [];
-    let selectedSeats = [];
+</div>
 
-    function getSeatStructure(totalSeats){
-      if (totalSeats % 2 !== 0 || totalSeats < 4) {
-        throw new Error("I posti totali devono essere pari e almeno 4.");
-      }
+<div class="booking-wrap">
 
-      const longSide = (totalSeats - 2) / 2;
+<div class="table-layout">
+<div id="tableGrid" class="table-grid"></div>
+</div>
 
-      return {
-        left: 1,
-        right: 1,
-        top: longSide,
-        bottom: longSide
-      };
-    }
+<div class="card form-box">
 
-    function createSeatButton(num, isTaken){
-      const btn = document.createElement("button");
-      btn.className = "seat " + (isTaken ? "taken" : "free");
-      btn.textContent = num;
-      btn.type = "button";
+<h3 class="event-title">Prenotazione</h3>
 
-      if (!isTaken) {
-        btn.addEventListener("click", () => {
-          if (selectedSeats.includes(num)) {
-            selectedSeats = selectedSeats.filter(x => x !== num);
-            btn.classList.remove("selected");
-            btn.classList.add("free");
-          } else {
-            selectedSeats.push(num);
-            selectedSeats.sort((a,b)=>a-b);
-            btn.classList.remove("free");
-            btn.classList.add("selected");
-          }
+<input id="nomeInput" type="text" placeholder="Nome e cognome">
+<input id="telefonoInput" type="text" placeholder="Telefono">
 
-          updateSelectedInfo();
-        });
-      }
+<div class="selected-box">
+<strong>Posti disponibili:</strong>
+<span id="availableSeatsText">0</span>
+</div>
 
-      return btn;
-    }
+<div class="selected-box">
+<strong>Posti occupati:</strong>
+<span id="occupiedSeatsText">0</span>
+</div>
 
-    function updateSelectedInfo(){
-      document.getElementById("selectedSeatsText").textContent =
-        selectedSeats.length ? selectedSeats.join(", ") : "nessuno";
+<div class="selected-box">
+<strong>Posti selezionati:</strong>
+<span id="selectedSeatsText">nessuno</span>
+</div>
 
-      document.getElementById("selectedCountText").textContent =
-        selectedSeats.length;
-    }
+<div class="selected-box">
+<strong>Totale selezionati:</strong>
+<span id="selectedCountText">0</span>
+</div>
 
-    function updateAvailabilityInfo()
+<button id="bookBtn" class="button">Prenota</button>
+
+<p id="bookingMsg" class="note"></p>
+
+</div>
+
+</div>
+
+</section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/site.js"></script>
+
+<script>
+
+const params = new URLSearchParams(window.location.search);
+const serataId = params.get("id");
+
+let currentEvent=null;
+let occupiedSeats=[];
+let selectedSeats=[];
+
 function isPastEvent(dateStr){
-  const eventDate = new Date(dateStr + "T00:00:00");
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return eventDate < today;
+
+const eventDate=new Date(dateStr+"T00:00:00");
+const today=new Date();
+today.setHours(0,0,0,0);
+
+return eventDate<today;
+
 }
 
 function lockPastEvent(){
-  document.getElementById("nomeInput").disabled = true;
-  document.getElementById("telefonoInput").disabled = true;
-  document.getElementById("bookBtn").disabled = true;
-  document.getElementById("bookBtn").style.opacity = "0.6";
-  document.getElementById("bookBtn").style.cursor = "not-allowed";
-  document.getElementById("bookingMsg").textContent =
-    "Le prenotazioni per questa serata sono chiuse perché la data è passata.";
-}{
-      if(!currentEvent) return;
 
-      const total = currentEvent.posti_totali;
-      const occupied = occupiedSeats.length;
-      const available = total - occupied;
+document.getElementById("nomeInput").disabled=true;
+document.getElementById("telefonoInput").disabled=true;
+document.getElementById("bookBtn").disabled=true;
 
-      document.getElementById("availableSeatsText").textContent =
-        `${available} / ${total}`;
+document.getElementById("bookingMsg").textContent=
+"Le prenotazioni per questa serata sono chiuse.";
 
-      document.getElementById("occupiedSeatsText").textContent =
-        `${occupied} / ${total}`;
-    }
+}
 
-    function renderTable(totalSeats){
-      const grid = document.getElementById("tableGrid");
-      grid.innerHTML = "";
+function updateSelectedInfo(){
 
-      const s = getSeatStructure(totalSeats);
+document.getElementById("selectedSeatsText").textContent=
+selectedSeats.length?selectedSeats.join(", "):"nessuno";
 
-      const top = document.createElement("div");
-      top.className = "top-seats";
-      top.style.gridColumn = "2";
-      top.style.gridRow = "1";
+document.getElementById("selectedCountText").textContent=
+selectedSeats.length;
 
-      const left = document.createElement("div");
-      left.className = "side-seat-wrap";
-      left.style.gridColumn = "1";
-      left.style.gridRow = "2";
+}
 
-      const center = document.createElement("div");
-      center.className = "rect-table";
-      center.style.gridColumn = "2";
-      center.style.gridRow = "2";
+function updateAvailabilityInfo(){
 
-      const right = document.createElement("div");
-      right.className = "side-seat-wrap";
-      right.style.gridColumn = "3";
-      right.style.gridRow = "2";
+const total=currentEvent.posti_totali;
+const occupied=occupiedSeats.length;
+const available=total-occupied;
 
-      const bottom = document.createElement("div");
-      bottom.className = "bottom-seats";
-      bottom.style.gridColumn = "2";
-      bottom.style.gridRow = "3";
+document.getElementById("availableSeatsText").textContent=
+`${available} / ${total}`;
 
-      let seatNum = 1;
+document.getElementById("occupiedSeatsText").textContent=
+`${occupied} / ${total}`;
 
-      left.appendChild(createSeatButton(seatNum, occupiedSeats.includes(seatNum)));
-      seatNum++;
+}
 
-      for (let i = 0; i < s.top; i++) {
-        top.appendChild(createSeatButton(seatNum, occupiedSeats.includes(seatNum)));
-        seatNum++;
-      }
+function getSeatStructure(totalSeats){
 
-      for (let i = 0; i < s.bottom; i++) {
-        bottom.appendChild(createSeatButton(seatNum, occupiedSeats.includes(seatNum)));
-        seatNum++;
-      }
+const longSide=(totalSeats-2)/2;
 
-      right.appendChild(createSeatButton(seatNum, occupiedSeats.includes(seatNum)));
+return{
+left:1,
+right:1,
+top:longSide,
+bottom:longSide
+};
 
-      grid.appendChild(top);
-      grid.appendChild(left);
-      grid.appendChild(center);
-      grid.appendChild(right);
-      grid.appendChild(bottom);
-    }
+}
 
-    async function loadEventAndSeats(){
-      if (!serataId) {
-        document.getElementById("eventDetail").innerHTML =
-          `<div class="card note">Serata non trovata.</div>`;
-        return;
-      }
+function createSeatButton(num,isTaken){
 
-      const { data: eventData, error: eventError } = await supabaseClient
-        .from("serate")
-        .select("*")
-        .eq("id", serataId)
-        .single();
+const btn=document.createElement("button");
 
-      if (eventError || !eventData) {
-        console.error(eventError);
-        document.getElementById("eventDetail").innerHTML =
-          `<div class="card note">Errore nel caricamento della serata.</div>`;
-        return;
-      }
+btn.className="seat "+(isTaken?"taken":"free");
 
-      currentEvent = eventData;
+btn.textContent=num;
 
-      renderEventCard(document.getElementById("eventDetail"), currentEvent);
+if(!isTaken){
 
-      const { data: seatRows, error: seatError } = await supabaseClient
-        .from("prenotazione_posti")
-        .select("posto_numero")
-        .eq("serata_id", serataId);
+btn.addEventListener("click",()=>{
 
-      if (seatError) {
-        console.error(seatError);
-        document.getElementById("bookingMsg").textContent =
-          "Errore nel caricamento posti.";
-        return;
-      }
+if(selectedSeats.includes(num)){
 
-      occupiedSeats = seatRows.map(r => r.posto_numero).sort((a,b)=>a-b);
+selectedSeats=selectedSeats.filter(x=>x!==num);
+btn.classList.remove("selected");
+btn.classList.add("free");
 
-      renderTable(currentEvent.posti_totali);
-      updateAvailabilityInfo();
-      updateSelectedInfo();
-    }
+}else{
 
-    async function saveBooking(){
-      const nome = document.getElementById("nomeInput").value.trim();
-      const telefono = document.getElementById("telefonoInput").value.trim();
-      const msg = document.getElementById("bookingMsg");
+selectedSeats.push(num);
+btn.classList.remove("free");
+btn.classList.add("selected");
 
-      msg.textContent = "";
+}
 
-      if (!nome || !telefono) {
-        msg.textContent = "Inserisci nome e telefono.";
-        return;
-      }
+updateSelectedInfo();
 
-      if (!selectedSeats.length) {
-        msg.textContent = "Seleziona almeno un posto.";
-        return;
-      }
+});
 
-      const overlap = selectedSeats.some(seat => occupiedSeats.includes(seat));
+}
 
-      if (overlap) {
-        msg.textContent = "Uno dei posti selezionati non è più disponibile.";
-        await loadEventAndSeats();
-        selectedSeats = [];
-        updateSelectedInfo();
-        return;
-      }
+return btn;
 
-      const bookedSeats = [...selectedSeats];
+}
 
-      const { data: prenotazione, error: prenError } = await supabaseClient
-        .from("prenotazioni")
-        .insert([{
-          serata_id: serataId,
-          nome,
-          telefono
-        }])
-        .select()
-        .single();
+function renderTable(totalSeats){
 
-      if (prenError || !prenotazione) {
-        console.error(prenError);
-        msg.textContent = "Errore nel salvataggio prenotazione.";
-        return;
-      }
+const grid=document.getElementById("tableGrid");
+grid.innerHTML="";
 
-      const postiRows = bookedSeats.map(n => ({
-        prenotazione_id: prenotazione.id,
-        serata_id: serataId,
-        posto_numero: n
-      }));
+const s=getSeatStructure(totalSeats);
 
-      const { error: postiError } = await supabaseClient
-        .from("prenotazione_posti")
-        .insert(postiRows);
+const top=document.createElement("div");
+top.className="top-seats";
+top.style.gridColumn="2";
+top.style.gridRow="1";
 
-      if (postiError) {
-        console.error(postiError);
-        msg.textContent = "Errore nel salvataggio posti.";
-        return;
-      }
+const left=document.createElement("div");
+left.className="side-seat-wrap";
+left.style.gridColumn="1";
+left.style.gridRow="2";
 
-      msg.textContent =
-        `Prenotazione salvata! Hai riservato i posti: ${bookedSeats.join(", ")}.`;
+const center=document.createElement("div");
+center.className="rect-table";
+center.style.gridColumn="2";
+center.style.gridRow="2";
 
-      document.getElementById("nomeInput").value = "";
-      document.getElementById("telefonoInput").value = "";
-      selectedSeats = [];
+const right=document.createElement("div");
+right.className="side-seat-wrap";
+right.style.gridColumn="3";
+right.style.gridRow="2";
 
-      await loadEventAndSeats();
-    }
+const bottom=document.createElement("div");
+bottom.className="bottom-seats";
+bottom.style.gridColumn="2";
+bottom.style.gridRow="3";
 
-    document.addEventListener("DOMContentLoaded", async () => {
-      setupMenu();
-      await loadEventAndSeats();
+let seatNum=1;
 
-      document.getElementById("bookBtn").addEventListener("click", saveBooking);
-    });
-  </script>
+left.appendChild(createSeatButton(seatNum,occupiedSeats.includes(seatNum)));
+seatNum++;
+
+for(let i=0;i<s.top;i++){
+top.appendChild(createSeatButton(seatNum,occupiedSeats.includes(seatNum)));
+seatNum++;
+}
+
+for(let i=0;i<s.bottom;i++){
+bottom.appendChild(createSeatButton(seatNum,occupiedSeats.includes(seatNum)));
+seatNum++;
+}
+
+right.appendChild(createSeatButton(seatNum,occupiedSeats.includes(seatNum)));
+
+grid.appendChild(top);
+grid.appendChild(left);
+grid.appendChild(center);
+grid.appendChild(right);
+grid.appendChild(bottom);
+
+}
+
+async function loadEventAndSeats(){
+
+const {data:eventData}=await supabaseClient
+.from("serate")
+.select("*")
+.eq("id",serataId)
+.single();
+
+currentEvent=eventData;
+
+renderEventCard(document.getElementById("eventDetail"),currentEvent);
+
+if(isPastEvent(currentEvent.data)){
+lockPastEvent();
+}
+
+const {data:seatRows}=await supabaseClient
+.from("prenotazione_posti")
+.select("posto_numero")
+.eq("serata_id",serataId);
+
+occupiedSeats=seatRows.map(r=>r.posto_numero);
+
+renderTable(currentEvent.posti_totali);
+
+updateAvailabilityInfo();
+
+updateSelectedInfo();
+
+}
+
+async function saveBooking(){
+
+const nome=document.getElementById("nomeInput").value.trim();
+const telefono=document.getElementById("telefonoInput").value.trim();
+const msg=document.getElementById("bookingMsg");
+
+msg.textContent="";
+
+if(isPastEvent(currentEvent.data)){
+msg.textContent="Non puoi prenotare una serata passata.";
+return;
+}
+
+if(!nome||!telefono){
+msg.textContent="Inserisci nome e telefono.";
+return;
+}
+
+if(!selectedSeats.length){
+msg.textContent="Seleziona almeno un posto.";
+return;
+}
+
+const {data:prenotazione}=await supabaseClient
+.from("prenotazioni")
+.insert([{serata_id:serataId,nome,telefono}])
+.select()
+.single();
+
+const postiRows=selectedSeats.map(n=>({
+prenotazione_id:prenotazione.id,
+serata_id:serataId,
+posto_numero:n
+}));
+
+await supabaseClient
+.from("prenotazione_posti")
+.insert(postiRows);
+
+msg.textContent=
+`Prenotazione salvata! Posti: ${selectedSeats.join(", ")}`;
+
+document.getElementById("nomeInput").value="";
+document.getElementById("telefonoInput").value="";
+selectedSeats=[];
+
+await loadEventAndSeats();
+
+}
+
+document.addEventListener("DOMContentLoaded",async()=>{
+
+setupMenu();
+
+await loadEventAndSeats();
+
+document
+.getElementById("bookBtn")
+.addEventListener("click",saveBooking);
+
+});
+
+</script>
+
 </body>
 </html>
