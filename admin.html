@@ -1,25 +1,22 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta property="og:title" content="Tavernetta da Kevin">
-<meta property="og:description" content="Scopri la prossima serata, prenota il tuo posto e guarda il calendario eventi della Tavernetta da Kevin.">
-<meta property="og:image" content="https://www.tavernettadakevin.it/img/whatsapp-preview.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:url" content="https://www.tavernettadakevin.it/">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Tavernetta da Kevin">
-<meta property="og:locale" content="it_IT">
-
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Tavernetta da Kevin">
-<meta name="twitter:description" content="Scopri la prossima serata e prenota il tuo posto.">
-<meta name="twitter:image" content="https://www.tavernettadakevin.it/img/whatsapp-preview.png">
-  <link rel="icon" type="image/png" href="img/logo.png">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin - Tavernetta da Kevin</title>
+
+  <title>Admin – Tavernetta da Kevin</title>
+  <meta name="description" content="Pannello admin per gestire le serate della Tavernetta da Kevin.">
+
+  <link rel="icon" type="image/png" href="img/logo.png">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="canonical" href="https://tavernettadakevin.it/admin.html">
+
+  <meta property="og:title" content="Admin – Tavernetta da Kevin">
+  <meta property="og:description" content="Pannello admin per gestire le serate della Tavernetta da Kevin.">
+  <meta property="og:image" content="https://tavernettadakevin.it/img/whatsapp-preview.png">
+  <meta property="og:url" content="https://tavernettadakevin.it/admin.html">
+  <meta property="og:type" content="website">
+
   <style>
     .admin-grid{
       display:grid;
@@ -85,6 +82,18 @@
       border:none !important;
     }
 
+    .preview-box{
+      margin-top:12px;
+    }
+
+    .preview-box img{
+      width:100%;
+      max-width:260px;
+      border-radius:12px;
+      display:none;
+      box-shadow:var(--shadow);
+    }
+
     @media (max-width: 900px){
       .admin-grid{
         grid-template-columns:1fr;
@@ -115,12 +124,14 @@
   <main class="page">
     <section class="section">
       <h2>Admin serate</h2>
+
       <div class="admin-grid">
         <div class="card">
           <h3 class="event-title">Aggiungi / modifica serata</h3>
 
           <form id="adminEventForm" class="admin-form">
             <input type="hidden" id="eventId">
+            <input type="hidden" id="locandinaCurrent">
 
             <label for="titolo">Titolo</label>
             <input id="titolo" type="text" placeholder="Es. Fave e Salato">
@@ -134,8 +145,12 @@
             <label for="programma">Programma</label>
             <textarea id="programma" placeholder="Scrivi il programma della serata"></textarea>
 
-            <label for="locandina">Locandina</label>
-            <input id="locandina" type="text" placeholder="Es. serata4.jpg">
+            <label for="locandinaFile">Locandina</label>
+            <input id="locandinaFile" type="file" accept="image/*">
+
+            <div class="preview-box">
+              <img id="locandinaPreview" alt="Anteprima locandina">
+            </div>
 
             <label for="linkApple">Link Invito Apple</label>
             <input id="linkApple" type="text" placeholder="https://...">
@@ -176,6 +191,30 @@
     const adminMsg = document.getElementById("adminMsg");
     const listBox = document.getElementById("adminEventsList");
     const resetBtn = document.getElementById("resetFormBtn");
+    const fileInput = document.getElementById("locandinaFile");
+    const previewImg = document.getElementById("locandinaPreview");
+
+    function showPreview(src) {
+      if (!src) {
+        previewImg.style.display = "none";
+        previewImg.src = "";
+        return;
+      }
+      previewImg.src = src;
+      previewImg.style.display = "block";
+    }
+
+    fileInput.addEventListener("change", () => {
+      const file = fileInput.files[0];
+      if (!file) {
+        const current = document.getElementById("locandinaCurrent").value.trim();
+        showPreview(current);
+        return;
+      }
+
+      const objectUrl = URL.createObjectURL(file);
+      showPreview(objectUrl);
+    });
 
     function clearForm() {
       document.getElementById("eventId").value = "";
@@ -183,10 +222,12 @@
       document.getElementById("data").value = "";
       document.getElementById("menu").value = "";
       document.getElementById("programma").value = "";
-      document.getElementById("locandina").value = "";
+      document.getElementById("locandinaFile").value = "";
+      document.getElementById("locandinaCurrent").value = "";
       document.getElementById("linkApple").value = "";
       document.getElementById("postiTotali").value = "";
       adminMsg.textContent = "";
+      showPreview("");
     }
 
     function fillForm(ev) {
@@ -195,9 +236,11 @@
       document.getElementById("data").value = (ev.data || "").slice(0, 10);
       document.getElementById("menu").value = ev.menu || "";
       document.getElementById("programma").value = ev.programma || "";
-      document.getElementById("locandina").value = ev.locandina || "";
+      document.getElementById("locandinaCurrent").value = ev.locandina || "";
       document.getElementById("linkApple").value = ev.link_apple || "";
       document.getElementById("postiTotali").value = ev.posti_totali || "";
+      document.getElementById("locandinaFile").value = "";
+      showPreview(ev.locandina || "");
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
@@ -227,12 +270,12 @@
           <h3>${ev.titolo || "Senza titolo"}</h3>
           <p><strong>Data:</strong> ${ev.data}</p>
           <p><strong>Posti:</strong> ${ev.posti_totali}</p>
-          <p><strong>Locandina:</strong> ${ev.locandina || "-"}</p>
+          ${ev.locandina ? `<img src="${ev.locandina}" alt="${ev.titolo}" style="width:100%;max-width:220px;border-radius:10px;margin-top:8px;">` : ""}
 
           <div class="admin-actions">
-            <button class="button secondary edit-btn">Modifica</button>
-            <a class="button secondary" href="admin-evento.html?id=${ev.id}">Gestisci Serata</a>
-            <button class="button danger delete-btn">Elimina</button>
+            <button class="button secondary edit-btn" type="button">Modifica</button>
+            <a class="button secondary" href="admin-evento.html?id=${ev.id}">Gestisci serata</a>
+            <button class="button danger delete-btn" type="button">Elimina</button>
           </div>
         `;
 
@@ -272,11 +315,15 @@
       const data = document.getElementById("data").value.trim();
       const menu = document.getElementById("menu").value.trim();
       const programma = document.getElementById("programma").value.trim();
-      const locandina = document.getElementById("locandina").value.trim();
       const linkApple = document.getElementById("linkApple").value.trim();
       const postiTotali = parseInt(document.getElementById("postiTotali").value, 10);
 
-      if (!titolo || !data || !menu || !programma || !locandina || !postiTotali) {
+      const currentLocandina = document.getElementById("locandinaCurrent").value.trim();
+      const selectedFile = fileInput.files[0];
+
+      let locandinaUrl = currentLocandina;
+
+      if (!titolo || !data || !menu || !programma || !postiTotali) {
         adminMsg.textContent = "Compila tutti i campi obbligatori.";
         return;
       }
@@ -286,12 +333,44 @@
         return;
       }
 
+      if (selectedFile) {
+        const safeName = selectedFile.name.replace(/\s+/g, "-");
+        const filePath = `serate/${Date.now()}-${safeName}`;
+
+        const { error: uploadError } = await supabaseClient
+          .storage
+          .from("locandine")
+          .upload(filePath, selectedFile, {
+            cacheControl: "3600",
+            upsert: false,
+            contentType: selectedFile.type
+          });
+
+        if (uploadError) {
+          console.error(uploadError);
+          adminMsg.textContent = "Errore nel caricamento della locandina.";
+          return;
+        }
+
+        const { data: publicData } = supabaseClient
+          .storage
+          .from("locandine")
+          .getPublicUrl(filePath);
+
+        locandinaUrl = publicData.publicUrl;
+      }
+
+      if (!locandinaUrl) {
+        adminMsg.textContent = "Carica una locandina.";
+        return;
+      }
+
       const payload = {
         titolo,
         data,
         menu,
         programma,
-        locandina,
+        locandina: locandinaUrl,
         link_apple: linkApple,
         posti_totali: postiTotali
       };
@@ -303,6 +382,7 @@
           .eq("id", id);
 
         if (error) {
+          console.error(error);
           adminMsg.textContent = "Errore nella modifica della serata.";
           return;
         }
@@ -314,6 +394,7 @@
           .insert([payload]);
 
         if (error) {
+          console.error(error);
           adminMsg.textContent = "Errore nel salvataggio della serata.";
           return;
         }
@@ -333,7 +414,4 @@
     });
   </script>
 </body>
-
 </html>
-
-
