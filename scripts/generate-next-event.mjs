@@ -1,7 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
 
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   throw new Error("Mancano SUPABASE_URL o SUPABASE_ANON_KEY");
@@ -13,12 +13,12 @@ function parseEventDate(dateValue) {
   if (!dateValue) return null;
   const str = String(dateValue).trim();
 
-  if (/^\\d{4}-\\d{2}-\\d{2}$/.test(str)) {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
     const [y, m, d] = str.split("-").map(Number);
     return new Date(y, m - 1, d);
   }
 
-  if (/^\\d{2}[-/]\\d{2}[-/]\\d{4}$/.test(str)) {
+  if (/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(str)) {
     const [d, m, y] = str.split(/[-/]/).map(Number);
     return new Date(y, m - 1, d);
   }
@@ -38,7 +38,7 @@ function formatDateIT(dateStr) {
   });
 }
 
-function escapeHtml(str = "") {
+function esc(str = "") {
   return String(str)
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
@@ -52,9 +52,7 @@ const { data, error } = await supabase
   .select("*")
   .order("data", { ascending: true });
 
-if (error) {
-  throw error;
-}
+if (error) throw error;
 
 const today = new Date();
 today.setHours(0, 0, 0, 0);
@@ -90,6 +88,7 @@ if (!nextEvent) {
   <meta property="og:url" content="https://tavernettadakevin.it/prossima-serata.html">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Tavernetta da Kevin">
+  <meta property="og:locale" content="it_IT">
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Prossima serata – Tavernetta da Kevin">
@@ -131,13 +130,13 @@ if (!nextEvent) {
 </body>
 </html>`;
 } else {
-  const title = escapeHtml(nextEvent.titolo || "Prossima serata");
-  const dateText = escapeHtml(formatDateIT(nextEvent.data));
-  const menu = escapeHtml(nextEvent.menu || "");
-  const program = escapeHtml(nextEvent.programma || "");
-  const image = escapeHtml(nextEvent.locandina || fallbackImage);
+  const title = esc(nextEvent.titolo || "Prossima serata");
+  const dateText = esc(formatDateIT(nextEvent.data));
+  const menu = esc(nextEvent.menu || "");
+  const program = esc(nextEvent.programma || "");
+  const image = esc(nextEvent.locandina || fallbackImage);
   const eventUrl = `https://tavernettadakevin.it/evento.html?id=${nextEvent.id}`;
-  const description = `${dateText} – ${nextEvent.titolo || "Prossima serata"} alla Tavernetta da Kevin. Prenota il tuo posto.`;
+  const description = esc(`${dateText} – ${nextEvent.titolo || "Prossima serata"} alla Tavernetta da Kevin. Prenota il tuo posto.`);
 
   html = `<!DOCTYPE html>
 <html lang="it">
@@ -146,14 +145,14 @@ if (!nextEvent) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>${title} – Tavernetta da Kevin</title>
-  <meta name="description" content="${escapeHtml(description)}">
+  <meta name="description" content="${description}">
 
   <link rel="icon" type="image/png" href="img/logo.png">
   <link rel="stylesheet" href="css/style.css">
   <link rel="canonical" href="https://tavernettadakevin.it/prossima-serata.html">
 
   <meta property="og:title" content="${title} – Tavernetta da Kevin">
-  <meta property="og:description" content="${escapeHtml(description)}">
+  <meta property="og:description" content="${description}">
   <meta property="og:image" content="${image}">
   <meta property="og:image:secure_url" content="${image}">
   <meta property="og:image:width" content="1200">
@@ -165,7 +164,7 @@ if (!nextEvent) {
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${title} – Tavernetta da Kevin">
-  <meta name="twitter:description" content="${escapeHtml(description)}">
+  <meta name="twitter:description" content="${description}">
   <meta name="twitter:image" content="${image}">
 </head>
 <body>
