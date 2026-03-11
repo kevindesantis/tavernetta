@@ -107,29 +107,51 @@
     }
 
     .qty-badge{
-      min-width:58px;
+      min-width:64px;
       text-align:center;
       background:#fff;
       border:1px solid rgba(107,62,38,.14);
-      border-radius:10px;
-      padding:10px 8px;
+      border-radius:12px;
+      padding:12px 10px;
       font-weight:bold;
+      font-size:18px;
       color:var(--brown);
     }
 
     .mini-btn{
-      min-width:42px;
-      height:42px;
+      min-width:54px;
+      height:54px;
       border:none;
-      border-radius:10px;
+      border-radius:12px;
       background:var(--brown);
       color:#fff;
-      font-size:22px;
+      font-size:24px;
+      font-weight:bold;
       cursor:pointer;
     }
 
+    .qty-select{
+      height:54px;
+      min-width:82px;
+      border-radius:12px;
+      border:1px solid rgba(107,62,38,.18);
+      background:#fff;
+      padding:0 10px;
+      font-size:16px;
+      color:var(--brown);
+      font-weight:bold;
+    }
+
     .danger-btn{
+      min-width:38px;
+      height:38px;
+      border:none;
+      border-radius:10px;
       background:#b9382f;
+      color:#fff;
+      font-size:16px;
+      cursor:pointer;
+      padding:0 10px;
     }
 
     .add-box{
@@ -137,7 +159,7 @@
       border-radius:16px;
       box-shadow:var(--shadow);
       padding:18px;
-      margin-top:20px;
+      margin-top:26px;
     }
 
     .add-box h2{
@@ -206,16 +228,18 @@
     <div id="inventoryMount"></div>
 
     <section class="add-box">
-      <h2>Aggiungi nuovo articolo</h2>
+      <h2>Aggiungi prodotto che non c’è in lista</h2>
 
       <div class="add-grid">
         <input id="newNome" type="text" placeholder="Nome articolo">
         <select id="newCategoria">
           <option value="Birra">Birra</option>
           <option value="Vino">Vino</option>
+          <option value="Superalcolici">Superalcolici</option>
           <option value="Bibite">Bibite</option>
           <option value="Acqua">Acqua</option>
           <option value="Cucina">Cucina</option>
+          <option value="Detersivi">Detersivi</option>
           <option value="Materiale">Materiale</option>
           <option value="Altro">Altro</option>
         </select>
@@ -235,7 +259,25 @@
   <script src="../js/supabase-client.js"></script>
 
   <script>
-    const categoriesOrder = ["Birra", "Vino", "Bibite", "Acqua", "Cucina", "Materiale", "Altro"];
+    const categoriesOrder = [
+      "Birra",
+      "Vino",
+      "Superalcolici",
+      "Bibite",
+      "Acqua",
+      "Cucina",
+      "Detersivi",
+      "Materiale",
+      "Altro"
+    ];
+
+    function buildSelectOptions() {
+      let html = "";
+      for (let i = 1; i <= 100; i++) {
+        html += `<option value="${i}">${i}</option>`;
+      }
+      return html;
+    }
 
     async function loadInventory() {
       const mount = document.getElementById("inventoryMount");
@@ -244,7 +286,6 @@
       const { data, error } = await supabaseClient
         .from("inventario")
         .select("*")
-        .order("categoria", { ascending: true })
         .order("ordine", { ascending: true })
         .order("nome", { ascending: true });
 
@@ -287,19 +328,23 @@
 
             <div class="item-controls">
               <button class="mini-btn minus-btn" type="button">-</button>
-              <div class="qty-badge">${item.quantita}</div>
+              <select class="qty-select">${buildSelectOptions()}</select>
               <button class="mini-btn plus-btn" type="button">+</button>
-              <button class="mini-btn danger-btn delete-btn" type="button">🗑</button>
+              <div class="qty-badge">${item.quantita}</div>
+              <button class="danger-btn delete-btn" type="button">🗑</button>
             </div>
           `;
 
+          const select = row.querySelector(".qty-select");
+
           row.querySelector(".plus-btn").addEventListener("click", async () => {
-            await updateQuantity(item.id, item.quantita + 1);
+            const delta = parseInt(select.value, 10);
+            await updateQuantity(item.id, item.quantita + delta);
           });
 
           row.querySelector(".minus-btn").addEventListener("click", async () => {
-            if (item.quantita <= 0) return;
-            await updateQuantity(item.id, item.quantita - 1);
+            const delta = parseInt(select.value, 10);
+            await updateQuantity(item.id, Math.max(0, item.quantita - delta));
           });
 
           row.querySelector(".delete-btn").addEventListener("click", async () => {
@@ -393,178 +438,7 @@
     }
 
     document.getElementById("addItemBtn").addEventListener("click", addItem);
-
     document.addEventListener("DOMContentLoaded", loadInventory);
   </script>
-</body>
-</html><!DOCTYPE html>
-<html lang="it">
-<head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Inventario Tavernetta</title>
-
-<link rel="icon" type="image/png" href="../img/logo.png">
-<link rel="stylesheet" href="../css/style.css">
-
-<style>
-
-.page{
-width:95%;
-max-width:900px;
-margin:auto;
-padding:20px;
-}
-
-.item{
-background:#fff7eb;
-padding:15px;
-border-radius:12px;
-margin-bottom:10px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-}
-
-.item-name{
-font-weight:bold;
-}
-
-.controls button{
-margin-left:5px;
-}
-
-</style>
-
-</head>
-
-<body>
-
-<div class="page">
-
-<h1>Inventario Tavernetta</h1>
-
-<div style="margin-bottom:20px">
-
-<input id="nome" placeholder="Nome prodotto">
-
-<input id="categoria" placeholder="Categoria">
-
-<input id="quantita" type="number" placeholder="Quantità">
-
-<input id="unita" placeholder="Unità (bottiglie, kg...)">
-
-<button onclick="aggiungi()">Aggiungi</button>
-
-</div>
-
-<div id="lista"></div>
-
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../js/supabase-client.js"></script>
-
-<script>
-
-async function carica(){
-
-const { data } = await supabaseClient
-.from("inventario")
-.select("*")
-.order("nome")
-
-const lista = document.getElementById("lista")
-
-lista.innerHTML = ""
-
-data.forEach(item=>{
-
-lista.innerHTML += `
-<div class="item">
-
-<div>
-<div class="item-name">${item.nome}</div>
-<div>${item.quantita} ${item.unita || ""}</div>
-</div>
-
-<div class="controls">
-
-<button onclick="meno(${item.id},${item.quantita})">-</button>
-
-<button onclick="piu(${item.id},${item.quantita})">+</button>
-
-<button onclick="elimina(${item.id})">🗑</button>
-
-</div>
-
-</div>
-`
-
-})
-
-}
-
-async function aggiungi(){
-
-const nome = document.getElementById("nome").value
-const categoria = document.getElementById("categoria").value
-const quantita = document.getElementById("quantita").value
-const unita = document.getElementById("unita").value
-
-await supabaseClient.from("inventario").insert([{
-
-nome,
-categoria,
-quantita,
-unita
-
-}])
-
-carica()
-
-}
-
-async function piu(id,q){
-
-await supabaseClient
-.from("inventario")
-.update({ quantita:q+1 })
-.eq("id",id)
-
-carica()
-
-}
-
-async function meno(id,q){
-
-if(q<=0) return
-
-await supabaseClient
-.from("inventario")
-.update({ quantita:q-1 })
-.eq("id",id)
-
-carica()
-
-}
-
-async function elimina(id){
-
-await supabaseClient
-.from("inventario")
-.delete()
-.eq("id",id)
-
-carica()
-
-}
-
-carica()
-
-</script>
-
 </body>
 </html>
