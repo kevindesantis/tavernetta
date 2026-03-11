@@ -1,25 +1,22 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta property="og:title" content="Tavernetta da Kevin">
-<meta property="og:description" content="Scopri la prossima serata, prenota il tuo posto e guarda il calendario eventi della Tavernetta da Kevin.">
-<meta property="og:image" content="https://www.tavernettadakevin.it/img/whatsapp-preview.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:url" content="https://www.tavernettadakevin.it/">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Tavernetta da Kevin">
-<meta property="og:locale" content="it_IT">
-
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Tavernetta da Kevin">
-<meta name="twitter:description" content="Scopri la prossima serata e prenota il tuo posto.">
-<meta name="twitter:image" content="https://www.tavernettadakevin.it/img/whatsapp-preview.png">
-  <link rel="icon" type="image/png" href="img/logo.png">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Evento - Tavernetta da Kevin</title>
+
+  <title>Admin evento – Tavernetta da Kevin</title>
+  <meta name="description" content="Gestione amministrativa della serata della Tavernetta da Kevin.">
+
+  <link rel="icon" type="image/png" href="img/logo.png">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="canonical" href="https://tavernettadakevin.it/admin-evento.html">
+
+  <meta property="og:title" content="Admin evento – Tavernetta da Kevin">
+  <meta property="og:description" content="Gestione amministrativa della serata della Tavernetta da Kevin.">
+  <meta property="og:image" content="https://tavernettadakevin.it/img/whatsapp-preview.png">
+  <meta property="og:url" content="https://tavernettadakevin.it/admin-evento.html">
+  <meta property="og:type" content="website">
+
   <style>
     .booking-wrap{
       display:grid;
@@ -84,10 +81,12 @@
     }
 
     .rect-table{
-      background:#8b5a2b;
-      border-radius:18px;
+      background:linear-gradient(180deg,#9a6732 0%,#7b4e24 100%);
+      border-radius:22px;
       height:120px;
-      box-shadow:inset 0 0 0 4px rgba(255,255,255,.15);
+      box-shadow:
+        inset 0 0 0 4px rgba(255,255,255,.14),
+        0 8px 20px rgba(0,0,0,.12);
     }
 
     .seat{
@@ -98,11 +97,16 @@
       color:#fff;
       font-weight:bold;
       cursor:pointer;
+      transition:.2s;
     }
 
     .seat.free{ background:#2e9d50; }
     .seat.taken{ background:#c43b2f; cursor:not-allowed; }
     .seat.selected{ background:#d4a017; }
+
+    .seat.free:hover{
+      transform:scale(1.08);
+    }
 
     .form-box input{
       width:100%;
@@ -195,16 +199,30 @@
 
         <div class="card form-box">
           <h3 class="event-title">Nuova prenotazione admin</h3>
+
           <input id="nomeInput" type="text" placeholder="Nome e cognome">
           <input id="telefonoInput" type="text" placeholder="Telefono">
+
+          <div class="selected-box">
+            <strong>Posti disponibili:</strong>
+            <span id="availableSeatsText">0</span>
+          </div>
+
+          <div class="selected-box">
+            <strong>Posti occupati:</strong>
+            <span id="occupiedSeatsText">0</span>
+          </div>
+
           <div class="selected-box">
             <strong>Posti selezionati:</strong>
             <span id="selectedSeatsText">nessuno</span>
           </div>
+
           <div class="selected-box">
             <strong>Totale posti:</strong>
             <span id="selectedCountText">0</span>
           </div>
+
           <button id="bookBtn" class="button">Salva prenotazione</button>
           <p id="bookingMsg" class="note"></p>
         </div>
@@ -221,6 +239,7 @@
   <script src="js/supabase-client.js"></script>
   <script src="js/admin-guard.js"></script>
   <script src="js/site.js"></script>
+
   <script>
     const params = new URLSearchParams(window.location.search);
     const serataId = params.get("id");
@@ -229,10 +248,31 @@
     let occupiedSeats = [];
     let selectedSeats = [];
 
+    function updateSelectedInfo(){
+      document.getElementById("selectedSeatsText").textContent =
+        selectedSeats.length ? selectedSeats.join(", ") : "nessuno";
+
+      document.getElementById("selectedCountText").textContent =
+        selectedSeats.length;
+    }
+
+    function updateAvailabilityInfo(){
+      const total = currentEvent.posti_totali;
+      const occupied = occupiedSeats.length;
+      const available = total - occupied;
+
+      document.getElementById("availableSeatsText").textContent =
+        `${available} / ${total}`;
+
+      document.getElementById("occupiedSeatsText").textContent =
+        `${occupied} / ${total}`;
+    }
+
     function getSeatStructure(totalSeats){
       if (totalSeats % 2 !== 0 || totalSeats < 4) {
         throw new Error("I posti totali devono essere pari e almeno 4.");
       }
+
       const longSide = (totalSeats - 2) / 2;
       return { left: 1, right: 1, top: longSide, bottom: longSide };
     }
@@ -241,6 +281,7 @@
       const btn = document.createElement("button");
       btn.className = "seat " + (isTaken ? "taken" : "free");
       btn.textContent = num;
+      btn.type = "button";
 
       if (!isTaken) {
         btn.addEventListener("click", () => {
@@ -259,12 +300,6 @@
       }
 
       return btn;
-    }
-
-    function updateSelectedInfo(){
-      document.getElementById("selectedSeatsText").textContent =
-        selectedSeats.length ? selectedSeats.join(", ") : "nessuno";
-      document.getElementById("selectedCountText").textContent = selectedSeats.length;
     }
 
     function renderTable(totalSeats){
@@ -340,6 +375,7 @@
         .order("creato_il", { ascending: false });
 
       if (error) {
+        console.error(error);
         box.innerHTML = `<div class="note">Errore nel caricamento prenotazioni.</div>`;
         return;
       }
@@ -364,7 +400,7 @@
           <p><strong>Telefono:</strong> ${pr.telefono || "-"}</p>
           <p><strong>Posti:</strong> ${posti.join(", ")}</p>
           <div class="button-row">
-            <button class="button danger delete-pren-btn">Elimina prenotazione</button>
+            <button class="button danger delete-pren-btn" type="button">Elimina prenotazione</button>
           </div>
         `;
 
@@ -378,6 +414,7 @@
             .eq("id", pr.id);
 
           if (delError) {
+            console.error(delError);
             document.getElementById("bookingMsg").textContent = "Errore nell'eliminazione della prenotazione.";
             return;
           }
@@ -404,6 +441,7 @@
         .single();
 
       if (eventError || !eventData) {
+        console.error(eventError);
         document.getElementById("eventDetail").innerHTML = `<div class="card note">Errore nel caricamento della serata.</div>`;
         return;
       }
@@ -417,12 +455,14 @@
         .eq("serata_id", serataId);
 
       if (seatError) {
+        console.error(seatError);
         document.getElementById("bookingMsg").textContent = "Errore nel caricamento posti.";
         return;
       }
 
       occupiedSeats = seatRows.map(r => r.posto_numero).sort((a,b)=>a-b);
       renderTable(currentEvent.posti_totali);
+      updateAvailabilityInfo();
       updateSelectedInfo();
     }
 
@@ -452,6 +492,8 @@
         return;
       }
 
+      const bookedSeats = [...selectedSeats];
+
       const { data: prenotazione, error: prenError } = await supabaseClient
         .from("prenotazioni")
         .insert([{
@@ -463,11 +505,12 @@
         .single();
 
       if (prenError || !prenotazione) {
+        console.error(prenError);
         msg.textContent = "Errore nel salvataggio prenotazione.";
         return;
       }
 
-      const postiRows = selectedSeats.map(n => ({
+      const postiRows = bookedSeats.map(n => ({
         prenotazione_id: prenotazione.id,
         serata_id: serataId,
         posto_numero: n
@@ -478,6 +521,7 @@
         .insert(postiRows);
 
       if (postiError) {
+        console.error(postiError);
         msg.textContent = "Errore nel salvataggio posti.";
         return;
       }
@@ -486,6 +530,7 @@
       document.getElementById("nomeInput").value = "";
       document.getElementById("telefonoInput").value = "";
       selectedSeats = [];
+
       await loadEventAndSeats();
       await loadPrenotazioniList();
     }
@@ -498,7 +543,4 @@
     });
   </script>
 </body>
-
 </html>
-
-
