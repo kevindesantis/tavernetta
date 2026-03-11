@@ -60,25 +60,33 @@ async function loadEvents() {
   return data || [];
 }
 
-function parseEventDate(dateStr) {
-  if (!dateStr) return null;
+function parseEventDate(dateValue) {
+  if (!dateValue) return null;
 
-  // formato standard ISO: yyyy-mm-dd
-  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-    const [y, m, d] = dateStr.split("-").map(Number);
+  if (dateValue instanceof Date) return dateValue;
+
+  const str = String(dateValue).trim();
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+    const [y, m, d] = str.split("-").map(Number);
     return new Date(y, m - 1, d);
   }
 
-  // formato gg-mm-aaaa o gg/mm/aaaa
-  if (/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(dateStr)) {
-    const parts = dateStr.split(/[-/]/).map(Number);
-    const [d, m, y] = parts;
+  if (/^\d{4}-\d{2}-\d{2}T/.test(str)) {
+    const onlyDate = str.slice(0, 10);
+    const [y, m, d] = onlyDate.split("-").map(Number);
     return new Date(y, m - 1, d);
   }
 
-  // fallback
-  const d = new Date(dateStr);
-  return isNaN(d.getTime()) ? null : d;
+  if (/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(str)) {
+    const [d, m, y] = str.split(/[-/]/).map(Number);
+    return new Date(y, m - 1, d);
+  }
+
+  const d = new Date(str);
+  if (isNaN(d.getTime())) return null;
+
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
 
 function formatDateIT(dateStr) {
@@ -114,7 +122,9 @@ function getNextAndLast(events) {
 
 function renderEventCard(container, eventObj, opts = {}) {
   if (!container || !eventObj) {
-    if (container) container.innerHTML = `<div class="card note">Nessuna serata disponibile.</div>`;
+    if (container) {
+      container.innerHTML = `<div class="card note">Nessuna serata disponibile.</div>`;
+    }
     return;
   }
 
@@ -123,7 +133,7 @@ function renderEventCard(container, eventObj, opts = {}) {
   container.innerHTML = `
     <div class="card event-card">
       <div>
-        <img src="img/${eventObj.locandina}" alt="${eventObj.titolo}">
+        <img src="${eventObj.locandina}" alt="${eventObj.titolo}">
       </div>
       <div>
         <h3 class="event-title">${eventObj.titolo}</h3>
@@ -174,7 +184,7 @@ async function renderEventsPage() {
       const article = document.createElement("article");
       article.className = "event-tile";
       article.innerHTML = `
-        <img src="img/${ev.locandina}" alt="${ev.titolo}">
+        <img src="${ev.locandina}" alt="${ev.titolo}">
         <div class="inner">
           <h3 class="event-title">${ev.titolo}</h3>
           <p class="meta">${formatDateIT(ev.data)}</p>
@@ -209,21 +219,24 @@ async function renderCalendarPage() {
     "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre"
   ];
 
-  function buildEventMap() {
-    const map = new Map();
+  const normalizedEvents = events
+    .map(ev => ({
+      ...ev,
+      parsedDate: parseEventDate(ev.data)
+    }))
+    .filter(ev => ev.parsedDate);
 
-    events.forEach(ev => {
-      const d = parseEventDate(ev.data);
-      if (!d) return;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-      const key = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
-      map.set(key, ev);
-    });
+  const firstFuture = normalizedEvents
+    .filter(ev => ev.parsedDate >= today)
+    .sort((a, b) => a.parsedDate - b.parsedDate)[0];
 
-    return map;
+  if (firstFuture) {
+    currentYear = firstFuture.parsedDate.getFullYear();
+    currentMonth = firstFuture.parsedDate.getMonth();
   }
-
-  const eventMap = buildEventMap();
 
   function drawCalendar(year, month) {
     mount.innerHTML = "";
@@ -241,6 +254,17 @@ async function renderCalendarPage() {
     const startWeekday = (firstDay.getDay() + 6) % 7;
     const totalDays = lastDay.getDate();
 
+    const eventMap = new Map();
+    normalizedEvents.forEach(ev => {
+      if (
+        ev.parsedDate.getFullYear() === year &&
+        ev.parsedDate.getMonth() === month
+      ) {
+        const day = ev.parsedDate.getDate();
+        eventMap.set(day, ev);
+      }
+    });
+
     for (let i = 0; i < startWeekday; i++) {
       const empty = document.createElement("div");
       empty.className = "calendar-day empty";
@@ -248,8 +272,7 @@ async function renderCalendarPage() {
     }
 
     for (let day = 1; day <= totalDays; day++) {
-      const key = `${year}-${month + 1}-${day}`;
-      const ev = eventMap.get(key);
+      const ev = eventMap.get(day);
 
       const cell = document.createElement("div");
       cell.className = "calendar-day" + (ev ? " has-event" : "");
@@ -260,7 +283,7 @@ async function renderCalendarPage() {
           detail.innerHTML = `
             <div class="card event-card">
               <div>
-                <img src="img/${ev.locandina}" alt="${ev.titolo}">
+                <img src="${ev.locandina}" alt="${ev.titolo}">
               </div>
               <div>
                 <h3 class="event-title">${ev.titolo}</h3>
@@ -300,21 +323,6 @@ async function renderCalendarPage() {
     }
     drawCalendar(currentYear, currentMonth);
   });
-
-  // Se c'è almeno una serata futura, apro direttamente il mese della prima futura
-  const upcoming = events
-    .map(ev => ({ ...ev, parsed: parseEventDate(ev.data) }))
-    .filter(ev => ev.parsed)
-    .sort((a, b) => a.parsed - b.parsed);
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const firstFuture = upcoming.find(ev => ev.parsed >= today);
-  if (firstFuture) {
-    currentYear = firstFuture.parsed.getFullYear();
-    currentMonth = firstFuture.parsed.getMonth();
-  }
 
   drawCalendar(currentYear, currentMonth);
 }
