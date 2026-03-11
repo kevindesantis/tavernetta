@@ -1,4 +1,4 @@
-const ADMIN_PASSWORD = "1234";
+const ADMIN_PASSWORD = "Kevdsant3121131";
 
 function requireAdminPassword() {
 
@@ -22,5 +22,6 @@ function requireAdminPassword() {
   alert("Password errata");
   window.location.href = "index.html";
 }
+
 
 requireAdminPassword();
