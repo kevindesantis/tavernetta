@@ -1,6 +1,405 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventario – Tavernetta Manager</title>
+
+  <link rel="icon" type="image/png" href="../img/logo.png">
+  <link rel="stylesheet" href="../css/style.css">
+
+  <style>
+    .manager-page{
+      width:min(1000px, calc(100% - 20px));
+      margin:20px auto 40px;
+    }
+
+    .manager-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:18px;
+    }
+
+    .manager-brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .manager-brand img{
+      height:52px;
+      width:auto;
+      object-fit:contain;
+    }
+
+    .manager-title{
+      margin:0;
+      color:var(--brown);
+      font-size:28px;
+    }
+
+    .manager-subtitle{
+      margin:4px 0 0;
+      font-size:14px;
+      opacity:.8;
+    }
+
+    .category-box{
+      background:var(--card);
+      border-radius:16px;
+      box-shadow:var(--shadow);
+      padding:18px;
+      margin-bottom:18px;
+    }
+
+    .category-box h2{
+      margin:0 0 14px;
+      color:var(--brown);
+      font-size:22px;
+    }
+
+    .inventory-list{
+      display:grid;
+      gap:10px;
+    }
+
+    .inventory-item{
+      background:#fff7eb;
+      border-radius:12px;
+      border:1px solid rgba(107,62,38,.12);
+      padding:12px;
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:12px;
+      align-items:center;
+    }
+
+    .inventory-item.low{
+      border-color:#d47f00;
+      background:#fff3db;
+    }
+
+    .inventory-item.zero{
+      border-color:#b9382f;
+      background:#ffe7e3;
+    }
+
+    .item-name{
+      font-weight:bold;
+      color:var(--brown);
+      font-size:17px;
+    }
+
+    .item-meta{
+      font-size:14px;
+      opacity:.8;
+      margin-top:4px;
+    }
+
+    .item-controls{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .qty-badge{
+      min-width:58px;
+      text-align:center;
+      background:#fff;
+      border:1px solid rgba(107,62,38,.14);
+      border-radius:10px;
+      padding:10px 8px;
+      font-weight:bold;
+      color:var(--brown);
+    }
+
+    .mini-btn{
+      min-width:42px;
+      height:42px;
+      border:none;
+      border-radius:10px;
+      background:var(--brown);
+      color:#fff;
+      font-size:22px;
+      cursor:pointer;
+    }
+
+    .danger-btn{
+      background:#b9382f;
+    }
+
+    .add-box{
+      background:var(--card);
+      border-radius:16px;
+      box-shadow:var(--shadow);
+      padding:18px;
+      margin-top:20px;
+    }
+
+    .add-box h2{
+      margin:0 0 14px;
+      color:var(--brown);
+      font-size:22px;
+    }
+
+    .add-grid{
+      display:grid;
+      grid-template-columns:repeat(4, 1fr);
+      gap:12px;
+    }
+
+    .add-grid input,
+    .add-grid select{
+      width:100%;
+      padding:12px;
+      border:1px solid rgba(107,62,38,.18);
+      border-radius:10px;
+      background:#fffaf2;
+      font-size:15px;
+    }
+
+    .note{
+      margin-top:10px;
+      font-size:14px;
+      opacity:.8;
+    }
+
+    @media (max-width: 900px){
+      .add-grid{
+        grid-template-columns:1fr;
+      }
+
+      .inventory-item{
+        grid-template-columns:1fr;
+      }
+
+      .item-controls{
+        justify-content:flex-start;
+      }
+
+      .manager-title{
+        font-size:24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="manager-page">
+    <div class="manager-header">
+      <div class="manager-brand">
+        <img src="../img/logo.png" alt="Tavernetta da Kevin">
+        <div>
+          <h1 class="manager-title">Inventario</h1>
+          <p class="manager-subtitle">Tavernetta Manager</p>
+        </div>
+      </div>
+
+      <div class="button-row">
+        <a class="button secondary" href="index.html">Torna al Manager</a>
+      </div>
+    </div>
+
+    <div id="inventoryMount"></div>
+
+    <section class="add-box">
+      <h2>Aggiungi nuovo articolo</h2>
+
+      <div class="add-grid">
+        <input id="newNome" type="text" placeholder="Nome articolo">
+        <select id="newCategoria">
+          <option value="Birra">Birra</option>
+          <option value="Vino">Vino</option>
+          <option value="Bibite">Bibite</option>
+          <option value="Acqua">Acqua</option>
+          <option value="Cucina">Cucina</option>
+          <option value="Materiale">Materiale</option>
+          <option value="Altro">Altro</option>
+        </select>
+        <input id="newUnita" type="text" placeholder="Unità (bottiglie, kg, pezzi...)">
+        <input id="newQuantita" type="number" min="0" value="0" placeholder="Quantità iniziale">
+      </div>
+
+      <div class="button-row">
+        <button id="addItemBtn" class="button" type="button">Aggiungi articolo</button>
+      </div>
+
+      <p id="inventoryMsg" class="note"></p>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-client.js"></script>
+
+  <script>
+    const categoriesOrder = ["Birra", "Vino", "Bibite", "Acqua", "Cucina", "Materiale", "Altro"];
+
+    async function loadInventory() {
+      const mount = document.getElementById("inventoryMount");
+      mount.innerHTML = "Caricamento...";
+
+      const { data, error } = await supabaseClient
+        .from("inventario")
+        .select("*")
+        .order("categoria", { ascending: true })
+        .order("ordine", { ascending: true })
+        .order("nome", { ascending: true });
+
+      if (error) {
+        console.error(error);
+        mount.innerHTML = `<div class="category-box"><p>Errore nel caricamento inventario.</p></div>`;
+        return;
+      }
+
+      const items = data || [];
+      mount.innerHTML = "";
+
+      categoriesOrder.forEach(category => {
+        const categoryItems = items.filter(i => i.categoria === category);
+        if (!categoryItems.length) return;
+
+        const section = document.createElement("section");
+        section.className = "category-box";
+
+        const title = document.createElement("h2");
+        title.textContent = category;
+        section.appendChild(title);
+
+        const list = document.createElement("div");
+        list.className = "inventory-list";
+
+        categoryItems.forEach(item => {
+          const row = document.createElement("div");
+          let extraClass = "";
+          if (item.quantita === 0) extraClass = " zero";
+          else if (item.quantita <= 2) extraClass = " low";
+
+          row.className = "inventory-item" + extraClass;
+
+          row.innerHTML = `
+            <div>
+              <div class="item-name">${item.nome}</div>
+              <div class="item-meta">Quantità: ${item.quantita} ${item.unita || ""}</div>
+            </div>
+
+            <div class="item-controls">
+              <button class="mini-btn minus-btn" type="button">-</button>
+              <div class="qty-badge">${item.quantita}</div>
+              <button class="mini-btn plus-btn" type="button">+</button>
+              <button class="mini-btn danger-btn delete-btn" type="button">🗑</button>
+            </div>
+          `;
+
+          row.querySelector(".plus-btn").addEventListener("click", async () => {
+            await updateQuantity(item.id, item.quantita + 1);
+          });
+
+          row.querySelector(".minus-btn").addEventListener("click", async () => {
+            if (item.quantita <= 0) return;
+            await updateQuantity(item.id, item.quantita - 1);
+          });
+
+          row.querySelector(".delete-btn").addEventListener("click", async () => {
+            const ok = confirm(`Eliminare "${item.nome}" dall'inventario?`);
+            if (!ok) return;
+            await deleteItem(item.id);
+          });
+
+          list.appendChild(row);
+        });
+
+        section.appendChild(list);
+        mount.appendChild(section);
+      });
+    }
+
+    async function updateQuantity(id, quantity) {
+      const { error } = await supabaseClient
+        .from("inventario")
+        .update({ quantita: quantity })
+        .eq("id", id);
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      await loadInventory();
+    }
+
+    async function deleteItem(id) {
+      const { error } = await supabaseClient
+        .from("inventario")
+        .delete()
+        .eq("id", id);
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      await loadInventory();
+    }
+
+    async function addItem() {
+      const msg = document.getElementById("inventoryMsg");
+      msg.textContent = "";
+
+      const nome = document.getElementById("newNome").value.trim();
+      const categoria = document.getElementById("newCategoria").value.trim();
+      const unita = document.getElementById("newUnita").value.trim() || "pz";
+      const quantita = parseInt(document.getElementById("newQuantita").value || "0", 10);
+
+      if (!nome) {
+        msg.textContent = "Inserisci il nome dell'articolo.";
+        return;
+      }
+
+      const { data: existing } = await supabaseClient
+        .from("inventario")
+        .select("ordine")
+        .eq("categoria", categoria)
+        .order("ordine", { ascending: false })
+        .limit(1);
+
+      const nextOrder = existing && existing.length ? (existing[0].ordine || 0) + 1 : 1;
+
+      const { error } = await supabaseClient
+        .from("inventario")
+        .insert([{
+          nome,
+          categoria,
+          quantita: isNaN(quantita) ? 0 : quantita,
+          unita,
+          ordine: nextOrder
+        }]);
+
+      if (error) {
+        console.error(error);
+        msg.textContent = "Errore nell'aggiunta dell'articolo.";
+        return;
+      }
+
+      document.getElementById("newNome").value = "";
+      document.getElementById("newCategoria").value = "Birra";
+      document.getElementById("newUnita").value = "";
+      document.getElementById("newQuantita").value = "0";
+
+      msg.textContent = "Articolo aggiunto correttamente.";
+      await loadInventory();
+    }
+
+    document.getElementById("addItemBtn").addEventListener("click", addItem);
+
+    document.addEventListener("DOMContentLoaded", loadInventory);
+  </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="it">
+<head>
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
