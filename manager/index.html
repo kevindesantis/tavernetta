@@ -6,8 +6,15 @@
   <title>Tavernetta Manager</title>
   <meta name="description" content="Dashboard privata di gestione della Tavernetta da Kevin.">
 
-  <link rel="icon" type="image/png" href="../img/logo.png">
+  <link rel="icon" type="image/png" href="../img/logoapp.png">
+  <link rel="apple-touch-icon" href="../img/logoapp.png">
   <link rel="stylesheet" href="../css/style.css">
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Tavernetta Manager">
+  <meta name="theme-color" content="#6b3e26">
 
   <style>
     .manager-page{
@@ -64,7 +71,6 @@
     .span-8{ grid-column:span 8; }
     .span-6{ grid-column:span 6; }
     .span-4{ grid-column:span 4; }
-    .span-3{ grid-column:span 3; }
 
     .manager-card h3{
       margin:0 0 10px;
@@ -157,7 +163,7 @@
     }
 
     @media (max-width: 900px){
-      .span-8, .span-6, .span-4, .span-3{
+      .span-8, .span-6, .span-4{
         grid-column:span 12;
       }
 
@@ -188,7 +194,7 @@
     <div class="manager-topbar">
       <div class="manager-header">
         <div class="manager-brand">
-          <img src="../img/logo.png" alt="Tavernetta da Kevin">
+          <img src="../img/logoapp.png" alt="Tavernetta Manager">
           <div>
             <h1 class="manager-title">Tavernetta Manager</h1>
             <p class="manager-subtitle">Dashboard privata di gestione</p>
@@ -203,13 +209,12 @@
       <div class="manager-card span-12">
         <h3>Azioni rapide</h3>
         <div class="manager-actions">
-          <a class="button" href="inventario.html">Inventario</a>
           <a class="button" href="../admin.html">Gestisci serate</a>
           <a class="button" href="../prossima-serata.html">Condividi prossima serata</a>
+          <a class="button" href="inventario.html">Inventario</a>
           <a class="button secondary" href="../serate.html">Apri elenco serate</a>
-          <a class="button secondary" href="../contatti.html">Contatti e WhatsApp</a>
         </div>
-        <p class="install-note">Da iPhone puoi aggiungerla alla schermata Home da Safari.</p>
+        <p class="install-note">Da Safari su iPhone fai Condividi → Aggiungi a schermata Home.</p>
       </div>
 
       <div class="manager-card span-8">
@@ -244,22 +249,23 @@
         <h3>Promemoria rapidi</h3>
         <div class="mini-list">
           <div class="mini-item">
-            <strong>Condividi serata</strong><br>
-            Usa sempre il link <code>prossima-serata.html</code> per WhatsApp.
+            <strong>Condivisione WhatsApp</strong><br>
+            Usa sempre <code>prossima-serata.html</code> per la preview corretta.
           </div>
           <div class="mini-item">
             <strong>Locandine</strong><br>
             Caricale da <code>admin.html</code> direttamente dal telefono.
           </div>
           <div class="mini-item">
-            <strong>Prossimo passo</strong><br>
-            Qui aggiungeremo inventario, visite sito e riepilogo prenotazioni.
+            <strong>Inventario</strong><br>
+            Da qui gestirai bevande, cucina, materiale e altro.
           </div>
         </div>
       </div>
     </section>
   </main>
 
+  <script src="manager-guard.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/supabase-client.js"></script>
   <script src="../js/site.js"></script>
