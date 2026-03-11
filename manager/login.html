@@ -19,15 +19,12 @@
       --bg:#f7e9d2;
       --card:#fffaf2;
       --brown:#6b3e26;
-      --brown-2:#8b5132;
       --text:#2f241c;
       --shadow:0 8px 28px rgba(0,0,0,.12);
       --radius:18px;
     }
 
-    *{
-      box-sizing:border-box;
-    }
+    *{ box-sizing:border-box; }
 
     body{
       margin:0;
@@ -79,6 +76,7 @@
       font-size:16px;
       background:#fff;
       outline:none;
+      margin-top:10px;
     }
 
     .field:focus{
@@ -99,10 +97,6 @@
       cursor:pointer;
     }
 
-    .button:active{
-      transform:translateY(1px);
-    }
-
     .secondary-link{
       display:inline-block;
       margin-top:16px;
@@ -117,6 +111,12 @@
       font-size:14px;
       color:#b9382f;
     }
+
+    .hint{
+      margin-top:10px;
+      font-size:13px;
+      opacity:.75;
+    }
   </style>
 </head>
 <body>
@@ -126,47 +126,62 @@
     <h1>Tavernetta Manager</h1>
     <p class="subtitle">Accesso privato gestione tavernetta</p>
 
-    <input
-      id="pwd"
-      class="field"
-      type="password"
-      placeholder="Inserisci la password"
-      autocomplete="current-password"
-    >
+    <form id="loginForm" autocomplete="on">
+      <input
+        id="username"
+        class="field"
+        type="text"
+        value="Kevin"
+        autocomplete="username"
+        autocapitalize="none"
+        spellcheck="false"
+      >
 
-    <button class="button" onclick="passwordLogin()">Accedi</button>
+      <input
+        id="pwd"
+        class="field"
+        type="password"
+        placeholder="Inserisci la password"
+        autocomplete="current-password"
+      >
+
+      <button class="button" type="submit">Accedi</button>
+    </form>
 
     <div id="loginMsg" class="msg"></div>
+    <p class="hint">Su iPhone, dopo il primo accesso puoi salvare la password e sbloccarla con Face ID.</p>
 
     <a class="secondary-link" href="../index.html">Torna al sito</a>
   </main>
 
   <script>
-    const PASSWORD = "1234";
+    const USERNAME = "Kevin";
+    const PASSWORD = "Kevdsant3121131";
 
-    function passwordLogin() {
+    function doLogin() {
+      const username = document.getElementById("username").value.trim();
       const input = document.getElementById("pwd").value.trim();
       const msg = document.getElementById("loginMsg");
 
       msg.textContent = "";
 
-      if (!input) {
-        msg.textContent = "Inserisci la password.";
+      if (!username || !input) {
+        msg.textContent = "Inserisci nome utente e password.";
         return;
       }
 
-      if (input === PASSWORD) {
+      if (username === USERNAME && input === PASSWORD) {
         localStorage.setItem("manager_auth", "ok");
+        localStorage.setItem("manager_user", username);
         window.location.href = "index.html";
       } else {
-        msg.textContent = "Password errata.";
+        msg.textContent = "Credenziali errate.";
       }
     }
 
-    document.getElementById("pwd").addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        passwordLogin();
-      }
+    document.getElementById("loginForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      doLogin();
     });
   </script>
 </body>
