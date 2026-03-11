@@ -1,4 +1,4 @@
-const ADMIN_PASSWORD = "Kevdsnt3121131...,";
+const ADMIN_PASSWORD = "Kevdsant3121131...,";
 
 function requireAdminPassword() {
   const ok = sessionStorage.getItem("admin_ok");
@@ -14,5 +14,6 @@ function requireAdminPassword() {
     window.location.href = "index.html";
   }
 }
+
 
 document.addEventListener("DOMContentLoaded", requireAdminPassword);
