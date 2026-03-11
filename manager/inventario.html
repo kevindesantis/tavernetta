@@ -5,8 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Inventario – Tavernetta Manager</title>
 
-  <link rel="icon" type="image/png" href="../img/logo.png">
+  <link rel="icon" type="image/png" href="../img/logoapp.png">
+  <link rel="apple-touch-icon" href="../img/logoapp.png">
   <link rel="stylesheet" href="../css/style.css">
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Tavernetta Manager">
+  <meta name="theme-color" content="#6b3e26">
 
   <style>
     .manager-page{
@@ -213,7 +220,7 @@
   <main class="manager-page">
     <div class="manager-header">
       <div class="manager-brand">
-        <img src="../img/logo.png" alt="Tavernetta da Kevin">
+        <img src="../img/logoapp.png" alt="Tavernetta Manager">
         <div>
           <h1 class="manager-title">Inventario</h1>
           <p class="manager-subtitle">Tavernetta Manager</p>
@@ -254,6 +261,7 @@
     </section>
   </main>
 
+  <script src="manager-guard.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/supabase-client.js"></script>
 
