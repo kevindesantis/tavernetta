@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Tavernetta Manager Login</title>
+
+<link rel="icon" type="image/png" href="../img/logoapp.png">
+<link rel="apple-touch-icon" href="../img/logoapp.png">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tavernetta Manager">
+
+<style>
+
+body{
+font-family:Arial;
+background:#f7e9d2;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+margin:0;
+}
+
+.box{
+background:white;
+padding:40px;
+border-radius:12px;
+box-shadow:0 10px 30px rgba(0,0,0,0.1);
+text-align:center;
+width:320px;
+}
+
+.logo{
+width:90px;
+margin-bottom:20px;
+}
+
+button{
+width:100%;
+padding:14px;
+margin-top:10px;
+border:none;
+border-radius:8px;
+background:#6b3e26;
+color:white;
+font-size:16px;
+cursor:pointer;
+}
+
+input{
+width:100%;
+padding:12px;
+margin-top:10px;
+border-radius:8px;
+border:1px solid #ccc;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="box">
+
+<img src="../img/logoapp.png" class="logo">
+
+<h2>Tavernetta Manager</h2>
+
+<button onclick="faceLogin()">🔓 Sblocca con Face ID</button>
+
+<input type="password" id="pwd" placeholder="Password admin">
+
+<button onclick="passwordLogin()">Accedi</button>
+
+</div>
+
+<script>
+
+const PASSWORD = "1234"
+
+function passwordLogin(){
+
+const p=document.getElementById("pwd").value
+
+if(p===PASSWORD){
+
+localStorage.setItem("manager_auth","ok")
+
+window.location.href="index.html"
+
+}else{
+
+alert("Password errata")
+
+}
+
+}
+
+async function faceLogin(){
+
+try{
+
+const credential = await navigator.credentials.get({
+publicKey:{
+challenge:new Uint8Array(32),
+timeout:60000,
+userVerification:"required"
+}
+})
+
+localStorage.setItem("manager_auth","ok")
+
+window.location.href="index.html"
+
+}catch(e){
+
+alert("Face ID non disponibile su questo dispositivo")
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
