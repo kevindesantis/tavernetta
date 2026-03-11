@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Serata – Tavernetta da Kevin</title>
   <meta name="description" content="Scopri i dettagli della serata alla Tavernetta da Kevin e prenota il tuo posto.">
 
@@ -66,41 +65,37 @@
     .room-layout{
       min-width:760px;
       display:grid;
-      grid-template-columns:140px 1fr 170px;
+      grid-template-columns:auto 1fr auto;
       grid-template-rows:auto auto auto auto;
-      gap:18px 14px;
+      column-gap:16px;
+      row-gap:14px;
       align-items:center;
       justify-items:center;
     }
 
-    .seat-row{
+    .zone-label{
+      font-size:13px;
+      color:var(--brown);
+      font-weight:bold;
+      opacity:.85;
+      margin-bottom:4px;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+      text-align:center;
+    }
+
+    .top-divans{
+      grid-column:2;
+      grid-row:1;
       display:flex;
-      gap:10px;
-      flex-wrap:nowrap;
+      flex-direction:column;
       align-items:center;
+      gap:8px;
+      width:100%;
+    }
+
+    .top-divans .seat-row{
       justify-content:center;
-    }
-
-    .vertical-stack{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      align-items:center;
-      justify-content:center;
-    }
-
-    .two-stack{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      align-items:center;
-    }
-
-    .single-col{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      align-items:center;
     }
 
     .table-wrap{
@@ -110,7 +105,7 @@
       display:grid;
       grid-template-columns:60px 1fr 60px;
       grid-template-rows:auto 120px auto;
-      gap:14px;
+      gap:12px;
       align-items:center;
     }
 
@@ -118,8 +113,9 @@
     .bottom-seats{
       display:flex;
       gap:10px;
-      justify-content:center;
       flex-wrap:nowrap;
+      width:100%;
+      justify-content:flex-end;
     }
 
     .left-seat,
@@ -136,6 +132,44 @@
       box-shadow:
         inset 0 0 0 4px rgba(255,255,255,.14),
         0 8px 20px rgba(0,0,0,.12);
+    }
+
+    .right-side{
+      grid-column:3;
+      grid-row:2 / span 2;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:8px;
+    }
+
+    .right-side .seat-col{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .bottom-divans{
+      grid-column:2;
+      grid-row:4;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:8px;
+      width:100%;
+    }
+
+    .bottom-divans .seat-row{
+      justify-content:center;
+    }
+
+    .seat-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:nowrap;
+      align-items:center;
     }
 
     .seat{
@@ -159,16 +193,6 @@
       transform:scale(1.08);
     }
 
-    .zone-label{
-      font-size:13px;
-      color:var(--brown);
-      font-weight:bold;
-      opacity:.85;
-      margin-bottom:2px;
-      text-transform:uppercase;
-      letter-spacing:.04em;
-    }
-
     .form-box input{
       width:100%;
       padding:12px;
@@ -183,7 +207,7 @@
       font-size:15px;
     }
 
-    @media(max-width:900px){
+    @media (max-width:900px){
       .booking-wrap{
         grid-template-columns:1fr;
       }
@@ -363,26 +387,23 @@
     }
 
     function buildTableSeatMap(totalSeats) {
-      const extra = Math.max(0, totalSeats - 14);
-      const extraTop = Math.ceil(extra / 2);
-      const extraBottom = Math.floor(extra / 2);
+      const longSide = (totalSeats - 2) / 2;
+      const top = [];
+      const bottom = [];
 
-      const topExtras = [];
-      const bottomExtras = [];
-
-      let current = 15;
-      for (let i = 0; i < extraTop; i++) {
-        topExtras.push(String(current++));
+      for (let i = 0; i < longSide; i++) {
+        top.push(String(2 + i));
       }
-      for (let i = 0; i < extraBottom; i++) {
-        bottomExtras.push(String(current++));
+
+      for (let i = 0; i < longSide; i++) {
+        bottom.push(String(2 + longSide + i));
       }
 
       return {
         left: "1",
-        right: "14",
-        top: [...topExtras, "2","3","4","5","6","7"],
-        bottom: [...bottomExtras, "8","9","10","11","12","13"]
+        right: String(totalSeats),
+        top,
+        bottom
       };
     }
 
@@ -390,15 +411,14 @@
       const room = document.getElementById("roomLayout");
       room.innerHTML = "";
 
-      // Colonna sinistra: D1..D5
-      const leftDivani = document.createElement("div");
-      leftDivani.style.gridColumn = "1";
-      leftDivani.style.gridRow = "2 / span 2";
-      leftDivani.className = "vertical-stack";
-      leftDivani.innerHTML = `<div class="zone-label">Divanetti</div>`;
-      ["D1","D2","D3","D4","D5"].forEach(id => leftDivani.appendChild(createSeatButton(id)));
+      const topDivans = document.createElement("div");
+      topDivans.className = "top-divans";
+      topDivans.innerHTML = `<div class="zone-label">Divanetti</div>`;
+      const topDivanRow = document.createElement("div");
+      topDivanRow.className = "seat-row";
+      ["D1","D2","D3","D4","D5"].forEach(id => topDivanRow.appendChild(createSeatButton(id)));
+      topDivans.appendChild(topDivanRow);
 
-      // Tavolo centrale
       const tableMap = buildTableSeatMap(tableTotal);
 
       const tableWrap = document.createElement("div");
@@ -439,32 +459,26 @@
       tableWrap.appendChild(right);
       tableWrap.appendChild(bottom);
 
-      // Colonna destra: D6 D7 / S1 S2 / D8
-      const rightArea = document.createElement("div");
-      rightArea.style.gridColumn = "3";
-      rightArea.style.gridRow = "2 / span 2";
-      rightArea.className = "single-col";
-      rightArea.innerHTML = `<div class="zone-label">Lato divani</div>`;
+      const rightSide = document.createElement("div");
+      rightSide.className = "right-side";
+      rightSide.innerHTML = `<div class="zone-label">Lato destro</div>`;
+      const rightCol = document.createElement("div");
+      rightCol.className = "seat-col";
+      ["D6","D7","S1"].forEach(id => rightCol.appendChild(createSeatButton(id)));
+      rightSide.appendChild(rightCol);
 
-      const r1 = document.createElement("div");
-      r1.className = "seat-row";
-      ["D6","D7"].forEach(id => r1.appendChild(createSeatButton(id)));
+      const bottomDivans = document.createElement("div");
+      bottomDivans.className = "bottom-divans";
+      bottomDivans.innerHTML = `<div class="zone-label">Sotto tavolo</div>`;
+      const bottomDivanRow = document.createElement("div");
+      bottomDivanRow.className = "seat-row";
+      ["S2","D8"].forEach(id => bottomDivanRow.appendChild(createSeatButton(id)));
+      bottomDivans.appendChild(bottomDivanRow);
 
-      const r2 = document.createElement("div");
-      r2.className = "seat-row";
-      ["S1","S2"].forEach(id => r2.appendChild(createSeatButton(id)));
-
-      const r3 = document.createElement("div");
-      r3.className = "seat-row";
-      r3.appendChild(createSeatButton("D8"));
-
-      rightArea.appendChild(r1);
-      rightArea.appendChild(r2);
-      rightArea.appendChild(r3);
-
-      room.appendChild(leftDivani);
+      room.appendChild(topDivans);
       room.appendChild(tableWrap);
-      room.appendChild(rightArea);
+      room.appendChild(rightSide);
+      room.appendChild(bottomDivans);
     }
 
     async function loadEventAndSeats(){
@@ -488,7 +502,6 @@
       }
 
       currentEvent = eventData;
-
       renderEventCard(document.getElementById("eventDetail"), currentEvent);
 
       if (isPastEvent(currentEvent.data)) {
