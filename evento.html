@@ -1,485 +1,147 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Serata – Tavernetta da Kevin</title>
-  <meta name="description" content="Scopri i dettagli della serata alla Tavernetta da Kevin e prenota il tuo posto.">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="icon" type="image/png" href="img/logo.png">
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="canonical" href="https://tavernettadakevin.it/evento.html">
+<title>Serata – Tavernetta da Kevin</title>
 
-  <meta property="og:title" content="Serata – Tavernetta da Kevin">
-  <meta property="og:description" content="Scopri i dettagli della serata alla Tavernetta da Kevin e prenota il tuo posto.">
-  <meta property="og:image" content="https://tavernettadakevin.it/img/whatsapp-preview.png">
-  <meta property="og:image:secure_url" content="https://tavernettadakevin.it/img/whatsapp-preview.png">
-  <meta property="og:image:type" content="image/png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Tavernetta da Kevin">
-  <meta property="og:url" content="https://tavernettadakevin.it/evento.html">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Tavernetta da Kevin">
-  <meta property="og:locale" content="it_IT">
+<link rel="stylesheet" href="css/style.css">
 
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Serata – Tavernetta da Kevin">
-  <meta name="twitter:description" content="Scopri i dettagli della serata alla Tavernetta da Kevin e prenota il tuo posto.">
-  <meta name="twitter:image" content="https://tavernettadakevin.it/img/whatsapp-preview.png">
+<style>
 
-  <style>
-    .booking-wrap{
-      display:grid;
-      grid-template-columns:1.1fr .9fr;
-      gap:20px;
-    }
+.tavolo-container{
+display:flex;
+flex-direction:column;
+align-items:center;
+gap:10px;
+margin-top:30px;
+}
 
-    .seat-legend{
-      display:flex;
-      gap:14px;
-      flex-wrap:wrap;
-      margin:10px 0 18px;
-      font-size:14px;
-    }
+.row{
+display:flex;
+gap:8px;
+}
 
-    .legend-dot{
-      width:16px;
-      height:16px;
-      border-radius:50%;
-      display:inline-block;
-    }
+.posto{
+width:42px;
+height:42px;
+border-radius:10px;
+border:none;
+background:#3dbb3d;
+color:white;
+font-weight:bold;
+cursor:pointer;
+}
 
-    .dot-free{background:#2e9d50;}
-    .dot-taken{background:#c43b2f;}
-    .dot-selected{background:#d4a017;}
+.posto.occupato{
+background:#e74c3c;
+}
 
-    .table-layout{
-      background:var(--card);
-      border-radius:16px;
-      padding:24px 16px;
-      box-shadow:var(--shadow);
-      overflow:auto;
-    }
+.posto.selezionato{
+background:#f1c40f;
+color:black;
+}
 
-    .table-grid{
-      min-width:640px;
-      display:grid;
-      grid-template-columns:64px 1fr 64px;
-      grid-template-rows:auto 120px auto;
-      gap:16px;
-      align-items:center;
-    }
+.divani-container{
+margin-top:40px;
+display:flex;
+flex-direction:column;
+align-items:center;
+gap:10px;
+}
 
-    .side-seat-wrap{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
+.divani-row{
+display:flex;
+gap:10px;
+}
 
-    .top-seats,
-    .bottom-seats{
-      display:flex;
-      justify-content:center;
-      gap:10px;
-      flex-wrap:nowrap;
-    }
+</style>
 
-    .rect-table{
-      background:linear-gradient(180deg,#9a6732 0%,#7b4e24 100%);
-      border-radius:22px;
-      height:120px;
-      box-shadow:
-        inset 0 0 0 4px rgba(255,255,255,.14),
-        0 8px 20px rgba(0,0,0,.12);
-    }
-
-    .seat{
-      width:42px;
-      height:42px;
-      border-radius:50%;
-      border:0;
-      color:#fff;
-      font-weight:bold;
-      cursor:pointer;
-      transition:.2s;
-    }
-
-    .seat.free{background:#2e9d50;}
-    .seat.taken{background:#c43b2f;cursor:not-allowed;}
-    .seat.selected{background:#d4a017;}
-
-    .seat.free:hover{
-      transform:scale(1.08);
-    }
-
-    .form-box input{
-      width:100%;
-      padding:12px;
-      margin-bottom:12px;
-      border-radius:10px;
-      border:1px solid #d6b98a;
-      font-size:16px;
-    }
-
-    .selected-box{
-      margin:12px 0;
-      font-size:15px;
-    }
-
-    @media(max-width:900px){
-      .booking-wrap{
-        grid-template-columns:1fr;
-      }
-
-      .table-grid{
-        min-width:560px;
-      }
-    }
-  </style>
 </head>
+
 <body>
 
-  <div class="top-bar">
-    <img src="img/logo.png" class="logo-top" alt="Tavernetta da Kevin">
-    <button id="hamburger" class="hamburger" aria-label="Apri menu">☰</button>
-  </div>
-
-  <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
-
-  <aside id="sidebar" class="sidebar">
-    <img src="img/logo.png" class="side-logo" alt="Logo">
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="serate.html">Serate</a>
-      <a href="calendario.html">Calendario</a>
-      <a href="dove.html">Dove siamo</a>
-      <a href="contatti.html">Contattaci</a>
-      <a href="admin.html">Admin</a>
-    </nav>
-  </aside>
-
-  <main class="page">
-
-    <section class="section">
-      <h2>Serata</h2>
-      <div id="eventDetail"></div>
-    </section>
-
-    <section class="section">
-      <h2>Prenota i posti</h2>
-
-      <div class="seat-legend">
-        <span class="legend-dot dot-free"></span> disponibile
-        <span class="legend-dot dot-selected"></span> selezionato
-        <span class="legend-dot dot-taken"></span> occupato
-      </div>
-
-      <div class="booking-wrap">
-        <div class="table-layout">
-          <div id="tableGrid" class="table-grid"></div>
-        </div>
-
-        <div class="card form-box">
-          <h3 class="event-title">Prenotazione</h3>
-
-          <input id="nomeInput" type="text" placeholder="Nome e cognome">
-          <input id="telefonoInput" type="text" placeholder="Telefono">
-
-          <div class="selected-box">
-            <strong>Posti disponibili:</strong>
-            <span id="availableSeatsText">0</span>
-          </div>
-
-          <div class="selected-box">
-            <strong>Posti occupati:</strong>
-            <span id="occupiedSeatsText">0</span>
-          </div>
-
-          <div class="selected-box">
-            <strong>Posti selezionati:</strong>
-            <span id="selectedSeatsText">nessuno</span>
-          </div>
-
-          <div class="selected-box">
-            <strong>Totale selezionati:</strong>
-            <span id="selectedCountText">0</span>
-          </div>
-
-          <button id="bookBtn" class="button">Prenota</button>
-          <p id="bookingMsg" class="note"></p>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase-client.js"></script>
-  <script src="js/site.js"></script>
-
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const serataId = params.get("id");
-
-    let currentEvent = null;
-    let occupiedSeats = [];
-    let selectedSeats = [];
-
-    function isPastEvent(dateStr){
-      const eventDate = new Date(dateStr + "T00:00:00");
-      const today = new Date();
-      today.setHours(0,0,0,0);
-      return eventDate < today;
-    }
-
-    function lockPastEvent(){
-      document.getElementById("nomeInput").disabled = true;
-      document.getElementById("telefonoInput").disabled = true;
-      document.getElementById("bookBtn").disabled = true;
-      document.getElementById("bookingMsg").textContent =
-        "Le prenotazioni per questa serata sono chiuse.";
-    }
-
-    function updateSelectedInfo(){
-      document.getElementById("selectedSeatsText").textContent =
-        selectedSeats.length ? selectedSeats.join(", ") : "nessuno";
-
-      document.getElementById("selectedCountText").textContent =
-        selectedSeats.length;
-    }
-
-    function updateAvailabilityInfo(){
-      const total = currentEvent.posti_totali;
-      const occupied = occupiedSeats.length;
-      const available = total - occupied;
-
-      document.getElementById("availableSeatsText").textContent =
-        `${available} / ${total}`;
-
-      document.getElementById("occupiedSeatsText").textContent =
-        `${occupied} / ${total}`;
-    }
-
-    function getSeatStructure(totalSeats){
-      const longSide = (totalSeats - 2) / 2;
-
-      return {
-        left: 1,
-        right: 1,
-        top: longSide,
-        bottom: longSide
-      };
-    }
-
-    function createSeatButton(num, isTaken){
-      const btn = document.createElement("button");
-      btn.className = "seat " + (isTaken ? "taken" : "free");
-      btn.textContent = num;
-      btn.type = "button";
-
-      if (!isTaken) {
-        btn.addEventListener("click", () => {
-          if (selectedSeats.includes(num)) {
-            selectedSeats = selectedSeats.filter(x => x !== num);
-            btn.classList.remove("selected");
-            btn.classList.add("free");
-          } else {
-            selectedSeats.push(num);
-            selectedSeats.sort((a,b)=>a-b);
-            btn.classList.remove("free");
-            btn.classList.add("selected");
-          }
-
-          updateSelectedInfo();
-        });
-      }
-
-      return btn;
-    }
-
-    function renderTable(totalSeats){
-      const grid = document.getElementById("tableGrid");
-      grid.innerHTML = "";
-
-      const s = getSeatStructure(totalSeats);
-
-      const top = document.createElement("div");
-      top.className = "top-seats";
-      top.style.gridColumn = "2";
-      top.style.gridRow = "1";
-
-      const left = document.createElement("div");
-      left.className = "side-seat-wrap";
-      left.style.gridColumn = "1";
-      left.style.gridRow = "2";
-
-      const center = document.createElement("div");
-      center.className = "rect-table";
-      center.style.gridColumn = "2";
-      center.style.gridRow = "2";
-
-      const right = document.createElement("div");
-      right.className = "side-seat-wrap";
-      right.style.gridColumn = "3";
-      right.style.gridRow = "2";
-
-      const bottom = document.createElement("div");
-      bottom.className = "bottom-seats";
-      bottom.style.gridColumn = "2";
-      bottom.style.gridRow = "3";
-
-      let seatNum = 1;
-
-      left.appendChild(createSeatButton(seatNum, occupiedSeats.includes(seatNum)));
-      seatNum++;
-
-      for(let i = 0; i < s.top; i++){
-        top.appendChild(createSeatButton(seatNum, occupiedSeats.includes(seatNum)));
-        seatNum++;
-      }
-
-      for(let i = 0; i < s.bottom; i++){
-        bottom.appendChild(createSeatButton(seatNum, occupiedSeats.includes(seatNum)));
-        seatNum++;
-      }
-
-      right.appendChild(createSeatButton(seatNum, occupiedSeats.includes(seatNum)));
-
-      grid.appendChild(top);
-      grid.appendChild(left);
-      grid.appendChild(center);
-      grid.appendChild(right);
-      grid.appendChild(bottom);
-    }
-
-    async function loadEventAndSeats(){
-      if (!serataId) {
-        document.getElementById("eventDetail").innerHTML =
-          `<div class="card note">Serata non trovata.</div>`;
-        return;
-      }
-
-      const { data: eventData, error: eventError } = await supabaseClient
-        .from("serate")
-        .select("*")
-        .eq("id", serataId)
-        .single();
-
-      if (eventError || !eventData) {
-        console.error(eventError);
-        document.getElementById("eventDetail").innerHTML =
-          `<div class="card note">Errore nel caricamento della serata.</div>`;
-        return;
-      }
-
-      currentEvent = eventData;
-
-      renderEventCard(document.getElementById("eventDetail"), currentEvent);
-
-      if (isPastEvent(currentEvent.data)) {
-        lockPastEvent();
-      }
-
-      const { data: seatRows, error: seatError } = await supabaseClient
-        .from("prenotazione_posti")
-        .select("posto_numero")
-        .eq("serata_id", serataId);
-
-      if (seatError) {
-        console.error(seatError);
-        document.getElementById("bookingMsg").textContent =
-          "Errore nel caricamento posti.";
-        return;
-      }
-
-      occupiedSeats = seatRows.map(r => r.posto_numero).sort((a,b)=>a-b);
-
-      renderTable(currentEvent.posti_totali);
-      updateAvailabilityInfo();
-      updateSelectedInfo();
-    }
-
-    async function saveBooking(){
-      const nome = document.getElementById("nomeInput").value.trim();
-      const telefono = document.getElementById("telefonoInput").value.trim();
-      const msg = document.getElementById("bookingMsg");
-
-      msg.textContent = "";
-
-      if (isPastEvent(currentEvent.data)) {
-        msg.textContent = "Non puoi prenotare una serata passata.";
-        return;
-      }
-
-      if (!nome || !telefono) {
-        msg.textContent = "Inserisci nome e telefono.";
-        return;
-      }
-
-      if (!selectedSeats.length) {
-        msg.textContent = "Seleziona almeno un posto.";
-        return;
-      }
-
-      const overlap = selectedSeats.some(seat => occupiedSeats.includes(seat));
-      if (overlap) {
-        msg.textContent = "Uno dei posti selezionati non è più disponibile.";
-        await loadEventAndSeats();
-        selectedSeats = [];
-        updateSelectedInfo();
-        return;
-      }
-
-      const bookedSeats = [...selectedSeats];
-
-      const { data: prenotazione, error: prenError } = await supabaseClient
-        .from("prenotazioni")
-        .insert([{
-          serata_id: serataId,
-          nome,
-          telefono
-        }])
-        .select()
-        .single();
-
-      if (prenError || !prenotazione) {
-        console.error(prenError);
-        msg.textContent = "Errore nel salvataggio prenotazione.";
-        return;
-      }
-
-      const postiRows = bookedSeats.map(n => ({
-        prenotazione_id: prenotazione.id,
-        serata_id: serataId,
-        posto_numero: n
-      }));
-
-      const { error: postiError } = await supabaseClient
-        .from("prenotazione_posti")
-        .insert(postiRows);
-
-      if (postiError) {
-        console.error(postiError);
-        msg.textContent = "Errore nel salvataggio posti.";
-        return;
-      }
-
-      msg.textContent = `Prenotazione salvata! Posti: ${bookedSeats.join(", ")}`;
-
-      document.getElementById("nomeInput").value = "";
-      document.getElementById("telefonoInput").value = "";
-      selectedSeats = [];
-
-      await loadEventAndSeats();
-    }
-
-    document.addEventListener("DOMContentLoaded", async () => {
-      setupMenu();
-      await loadEventAndSeats();
-      document.getElementById("bookBtn").addEventListener("click", saveBooking);
-    });
-  </script>
+<h2 style="text-align:center;">Scegli i posti</h2>
+
+<div class="tavolo-container">
+
+<div class="row">
+<button class="posto" data-posto="2">2</button>
+<button class="posto" data-posto="3">3</button>
+<button class="posto" data-posto="4">4</button>
+<button class="posto" data-posto="5">5</button>
+<button class="posto" data-posto="6">6</button>
+<button class="posto" data-posto="7">7</button>
+</div>
+
+<div class="row">
+<button class="posto" data-posto="1">1</button>
+
+<div style="width:240px;height:60px;background:#ddd;border-radius:20px;text-align:center;line-height:60px;">
+TAVOLO
+</div>
+
+<button class="posto" data-posto="14">14</button>
+</div>
+
+<div class="row">
+<button class="posto" data-posto="8">8</button>
+<button class="posto" data-posto="9">9</button>
+<button class="posto" data-posto="10">10</button>
+<button class="posto" data-posto="11">11</button>
+<button class="posto" data-posto="12">12</button>
+<button class="posto" data-posto="13">13</button>
+</div>
+
+</div>
+
+<h3 style="text-align:center;margin-top:40px;">Divanetti</h3>
+
+<div class="divani-container">
+
+<div class="divani-row">
+<button class="posto" data-posto="D1">D1</button>
+<button class="posto" data-posto="D2">D2</button>
+<button class="posto" data-posto="D3">D3</button>
+<button class="posto" data-posto="D4">D4</button>
+<button class="posto" data-posto="D5">D5</button>
+</div>
+
+<div class="divani-row">
+<button class="posto" data-posto="D6">D6</button>
+<button class="posto" data-posto="D7">D7</button>
+</div>
+
+<div class="divani-row">
+<button class="posto" data-posto="S1">S1</button>
+<button class="posto" data-posto="S2">S2</button>
+</div>
+
+<div class="divani-row">
+<button class="posto" data-posto="D8">D8</button>
+</div>
+
+</div>
+
+<script>
+
+const posti=document.querySelectorAll(".posto")
+
+posti.forEach(btn=>{
+
+btn.addEventListener("click",()=>{
+
+if(btn.classList.contains("occupato")) return
+
+btn.classList.toggle("selezionato")
+
+})
+
+})
+
+</script>
+
 </body>
 </html>
