@@ -172,8 +172,10 @@
 
       if (username === USERNAME && input === PASSWORD) {
         localStorage.setItem("admin_auth", "ok");
-        localStorage.setItem("admin_user", username);
-        window.location.href = "../admin.html";
+localStorage.setItem("admin_user", username);
+localStorage.setItem("manager_auth", "ok");
+localStorage.setItem("manager_user", username);
+window.location.href = "../admin.html";
       } else {
         msg.textContent = "Credenziali errate.";
       }
