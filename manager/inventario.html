@@ -170,7 +170,7 @@
 
     .add-grid{
       display:grid;
-      grid-template-columns:repeat(4, 1fr);
+      grid-template-columns:repeat(2, 1fr);
       gap:12px;
     }
 
@@ -238,13 +238,12 @@
           <option value="Superalcolici">Superalcolici</option>
           <option value="Bibite">Bibite</option>
           <option value="Acqua">Acqua</option>
+          <option value="Pasta">Pasta</option>
           <option value="Cucina">Cucina</option>
           <option value="Detersivi">Detersivi</option>
           <option value="Materiale">Materiale</option>
           <option value="Altro">Altro</option>
         </select>
-        <input id="newUnita" type="text" placeholder="Unità (bottiglie, kg, pezzi...)">
-        <input id="newQuantita" type="number" min="0" value="0" placeholder="Quantità iniziale">
       </div>
 
       <div class="button-row">
@@ -265,6 +264,7 @@
       "Superalcolici",
       "Bibite",
       "Acqua",
+      "Pasta",
       "Cucina",
       "Detersivi",
       "Materiale",
@@ -286,7 +286,6 @@
       const { data, error } = await supabaseClient
         .from("inventario")
         .select("*")
-        .order("ordine", { ascending: true })
         .order("nome", { ascending: true });
 
       if (error) {
@@ -299,7 +298,10 @@
       mount.innerHTML = "";
 
       categoriesOrder.forEach(category => {
-        const categoryItems = items.filter(i => i.categoria === category);
+        const categoryItems = items
+          .filter(i => i.categoria === category)
+          .sort((a, b) => a.nome.localeCompare(b.nome, "it", { sensitivity: "base" }));
+
         if (!categoryItems.length) return;
 
         const section = document.createElement("section");
@@ -323,7 +325,7 @@
           row.innerHTML = `
             <div>
               <div class="item-name">${item.nome}</div>
-              <div class="item-meta">Quantità: ${item.quantita} ${item.unita || ""}</div>
+              <div class="item-meta">Quantità: ${item.quantita}</div>
             </div>
 
             <div class="item-controls">
@@ -395,31 +397,20 @@
 
       const nome = document.getElementById("newNome").value.trim();
       const categoria = document.getElementById("newCategoria").value.trim();
-      const unita = document.getElementById("newUnita").value.trim() || "pz";
-      const quantita = parseInt(document.getElementById("newQuantita").value || "0", 10);
 
       if (!nome) {
         msg.textContent = "Inserisci il nome dell'articolo.";
         return;
       }
 
-      const { data: existing } = await supabaseClient
-        .from("inventario")
-        .select("ordine")
-        .eq("categoria", categoria)
-        .order("ordine", { ascending: false })
-        .limit(1);
-
-      const nextOrder = existing && existing.length ? (existing[0].ordine || 0) + 1 : 1;
-
       const { error } = await supabaseClient
         .from("inventario")
         .insert([{
           nome,
           categoria,
-          quantita: isNaN(quantita) ? 0 : quantita,
-          unita,
-          ordine: nextOrder
+          quantita: 0,
+          unita: "",
+          ordine: 0
         }]);
 
       if (error) {
@@ -430,8 +421,6 @@
 
       document.getElementById("newNome").value = "";
       document.getElementById("newCategoria").value = "Birra";
-      document.getElementById("newUnita").value = "";
-      document.getElementById("newQuantita").value = "0";
 
       msg.textContent = "Articolo aggiunto correttamente.";
       await loadInventory();
