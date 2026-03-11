@@ -1,7 +1,7 @@
-const ADMIN_PASSWORD = "Kevdsant3121131";
+const ADMIN_PASSWORD = "Kevdsa";
 
 function requireAdminPassword() {
-  const ok = sessionStorage.getItem("admin_ok");
+  const ok = localStorage.getItem("admin_ok");
 
   if (ok === "true") return;
 
@@ -14,7 +14,7 @@ function requireAdminPassword() {
   }
 
   if (inserted.trim() === ADMIN_PASSWORD) {
-    sessionStorage.setItem("admin_ok", "true");
+    localStorage.setItem("admin_ok", "true");
     return;
   }
 
