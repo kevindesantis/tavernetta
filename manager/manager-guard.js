@@ -1,3 +1,3 @@
-if (sessionStorage.getItem("admin_ok") !== "true") {
+if (localStorage.getItem("admin_ok") !== "true") {
   window.location.href = "../admin.html";
 }
