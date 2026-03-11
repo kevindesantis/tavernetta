@@ -1,4 +1,4 @@
-const ADMIN_PASSWORD = "Kevdsant";
+const ADMIN_PASSWORD = "Kevdsant3121131";
 
 function requireAdminPassword(stayHereIfOk = true) {
   const ok = localStorage.getItem("admin_ok");
@@ -28,3 +28,4 @@ function requireAdminPassword(stayHereIfOk = true) {
 }
 
 requireAdminPassword(false);
+
