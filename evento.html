@@ -69,10 +69,12 @@
     }
 
     .rect-table{
-      background:#8b5a2b;
-      border-radius:18px;
+      background:linear-gradient(180deg, #9a6732 0%, #7b4e24 100%);
+      border-radius:22px;
       height:120px;
-      box-shadow:inset 0 0 0 4px rgba(255,255,255,.15);
+      box-shadow:
+        inset 0 0 0 4px rgba(255,255,255,.14),
+        0 8px 20px rgba(0,0,0,.12);
     }
 
     .seat{
@@ -83,11 +85,28 @@
       color:#fff;
       font-weight:bold;
       cursor:pointer;
+      transition:transform .18s ease, box-shadow .18s ease, background .18s ease;
     }
 
-    .seat.free{ background:#2e9d50; }
-    .seat.taken{ background:#c43b2f; cursor:not-allowed; }
-    .seat.selected{ background:#d4a017; }
+    .seat.free{
+      background:#2e9d50;
+    }
+
+    .seat.free:hover{
+      transform:scale(1.08);
+      box-shadow:0 0 0 3px rgba(46,157,80,.18);
+    }
+
+    .seat.taken{
+      background:#c43b2f;
+      cursor:not-allowed;
+    }
+
+    .seat.selected{
+      background:#d4a017;
+      transform:scale(1.08);
+      box-shadow:0 0 0 3px rgba(212,160,23,.18);
+    }
 
     .form-box input{
       width:100%;
@@ -130,6 +149,7 @@
       <a href="calendario.html">Calendario</a>
       <a href="dove.html">Dove siamo</a>
       <a href="contatti.html">Contattaci</a>
+      <a href="admin.html">Admin</a>
     </nav>
   </aside>
 
@@ -155,24 +175,30 @@
 
         <div class="card form-box">
           <h3 class="event-title">Completa la prenotazione</h3>
+
           <input id="nomeInput" type="text" placeholder="Nome e cognome">
           <input id="telefonoInput" type="text" placeholder="Telefono">
-           <div class="selected-box">
-           <strong>Posti disponibili:</strong>
-           <span id="availableSeatsText">0</span>
+
+          <div class="selected-box">
+            <strong>Posti disponibili:</strong>
+            <span id="availableSeatsText">0</span>
           </div>
-           <div class="selected-box">
-           <strong>Posti occupati:</strong>
-           <span id="occupiedSeatsText">0</span>
+
+          <div class="selected-box">
+            <strong>Posti occupati:</strong>
+            <span id="occupiedSeatsText">0</span>
           </div>
-	    <div class="selected-box">
+
+          <div class="selected-box">
             <strong>Posti selezionati:</strong>
             <span id="selectedSeatsText">nessuno</span>
           </div>
+
           <div class="selected-box">
-            <strong>Totale posti:</strong>
+            <strong>Totale posti selezionati:</strong>
             <span id="selectedCountText">0</span>
           </div>
+
           <button id="bookBtn" class="button">Prenota</button>
           <p id="bookingMsg" class="note"></p>
         </div>
@@ -183,6 +209,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
   <script src="js/site.js"></script>
+
   <script>
     const params = new URLSearchParams(window.location.search);
     const serataId = params.get("id");
@@ -195,14 +222,22 @@
       if (totalSeats % 2 !== 0 || totalSeats < 4) {
         throw new Error("I posti totali devono essere pari e almeno 4.");
       }
+
       const longSide = (totalSeats - 2) / 2;
-      return { left: 1, right: 1, top: longSide, bottom: longSide };
+
+      return {
+        left: 1,
+        right: 1,
+        top: longSide,
+        bottom: longSide
+      };
     }
 
     function createSeatButton(num, isTaken){
       const btn = document.createElement("button");
       btn.className = "seat " + (isTaken ? "taken" : "free");
       btn.textContent = num;
+      btn.type = "button";
 
       if (!isTaken) {
         btn.addEventListener("click", () => {
@@ -216,6 +251,7 @@
             btn.classList.remove("free");
             btn.classList.add("selected");
           }
+
           updateSelectedInfo();
         });
       }
@@ -226,7 +262,23 @@
     function updateSelectedInfo(){
       document.getElementById("selectedSeatsText").textContent =
         selectedSeats.length ? selectedSeats.join(", ") : "nessuno";
-      document.getElementById("selectedCountText").textContent = selectedSeats.length;
+
+      document.getElementById("selectedCountText").textContent =
+        selectedSeats.length;
+    }
+
+    function updateAvailabilityInfo(){
+      if(!currentEvent) return;
+
+      const total = currentEvent.posti_totali;
+      const occupied = occupiedSeats.length;
+      const available = total - occupied;
+
+      document.getElementById("availableSeatsText").textContent =
+        `${available} / ${total}`;
+
+      document.getElementById("occupiedSeatsText").textContent =
+        `${occupied} / ${total}`;
     }
 
     function renderTable(totalSeats){
@@ -286,7 +338,8 @@
 
     async function loadEventAndSeats(){
       if (!serataId) {
-        document.getElementById("eventDetail").innerHTML = `<div class="card note">Serata non trovata.</div>`;
+        document.getElementById("eventDetail").innerHTML =
+          `<div class="card note">Serata non trovata.</div>`;
         return;
       }
 
@@ -297,11 +350,14 @@
         .single();
 
       if (eventError || !eventData) {
-        document.getElementById("eventDetail").innerHTML = `<div class="card note">Errore nel caricamento della serata.</div>`;
+        console.error(eventError);
+        document.getElementById("eventDetail").innerHTML =
+          `<div class="card note">Errore nel caricamento della serata.</div>`;
         return;
       }
 
       currentEvent = eventData;
+
       renderEventCard(document.getElementById("eventDetail"), currentEvent);
 
       const { data: seatRows, error: seatError } = await supabaseClient
@@ -310,12 +366,16 @@
         .eq("serata_id", serataId);
 
       if (seatError) {
-        document.getElementById("bookingMsg").textContent = "Errore nel caricamento posti.";
+        console.error(seatError);
+        document.getElementById("bookingMsg").textContent =
+          "Errore nel caricamento posti.";
         return;
       }
 
       occupiedSeats = seatRows.map(r => r.posto_numero).sort((a,b)=>a-b);
+
       renderTable(currentEvent.posti_totali);
+      updateAvailabilityInfo();
       updateSelectedInfo();
     }
 
@@ -337,6 +397,7 @@
       }
 
       const overlap = selectedSeats.some(seat => occupiedSeats.includes(seat));
+
       if (overlap) {
         msg.textContent = "Uno dei posti selezionati non è più disponibile.";
         await loadEventAndSeats();
@@ -344,6 +405,8 @@
         updateSelectedInfo();
         return;
       }
+
+      const bookedSeats = [...selectedSeats];
 
       const { data: prenotazione, error: prenError } = await supabaseClient
         .from("prenotazioni")
@@ -356,11 +419,12 @@
         .single();
 
       if (prenError || !prenotazione) {
+        console.error(prenError);
         msg.textContent = "Errore nel salvataggio prenotazione.";
         return;
       }
 
-      const postiRows = selectedSeats.map(n => ({
+      const postiRows = bookedSeats.map(n => ({
         prenotazione_id: prenotazione.id,
         serata_id: serataId,
         posto_numero: n
@@ -371,20 +435,25 @@
         .insert(postiRows);
 
       if (postiError) {
+        console.error(postiError);
         msg.textContent = "Errore nel salvataggio posti.";
         return;
       }
 
-      msg.textContent = "Prenotazione salvata con successo.";
+      msg.textContent =
+        `Prenotazione salvata! Hai riservato i posti: ${bookedSeats.join(", ")}.`;
+
       document.getElementById("nomeInput").value = "";
       document.getElementById("telefonoInput").value = "";
       selectedSeats = [];
+
       await loadEventAndSeats();
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
       setupMenu();
       await loadEventAndSeats();
+
       document.getElementById("bookBtn").addEventListener("click", saveBooking);
     });
   </script>
