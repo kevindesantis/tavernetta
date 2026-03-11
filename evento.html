@@ -267,7 +267,23 @@
         selectedSeats.length;
     }
 
-    function updateAvailabilityInfo(){
+    function updateAvailabilityInfo()
+function isPastEvent(dateStr){
+  const eventDate = new Date(dateStr + "T00:00:00");
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return eventDate < today;
+}
+
+function lockPastEvent(){
+  document.getElementById("nomeInput").disabled = true;
+  document.getElementById("telefonoInput").disabled = true;
+  document.getElementById("bookBtn").disabled = true;
+  document.getElementById("bookBtn").style.opacity = "0.6";
+  document.getElementById("bookBtn").style.cursor = "not-allowed";
+  document.getElementById("bookingMsg").textContent =
+    "Le prenotazioni per questa serata sono chiuse perché la data è passata.";
+}{
       if(!currentEvent) return;
 
       const total = currentEvent.posti_totali;
