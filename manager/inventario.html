@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Inventario Tavernetta</title>
+
+<link rel="icon" type="image/png" href="../img/logo.png">
+<link rel="stylesheet" href="../css/style.css">
+
+<style>
+
+.page{
+width:95%;
+max-width:900px;
+margin:auto;
+padding:20px;
+}
+
+.item{
+background:#fff7eb;
+padding:15px;
+border-radius:12px;
+margin-bottom:10px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.item-name{
+font-weight:bold;
+}
+
+.controls button{
+margin-left:5px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="page">
+
+<h1>Inventario Tavernetta</h1>
+
+<div style="margin-bottom:20px">
+
+<input id="nome" placeholder="Nome prodotto">
+
+<input id="categoria" placeholder="Categoria">
+
+<input id="quantita" type="number" placeholder="Quantità">
+
+<input id="unita" placeholder="Unità (bottiglie, kg...)">
+
+<button onclick="aggiungi()">Aggiungi</button>
+
+</div>
+
+<div id="lista"></div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase-client.js"></script>
+
+<script>
+
+async function carica(){
+
+const { data } = await supabaseClient
+.from("inventario")
+.select("*")
+.order("nome")
+
+const lista = document.getElementById("lista")
+
+lista.innerHTML = ""
+
+data.forEach(item=>{
+
+lista.innerHTML += `
+<div class="item">
+
+<div>
+<div class="item-name">${item.nome}</div>
+<div>${item.quantita} ${item.unita || ""}</div>
+</div>
+
+<div class="controls">
+
+<button onclick="meno(${item.id},${item.quantita})">-</button>
+
+<button onclick="piu(${item.id},${item.quantita})">+</button>
+
+<button onclick="elimina(${item.id})">🗑</button>
+
+</div>
+
+</div>
+`
+
+})
+
+}
+
+async function aggiungi(){
+
+const nome = document.getElementById("nome").value
+const categoria = document.getElementById("categoria").value
+const quantita = document.getElementById("quantita").value
+const unita = document.getElementById("unita").value
+
+await supabaseClient.from("inventario").insert([{
+
+nome,
+categoria,
+quantita,
+unita
+
+}])
+
+carica()
+
+}
+
+async function piu(id,q){
+
+await supabaseClient
+.from("inventario")
+.update({ quantita:q+1 })
+.eq("id",id)
+
+carica()
+
+}
+
+async function meno(id,q){
+
+if(q<=0) return
+
+await supabaseClient
+.from("inventario")
+.update({ quantita:q-1 })
+.eq("id",id)
+
+carica()
+
+}
+
+async function elimina(id){
+
+await supabaseClient
+.from("inventario")
+.delete()
+.eq("id",id)
+
+carica()
+
+}
+
+carica()
+
+</script>
+
+</body>
+</html>
