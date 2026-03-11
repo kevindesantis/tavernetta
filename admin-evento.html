@@ -3,19 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Admin evento – Tavernetta da Kevin</title>
   <meta name="description" content="Gestione amministrativa della serata della Tavernetta da Kevin.">
 
   <link rel="icon" type="image/png" href="img/logo.png">
   <link rel="stylesheet" href="css/style.css">
-  <link rel="canonical" href="https://tavernettadakevin.it/admin-evento.html">
-
-  <meta property="og:title" content="Admin evento – Tavernetta da Kevin">
-  <meta property="og:description" content="Gestione amministrativa della serata della Tavernetta da Kevin.">
-  <meta property="og:image" content="https://tavernettadakevin.it/img/whatsapp-preview.png">
-  <meta property="og:url" content="https://tavernettadakevin.it/admin-evento.html">
-  <meta property="og:type" content="website">
 
   <style>
     .booking-wrap{
@@ -346,11 +338,8 @@
       const occupied = occupiedSeats.length;
       const available = total - occupied;
 
-      document.getElementById("availableSeatsText").textContent =
-        `${available} / ${total}`;
-
-      document.getElementById("occupiedSeatsText").textContent =
-        `${occupied} / ${total}`;
+      document.getElementById("availableSeatsText").textContent = `${available} / ${total}`;
+      document.getElementById("occupiedSeatsText").textContent = `${occupied} / ${total}`;
     }
 
     function createSeatButton(id){
@@ -522,7 +511,7 @@
         `;
 
         item.querySelector(".delete-pren-btn").addEventListener("click", async () => {
-          const conferma = confirm(\`Eliminare la prenotazione di ${pr.nome}?\`);
+          const conferma = confirm(`Eliminare la prenotazione di ${pr.nome}?`);
           if (!conferma) return;
 
           const { error: delError } = await supabaseClient
