@@ -1,131 +1,173 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tavernetta Manager Login</title>
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="../img/logoapp.png">
+  <link rel="apple-touch-icon" href="../img/logoapp.png">
 
-<title>Tavernetta Manager Login</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Tavernetta Manager">
+  <meta name="theme-color" content="#6b3e26">
 
-<link rel="icon" type="image/png" href="../img/logoapp.png">
-<link rel="apple-touch-icon" href="../img/logoapp.png">
+  <style>
+    :root{
+      --bg:#f7e9d2;
+      --card:#fffaf2;
+      --brown:#6b3e26;
+      --brown-2:#8b5132;
+      --text:#2f241c;
+      --shadow:0 8px 28px rgba(0,0,0,.12);
+      --radius:18px;
+    }
 
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Tavernetta Manager">
+    *{
+      box-sizing:border-box;
+    }
 
-<style>
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family:Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+    }
 
-body{
-font-family:Arial;
-background:#f7e9d2;
-display:flex;
-justify-content:center;
-align-items:center;
-height:100vh;
-margin:0;
-}
+    .login-card{
+      width:min(100%, 380px);
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:28px 22px;
+      text-align:center;
+    }
 
-.box{
-background:white;
-padding:40px;
-border-radius:12px;
-box-shadow:0 10px 30px rgba(0,0,0,0.1);
-text-align:center;
-width:320px;
-}
+    .logo{
+      width:92px;
+      height:92px;
+      object-fit:contain;
+      display:block;
+      margin:0 auto 16px;
+      border-radius:20px;
+    }
 
-.logo{
-width:90px;
-margin-bottom:20px;
-}
+    h1{
+      margin:0;
+      color:var(--brown);
+      font-size:28px;
+    }
 
-button{
-width:100%;
-padding:14px;
-margin-top:10px;
-border:none;
-border-radius:8px;
-background:#6b3e26;
-color:white;
-font-size:16px;
-cursor:pointer;
-}
+    .subtitle{
+      margin:8px 0 22px;
+      font-size:14px;
+      opacity:.8;
+    }
 
-input{
-width:100%;
-padding:12px;
-margin-top:10px;
-border-radius:8px;
-border:1px solid #ccc;
-}
+    .field{
+      width:100%;
+      padding:14px;
+      border-radius:12px;
+      border:1px solid rgba(107,62,38,.18);
+      font-size:16px;
+      background:#fff;
+      outline:none;
+    }
 
-</style>
+    .field:focus{
+      border-color:var(--brown);
+      box-shadow:0 0 0 3px rgba(107,62,38,.12);
+    }
 
+    .button{
+      width:100%;
+      margin-top:14px;
+      padding:14px;
+      border:none;
+      border-radius:12px;
+      background:var(--brown);
+      color:#fff;
+      font-size:16px;
+      font-weight:bold;
+      cursor:pointer;
+    }
+
+    .button:active{
+      transform:translateY(1px);
+    }
+
+    .secondary-link{
+      display:inline-block;
+      margin-top:16px;
+      color:var(--brown);
+      text-decoration:none;
+      font-size:14px;
+    }
+
+    .msg{
+      min-height:20px;
+      margin-top:12px;
+      font-size:14px;
+      color:#b9382f;
+    }
+  </style>
 </head>
-
 <body>
+  <main class="login-card">
+    <img src="../img/logoapp.png" alt="Tavernetta Manager" class="logo">
 
-<div class="box">
+    <h1>Tavernetta Manager</h1>
+    <p class="subtitle">Accesso privato gestione tavernetta</p>
 
-<img src="../img/logoapp.png" class="logo">
+    <input
+      id="pwd"
+      class="field"
+      type="password"
+      placeholder="Inserisci la password"
+      autocomplete="current-password"
+    >
 
-<h2>Tavernetta Manager</h2>
+    <button class="button" onclick="passwordLogin()">Accedi</button>
 
-<button onclick="faceLogin()">🔓 Sblocca con Face ID</button>
+    <div id="loginMsg" class="msg"></div>
 
-<input type="password" id="pwd" placeholder="Password admin">
+    <a class="secondary-link" href="../index.html">Torna al sito</a>
+  </main>
 
-<button onclick="passwordLogin()">Accedi</button>
+  <script>
+    const PASSWORD = "1234";
 
-</div>
+    function passwordLogin() {
+      const input = document.getElementById("pwd").value.trim();
+      const msg = document.getElementById("loginMsg");
 
-<script>
+      msg.textContent = "";
 
-const PASSWORD = "Kevdsant3121131"
+      if (!input) {
+        msg.textContent = "Inserisci la password.";
+        return;
+      }
 
-function passwordLogin(){
+      if (input === PASSWORD) {
+        localStorage.setItem("manager_auth", "ok");
+        window.location.href = "index.html";
+      } else {
+        msg.textContent = "Password errata.";
+      }
+    }
 
-const p=document.getElementById("pwd").value
-
-if(p===PASSWORD){
-
-localStorage.setItem("manager_auth","ok")
-
-window.location.href="index.html"
-
-}else{
-
-alert("Password errata")
-
-}
-
-}
-
-async function faceLogin(){
-
-try{
-
-const credential = await navigator.credentials.get({
-publicKey:{
-challenge:new Uint8Array(32),
-timeout:60000,
-userVerification:"required"
-}
-})
-
-localStorage.setItem("manager_auth","ok")
-
-window.location.href="index.html"
-
-}catch(e){
-
-alert("Face ID non disponibile su questo dispositivo")
-
-}
-
-}
-
-</script>
-
+    document.getElementById("pwd").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        passwordLogin();
+      }
+    });
+  </script>
 </body>
 </html>
