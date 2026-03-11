@@ -20,7 +20,7 @@
   <style>
     .booking-wrap{
       display:grid;
-      grid-template-columns:1.1fr .9fr;
+      grid-template-columns:1.15fr .85fr;
       gap:20px;
     }
 
@@ -57,52 +57,118 @@
       overflow:auto;
     }
 
-    .table-grid{
-      min-width:640px;
+    .room-layout{
+      min-width:760px;
       display:grid;
-      grid-template-columns:64px 1fr 64px;
-      grid-template-rows:auto 120px auto;
-      gap:16px;
+      grid-template-columns:auto 1fr auto;
+      grid-template-rows:auto auto auto auto;
+      column-gap:16px;
+      row-gap:14px;
+      align-items:center;
+      justify-items:center;
+    }
+
+    .top-divans{
+      grid-column:2;
+      grid-row:1;
+      width:100%;
+      display:flex;
+      justify-content:flex-end;
+      padding-right:70px;
+    }
+
+    .top-divans .seat-row{
+      display:flex;
+      gap:10px;
       align-items:center;
     }
 
-    .side-seat-wrap{
-      display:flex;
+    .table-wrap{
+      grid-column:2;
+      grid-row:2 / span 2;
+      width:fit-content;
+      display:grid;
+      grid-template-columns:48px auto 48px;
+      grid-template-rows:auto 96px auto;
+      gap:8px;
       align-items:center;
-      justify-content:center;
+      justify-items:center;
     }
 
     .top-seats,
     .bottom-seats{
       display:flex;
-      justify-content:center;
       gap:10px;
       flex-wrap:nowrap;
+      width:auto;
+      justify-content:center;
+    }
+
+    .left-seat,
+    .right-seat{
+      display:flex;
+      align-items:center;
+      justify-content:center;
     }
 
     .rect-table{
+      width:var(--table-width, 340px);
       background:linear-gradient(180deg,#9a6732 0%,#7b4e24 100%);
       border-radius:22px;
-      height:120px;
+      height:96px;
       box-shadow:
         inset 0 0 0 4px rgba(255,255,255,.14),
         0 8px 20px rgba(0,0,0,.12);
     }
 
+    .right-side{
+      grid-column:3;
+      grid-row:2 / span 2;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+    }
+
+    .right-side .seat-col{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      align-items:center;
+    }
+
+    .bottom-divans{
+      grid-column:2;
+      grid-row:4;
+      width:100%;
+      display:flex;
+      justify-content:flex-end;
+      padding-right:18px;
+    }
+
+    .bottom-divans .seat-row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+
     .seat{
-      width:42px;
+      min-width:42px;
       height:42px;
-      border-radius:50%;
+      padding:0 10px;
+      border-radius:50px;
       border:0;
       color:#fff;
       font-weight:bold;
       cursor:pointer;
       transition:.2s;
+      font-size:14px;
     }
 
     .seat.free{ background:#2e9d50; }
     .seat.taken{ background:#c43b2f; cursor:not-allowed; }
-    .seat.selected{ background:#d4a017; }
+    .seat.selected{ background:#d4a017; color:#111; }
 
     .seat.free:hover{
       transform:scale(1.08);
@@ -151,8 +217,8 @@
         grid-template-columns:1fr;
       }
 
-      .table-grid{
-        min-width:560px;
+      .room-layout{
+        min-width:720px;
       }
     }
   </style>
@@ -194,7 +260,7 @@
 
       <div class="booking-wrap">
         <div class="table-layout">
-          <div id="tableGrid" class="table-grid"></div>
+          <div id="roomLayout" class="room-layout"></div>
         </div>
 
         <div class="card form-box">
@@ -248,16 +314,35 @@
     let occupiedSeats = [];
     let selectedSeats = [];
 
+    const FIXED_EXTRA_SEATS = ["D1","D2","D3","D4","D5","D6","D7","S1","D8","S2"];
+
+    function seatSort(a, b) {
+      const aIsNum = /^\d+$/.test(a);
+      const bIsNum = /^\d+$/.test(b);
+
+      if (aIsNum && bIsNum) return Number(a) - Number(b);
+      if (aIsNum) return -1;
+      if (bIsNum) return 1;
+      return a.localeCompare(b, "it", { numeric: true, sensitivity: "base" });
+    }
+
     function updateSelectedInfo(){
+      const ordered = [...selectedSeats].sort(seatSort);
       document.getElementById("selectedSeatsText").textContent =
-        selectedSeats.length ? selectedSeats.join(", ") : "nessuno";
+        ordered.length ? ordered.join(", ") : "nessuno";
 
       document.getElementById("selectedCountText").textContent =
-        selectedSeats.length;
+        ordered.length;
+    }
+
+    function getAllSeatIds(tableTotal){
+      const ids = [];
+      for (let i = 1; i <= tableTotal; i++) ids.push(String(i));
+      return [...ids, ...FIXED_EXTRA_SEATS];
     }
 
     function updateAvailabilityInfo(){
-      const total = currentEvent.posti_totali;
+      const total = getAllSeatIds(currentEvent.posti_totali).length;
       const occupied = occupiedSeats.length;
       const available = total - occupied;
 
@@ -268,30 +353,22 @@
         `${occupied} / ${total}`;
     }
 
-    function getSeatStructure(totalSeats){
-      if (totalSeats % 2 !== 0 || totalSeats < 4) {
-        throw new Error("I posti totali devono essere pari e almeno 4.");
-      }
+    function createSeatButton(id){
+      const isTaken = occupiedSeats.includes(id);
 
-      const longSide = (totalSeats - 2) / 2;
-      return { left: 1, right: 1, top: longSide, bottom: longSide };
-    }
-
-    function createSeatButton(num, isTaken){
       const btn = document.createElement("button");
       btn.className = "seat " + (isTaken ? "taken" : "free");
-      btn.textContent = num;
+      btn.textContent = id;
       btn.type = "button";
 
       if (!isTaken) {
         btn.addEventListener("click", () => {
-          if (selectedSeats.includes(num)) {
-            selectedSeats = selectedSeats.filter(x => x !== num);
+          if (selectedSeats.includes(id)) {
+            selectedSeats = selectedSeats.filter(x => x !== id);
             btn.classList.remove("selected");
             btn.classList.add("free");
           } else {
-            selectedSeats.push(num);
-            selectedSeats.sort((a,b)=>a-b);
+            selectedSeats.push(id);
             btn.classList.remove("free");
             btn.classList.add("selected");
           }
@@ -302,59 +379,99 @@
       return btn;
     }
 
-    function renderTable(totalSeats){
-      const grid = document.getElementById("tableGrid");
-      grid.innerHTML = "";
+    function buildTableSeatMap(totalSeats) {
+      const longSide = (totalSeats - 2) / 2;
+      const top = [];
+      const bottom = [];
 
-      const s = getSeatStructure(totalSeats);
+      for (let i = 0; i < longSide; i++) {
+        top.push(String(2 + i));
+      }
+
+      for (let i = 0; i < longSide; i++) {
+        bottom.push(String(2 + longSide + i));
+      }
+
+      return {
+        left: "1",
+        right: String(totalSeats),
+        top,
+        bottom
+      };
+    }
+
+    function renderRoom(tableTotal){
+      const room = document.getElementById("roomLayout");
+      room.innerHTML = "";
+
+      const topDivans = document.createElement("div");
+      topDivans.className = "top-divans";
+      const topDivanRow = document.createElement("div");
+      topDivanRow.className = "seat-row";
+      ["D1","D2","D3","D4","D5"].forEach(id => topDivanRow.appendChild(createSeatButton(id)));
+      topDivans.appendChild(topDivanRow);
+
+      const tableMap = buildTableSeatMap(tableTotal);
+      const seatWidth = 52;
+      const tableWidth = Math.max(220, tableMap.top.length * seatWidth);
+
+      const tableWrap = document.createElement("div");
+      tableWrap.className = "table-wrap";
 
       const top = document.createElement("div");
       top.className = "top-seats";
       top.style.gridColumn = "2";
       top.style.gridRow = "1";
+      tableMap.top.forEach(id => top.appendChild(createSeatButton(id)));
 
       const left = document.createElement("div");
-      left.className = "side-seat-wrap";
+      left.className = "left-seat";
       left.style.gridColumn = "1";
       left.style.gridRow = "2";
+      left.appendChild(createSeatButton(tableMap.left));
 
       const center = document.createElement("div");
       center.className = "rect-table";
       center.style.gridColumn = "2";
       center.style.gridRow = "2";
+      center.style.setProperty("--table-width", `${tableWidth}px`);
 
       const right = document.createElement("div");
-      right.className = "side-seat-wrap";
+      right.className = "right-seat";
       right.style.gridColumn = "3";
       right.style.gridRow = "2";
+      right.appendChild(createSeatButton(tableMap.right));
 
       const bottom = document.createElement("div");
       bottom.className = "bottom-seats";
       bottom.style.gridColumn = "2";
       bottom.style.gridRow = "3";
+      tableMap.bottom.forEach(id => bottom.appendChild(createSeatButton(id)));
 
-      let seatNum = 1;
+      tableWrap.appendChild(top);
+      tableWrap.appendChild(left);
+      tableWrap.appendChild(center);
+      tableWrap.appendChild(right);
+      tableWrap.appendChild(bottom);
 
-      left.appendChild(createSeatButton(seatNum, occupiedSeats.includes(seatNum)));
-      seatNum++;
+      const rightSide = document.createElement("div");
+      rightSide.className = "right-side";
+      const rightCol = document.createElement("div");
+      rightCol.className = "seat-col";
+      ["D6","D7","S1"].forEach(id => rightCol.appendChild(createSeatButton(id)));
+      rightSide.appendChild(rightCol);
 
-      for (let i = 0; i < s.top; i++) {
-        top.appendChild(createSeatButton(seatNum, occupiedSeats.includes(seatNum)));
-        seatNum++;
-      }
+      const bottomDivans = document.createElement("div");
+      bottomDivans.className = "bottom-divans";
+      const bottomRow = document.createElement("div");
+      bottomRow.className = "seat-row";
+      ["D8","S2"].forEach(id => bottomRow.appendChild(createSeatButton(id)));
+      bottomDivans.appendChild(bottomRow);
 
-      for (let i = 0; i < s.bottom; i++) {
-        bottom.appendChild(createSeatButton(seatNum, occupiedSeats.includes(seatNum)));
-        seatNum++;
-      }
-
-      right.appendChild(createSeatButton(seatNum, occupiedSeats.includes(seatNum)));
-
-      grid.appendChild(top);
-      grid.appendChild(left);
-      grid.appendChild(center);
-      grid.appendChild(right);
-      grid.appendChild(bottom);
+      room.appendChild(topDivans);
+      room.appendChild(tableWrap);
+      room.appendChild(rightSide);
+      room.appendChild(bottomDivans);
     }
 
     async function loadPrenotazioniList(){
@@ -389,8 +506,8 @@
 
       data.forEach(pr => {
         const posti = (pr.prenotazione_posti || [])
-          .map(p => p.posto_numero)
-          .sort((a,b)=>a-b);
+          .map(p => String(p.posto_numero))
+          .sort(seatSort);
 
         const item = document.createElement("div");
         item.className = "pren-item";
@@ -405,7 +522,7 @@
         `;
 
         item.querySelector(".delete-pren-btn").addEventListener("click", async () => {
-          const conferma = confirm(`Eliminare la prenotazione di ${pr.nome}?`);
+          const conferma = confirm(\`Eliminare la prenotazione di ${pr.nome}?\`);
           if (!conferma) return;
 
           const { error: delError } = await supabaseClient
@@ -460,8 +577,11 @@
         return;
       }
 
-      occupiedSeats = seatRows.map(r => r.posto_numero).sort((a,b)=>a-b);
-      renderTable(currentEvent.posti_totali);
+      occupiedSeats = (seatRows || [])
+        .map(r => String(r.posto_numero))
+        .sort(seatSort);
+
+      renderRoom(currentEvent.posti_totali);
       updateAvailabilityInfo();
       updateSelectedInfo();
     }
@@ -492,7 +612,7 @@
         return;
       }
 
-      const bookedSeats = [...selectedSeats];
+      const bookedSeats = [...selectedSeats].sort(seatSort);
 
       const { data: prenotazione, error: prenError } = await supabaseClient
         .from("prenotazioni")
@@ -510,10 +630,10 @@
         return;
       }
 
-      const postiRows = bookedSeats.map(n => ({
+      const postiRows = bookedSeats.map(seatId => ({
         prenotazione_id: prenotazione.id,
         serata_id: serataId,
-        posto_numero: n
+        posto_numero: seatId
       }));
 
       const { error: postiError } = await supabaseClient
