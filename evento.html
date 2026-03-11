@@ -73,29 +73,19 @@
       justify-items:center;
     }
 
-    .zone-label{
-      font-size:13px;
-      color:var(--brown);
-      font-weight:bold;
-      opacity:.85;
-      margin-bottom:4px;
-      text-transform:uppercase;
-      letter-spacing:.04em;
-      text-align:center;
-    }
-
     .top-divans{
       grid-column:2;
       grid-row:1;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:8px;
       width:100%;
+      display:flex;
+      justify-content:flex-end;
+      padding-right:70px;
     }
 
     .top-divans .seat-row{
-      justify-content:center;
+      display:flex;
+      gap:10px;
+      align-items:center;
     }
 
     .table-wrap{
@@ -140,7 +130,8 @@
       display:flex;
       flex-direction:column;
       align-items:center;
-      gap:8px;
+      justify-content:center;
+      gap:10px;
     }
 
     .right-side .seat-col{
@@ -148,27 +139,20 @@
       flex-direction:column;
       gap:10px;
       align-items:center;
-      justify-content:center;
     }
 
     .bottom-divans{
       grid-column:2;
       grid-row:4;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:8px;
       width:100%;
+      display:flex;
+      justify-content:flex-end;
+      padding-right:18px;
     }
 
     .bottom-divans .seat-row{
-      justify-content:center;
-    }
-
-    .seat-row{
       display:flex;
       gap:10px;
-      flex-wrap:nowrap;
       align-items:center;
     }
 
@@ -207,7 +191,7 @@
       font-size:15px;
     }
 
-    @media (max-width:900px){
+    @media(max-width:900px){
       .booking-wrap{
         grid-template-columns:1fr;
       }
@@ -306,7 +290,7 @@
     let occupiedSeats = [];
     let selectedSeats = [];
 
-    const FIXED_EXTRA_SEATS = ["D1","D2","D3","D4","D5","D6","D7","S1","S2","D8"];
+    const FIXED_EXTRA_SEATS = ["D1","D2","D3","D4","D5","D6","D7","S1","D8","S2"];
 
     function isPastEvent(dateStr){
       const eventDate = new Date(dateStr + "T00:00:00");
@@ -413,7 +397,6 @@
 
       const topDivans = document.createElement("div");
       topDivans.className = "top-divans";
-      topDivans.innerHTML = `<div class="zone-label">Divanetti</div>`;
       const topDivanRow = document.createElement("div");
       topDivanRow.className = "seat-row";
       ["D1","D2","D3","D4","D5"].forEach(id => topDivanRow.appendChild(createSeatButton(id)));
@@ -461,7 +444,6 @@
 
       const rightSide = document.createElement("div");
       rightSide.className = "right-side";
-      rightSide.innerHTML = `<div class="zone-label">Lato destro</div>`;
       const rightCol = document.createElement("div");
       rightCol.className = "seat-col";
       ["D6","D7","S1"].forEach(id => rightCol.appendChild(createSeatButton(id)));
@@ -469,10 +451,9 @@
 
       const bottomDivans = document.createElement("div");
       bottomDivans.className = "bottom-divans";
-      bottomDivans.innerHTML = `<div class="zone-label">Sotto tavolo</div>`;
       const bottomDivanRow = document.createElement("div");
       bottomDivanRow.className = "seat-row";
-      ["S2","D8"].forEach(id => bottomDivanRow.appendChild(createSeatButton(id)));
+      ["D8","S2"].forEach(id => bottomDivanRow.appendChild(createSeatButton(id)));
       bottomDivans.appendChild(bottomDivanRow);
 
       room.appendChild(topDivans);
