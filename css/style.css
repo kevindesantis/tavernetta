@@ -19,7 +19,6 @@ body{
   color:var(--text);
 }
 
-
 /* TOP BAR */
 
 .top-bar{
@@ -38,7 +37,10 @@ body{
 }
 
 .logo-top{
-  height:50px;
+  height:56px;
+  width:auto;
+  object-fit:contain;
+  display:block;
 }
 
 .hamburger{
@@ -49,7 +51,6 @@ body{
   cursor:pointer;
   z-index:5001;
 }
-
 
 /* SIDEBAR */
 
@@ -85,8 +86,9 @@ body{
   top:20px;
   left:20px;
   height:45px;
+  width:auto;
+  object-fit:contain;
 }
-
 
 /* BACKDROP */
 
@@ -105,14 +107,12 @@ body{
   visibility:visible;
 }
 
-
 /* PAGE */
 
 .page{
   width:min(1100px,calc(100% - 24px));
   margin:95px auto 40px;
 }
-
 
 /* SLIDER */
 
@@ -162,7 +162,6 @@ body{
   background:white;
 }
 
-
 /* SECTIONS */
 
 .section{
@@ -174,7 +173,6 @@ body{
   color:var(--brown);
 }
 
-
 /* CARDS */
 
 .card{
@@ -183,7 +181,6 @@ body{
   box-shadow:var(--shadow);
   padding:18px;
 }
-
 
 /* EVENT CARD */
 
@@ -208,7 +205,6 @@ body{
   margin-bottom:10px;
 }
 
-
 /* BUTTONS */
 
 .button{
@@ -218,6 +214,8 @@ body{
   color:white;
   text-decoration:none;
   border-radius:10px;
+  border:none;
+  cursor:pointer;
 }
 
 .button.secondary{
@@ -233,7 +231,6 @@ body{
   flex-wrap:wrap;
 }
 
-
 /* CONTACT */
 
 .contact-grid{
@@ -248,7 +245,6 @@ body{
   padding:18px;
   box-shadow:var(--shadow);
 }
-
 
 /* EVENTS LIST */
 
@@ -274,7 +270,6 @@ body{
 .event-tile .inner{
   padding:14px;
 }
-
 
 /* CALENDAR */
 
@@ -315,7 +310,6 @@ body{
   margin:6px auto 0;
 }
 
-
 /* MAP */
 
 .map-wrap iframe{
@@ -326,35 +320,11 @@ body{
   margin-top:12px;
 }
 
-
 /* NOTE */
 
 .note{
   font-size:14px;
   opacity:0.8;
-}
-
-
-/* MOBILE */
-
-@media (max-width:760px){
-
-  .event-card{
-    grid-template-columns:1fr;
-  }
-
-  .page{
-    margin-top:90px;
-  }
-
-  .logo-top{
-    height:42px;
-  }
-
-  .hero-slider{
-    aspect-ratio:16/10;
-  }
-
 }
 
 /* CALENDARIO NUOVO */
@@ -446,7 +416,31 @@ body{
   margin:8px auto 0;
 }
 
-@media (max-width: 760px){
+/* MOBILE */
+
+@media (max-width:760px){
+
+  .event-card{
+    grid-template-columns:1fr;
+  }
+
+  .page{
+    margin-top:90px;
+    width:min(100% - 16px, 1100px);
+  }
+
+  .logo-top{
+    height:44px;
+  }
+
+  .side-logo{
+    height:40px;
+  }
+
+  .hero-slider{
+    aspect-ratio:16/10;
+  }
+
   .calendar-toolbar{
     grid-template-columns:44px 1fr 44px;
     gap:8px;
@@ -490,4 +484,5 @@ body{
     height:7px;
     margin-top:6px;
   }
+
 }
