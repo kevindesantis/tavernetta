@@ -1,31 +1,5 @@
-window.addEventListener("load", async () => {
-  try {
-    if (!window.supabaseClient) {
-      console.log("track-visit: supabaseClient non trovato");
-      return;
-    }
+const supabaseUrl = "https://puygpylapxsxyuwggetq.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1eWdweWxhcHhzeHl1d2dnZXRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzUxNTAsImV4cCI6MjA4ODc1MTE1MH0.H8gURFF2n4p_luOj-_k6Br9LaA9tlqfEj8AINdhted0";
+const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-    const page = window.location.pathname.split("/").pop() || "index.html";
-    const today = new Date().toISOString().slice(0, 10);
-    const key = `visit_${page}_${today}`;
-
-    if (sessionStorage.getItem(key)) {
-      console.log("track-visit: visita già contata");
-      return;
-    }
-
-    const { error } = await window.supabaseClient
-      .from("site_visits")
-      .insert([{ page }]);
-
-    if (error) {
-      console.log("track-visit insert error", error);
-      return;
-    }
-
-    sessionStorage.setItem(key, "1");
-    console.log("track-visit: visita registrata", page);
-  } catch (err) {
-    console.log("track-visit fatal error", err);
-  }
-});
+window.supabaseClient = supabaseClient;
