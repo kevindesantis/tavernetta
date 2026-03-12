@@ -49,7 +49,7 @@
     }
 
     .room-layout{
-      min-width:820px;
+      min-width:860px;
       display:flex;
       flex-direction:column;
       gap:28px;
@@ -127,7 +127,7 @@
         0 8px 20px rgba(0,0,0,.12);
     }
 
-    /* SALA INTERNA */
+    /* INTERNA */
     .internal-wrap{
       width:100%;
       display:grid;
@@ -174,7 +174,7 @@
       padding-right:18px;
     }
 
-    /* SALA ESTERNA */
+    /* ESTERNA */
     .external-wrap{
       display:flex;
       flex-direction:column;
@@ -186,25 +186,17 @@
     /* GIARDINO */
     .garden-wrap{
       display:grid;
-      grid-template-columns:auto;
-      grid-template-rows:auto auto auto;
-      row-gap:14px;
+      grid-template-columns:auto auto;
+      column-gap:18px;
       align-items:center;
       justify-items:center;
       width:fit-content;
     }
 
-    .garden-p-top,
-    .garden-p-bottom{
-      display:flex;
-      gap:10px;
-      justify-content:center;
-    }
-
     .garden-table-wrap{
       display:grid;
       grid-template-columns:48px 96px 48px;
-      grid-template-rows:48px 48px 120px 48px 48px;
+      grid-template-rows:auto auto 120px auto auto;
       column-gap:10px;
       row-gap:10px;
       align-items:center;
@@ -231,6 +223,15 @@
     .g-right-top{ grid-column:3; grid-row:2; }
     .g-right-bottom{ grid-column:3; grid-row:4; }
 
+    .garden-right-poltrone{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      align-items:center;
+      justify-content:center;
+      min-width:56px;
+    }
+
     .form-box input,
     .form-box textarea{
       width:100%;
@@ -250,6 +251,20 @@
     .selected-box{
       margin:12px 0;
       font-size:15px;
+    }
+
+    .summary-box{
+      background:#fffaf2;
+      border:1px solid #ead6b1;
+      border-radius:12px;
+      padding:12px;
+      margin-bottom:12px;
+      font-size:14px;
+    }
+
+    .summary-box h4{
+      margin:0 0 8px;
+      color:var(--brown);
     }
 
     .pren-list{
@@ -282,7 +297,7 @@
       }
 
       .room-layout{
-        min-width:740px;
+        min-width:760px;
       }
     }
   </style>
@@ -330,6 +345,8 @@
         <div class="card form-box">
           <h3 class="event-title">Nuova prenotazione admin</h3>
           <p id="salaInfoText" class="note"></p>
+
+          <div id="summaryBox" class="summary-box"></div>
 
           <input id="nomeInput" type="text" placeholder="Nome e cognome">
           <input id="telefonoInput" type="text" placeholder="Telefono (opzionale)">
@@ -380,13 +397,11 @@
 
     let currentEvent = null;
     let occupiedSeats = [];
+    let occupiedSeatTypes = {};
     let selectedSeats = [];
     let saleConfig = {};
 
     const INTERNAL_EXTRA = ["D1","D2","D3","D4","D5","D6","D7","S1","D8","S2"];
-    const EXTERNAL_EXTRA = ["M1","M2","M3","M4","M5","M6","M7","M8","M9","M10"];
-    const GARDEN_TABLE = ["G1","G2","G3","G4","G5","G6"];
-    const GARDEN_EXTRA = ["P1","P2","P3","P4","P5","P6","P7","P8","P9","P10"];
 
     function seatSort(a, b) {
       const aNum = /^\d+$/.test(a);
@@ -395,6 +410,16 @@
       if (aNum) return -1;
       if (bNum) return 1;
       return a.localeCompare(b, "it", { numeric: true, sensitivity: "base" });
+    }
+
+    function getSeatMeta(id) {
+      if (/^\d+$/.test(id)) return { sala: "interna", tipo: "tavolo" };
+      if (/^D\d+$/.test(id) || /^S\d+$/.test(id)) return { sala: "interna", tipo: "divano" };
+      if (/^E\d+$/.test(id)) return { sala: "esterna", tipo: "tavolo" };
+      if (/^M\d+$/.test(id)) return { sala: "esterna", tipo: "muretto" };
+      if (/^G\d+$/.test(id)) return { sala: "giardino", tipo: "tavolo" };
+      if (/^P\d+$/.test(id)) return { sala: "giardino", tipo: "poltrona" };
+      return { sala: "", tipo: "" };
     }
 
     function updateSelectedInfo(){
@@ -492,51 +517,84 @@
       return wrap;
     }
 
-    function buildGardenBlock() {
+    function buildGardenTableSeats(totalSeats) {
+      const ids = [];
+      for (let i = 1; i <= totalSeats; i++) ids.push(`G${i}`);
+      return ids;
+    }
+
+    function buildGardenBlock(totalSeats, extraSeats) {
       const wrap = document.createElement("div");
       wrap.className = "plan-block";
 
       const garden = document.createElement("div");
       garden.className = "garden-wrap";
 
-      const topBenches = document.createElement("div");
-      topBenches.className = "garden-p-top";
-      ["P1","P2","P3","P4","P5"].forEach(id => topBenches.appendChild(createSeatButton(id)));
-
-      const bottomBenches = document.createElement("div");
-      bottomBenches.className = "garden-p-bottom";
-      ["P6","P7","P8","P9","P10"].forEach(id => bottomBenches.appendChild(createSeatButton(id)));
-
       const tableWrap = document.createElement("div");
       tableWrap.className = "garden-table-wrap";
 
-      const g1 = createSeatButton("G1"); g1.classList.add("g-top");
-      const g2 = createSeatButton("G2"); g2.classList.add("g-bottom");
-      const g3 = createSeatButton("G3"); g3.classList.add("g-left-top");
-      const g4 = createSeatButton("G4"); g4.classList.add("g-left-bottom");
-      const g5 = createSeatButton("G5"); g5.classList.add("g-right-top");
-      const g6 = createSeatButton("G6"); g6.classList.add("g-right-bottom");
+      const gIds = buildGardenTableSeats(totalSeats);
+
+      const topCount = Math.max(1, Math.floor((totalSeats - 4) / 2));
+      const bottomCount = Math.max(1, totalSeats - 4 - topCount);
+
+      const topSeats = gIds.slice(0, topCount);
+      const leftSeats = gIds.slice(topCount, topCount + 2);
+      const rightSeats = gIds.slice(topCount + 2, topCount + 4);
+      const bottomSeats = gIds.slice(topCount + 4);
+
+      const gTop = document.createElement("div");
+      gTop.className = "seat-row";
+      gTop.style.gridColumn = "2";
+      gTop.style.gridRow = "1";
+      topSeats.forEach(id => gTop.appendChild(createSeatButton(id)));
+
+      const gBottom = document.createElement("div");
+      gBottom.className = "seat-row";
+      gBottom.style.gridColumn = "2";
+      gBottom.style.gridRow = "5";
+      bottomSeats.forEach(id => gBottom.appendChild(createSeatButton(id)));
+
+      const gLeftTop = createSeatButton(leftSeats[0] || "");
+      const gLeftBottom = createSeatButton(leftSeats[1] || "");
+      const gRightTop = createSeatButton(rightSeats[0] || "");
+      const gRightBottom = createSeatButton(rightSeats[1] || "");
+
+      if (!leftSeats[0]) gLeftTop.style.visibility = "hidden";
+      if (!leftSeats[1]) gLeftBottom.style.visibility = "hidden";
+      if (!rightSeats[0]) gRightTop.style.visibility = "hidden";
+      if (!rightSeats[1]) gRightBottom.style.visibility = "hidden";
+
+      gLeftTop.classList.add("g-left-top");
+      gLeftBottom.classList.add("g-left-bottom");
+      gRightTop.classList.add("g-right-top");
+      gRightBottom.classList.add("g-right-bottom");
 
       const table = document.createElement("div");
       table.className = "garden-table";
 
-      tableWrap.appendChild(g1);
-      tableWrap.appendChild(g2);
-      tableWrap.appendChild(g3);
-      tableWrap.appendChild(g4);
-      tableWrap.appendChild(g5);
-      tableWrap.appendChild(g6);
+      tableWrap.appendChild(gTop);
+      tableWrap.appendChild(gBottom);
+      tableWrap.appendChild(gLeftTop);
+      tableWrap.appendChild(gLeftBottom);
+      tableWrap.appendChild(gRightTop);
+      tableWrap.appendChild(gRightBottom);
       tableWrap.appendChild(table);
 
-      garden.appendChild(topBenches);
+      const poltrone = document.createElement("div");
+      poltrone.className = "garden-right-poltrone";
+      for (let i = 1; i <= extraSeats; i++) {
+        poltrone.appendChild(createSeatButton(`P${i}`));
+      }
+
       garden.appendChild(tableWrap);
-      garden.appendChild(bottomBenches);
+      garden.appendChild(poltrone);
 
       wrap.appendChild(garden);
       return wrap;
     }
 
-    function buildExternalBlock(totalSeats) {
+    function buildExternalBlock(totalSeats, extraSeats) {
       const wrap = document.createElement("div");
       wrap.className = "plan-block";
 
@@ -545,7 +603,9 @@
 
       const topExtras = document.createElement("div");
       topExtras.className = "seat-row";
-      EXTERNAL_EXTRA.forEach(id => topExtras.appendChild(createSeatButton(id)));
+      for (let i = 1; i <= extraSeats; i++) {
+        topExtras.appendChild(createSeatButton(`M${i}`));
+      }
 
       external.appendChild(topExtras);
       external.appendChild(buildSimpleTableBlock(totalSeats, "E"));
@@ -599,9 +659,17 @@
       const room = document.getElementById("roomLayout");
       room.innerHTML = "";
 
-      if (saleConfig.giardino?.attiva) room.appendChild(buildGardenBlock());
-      if (saleConfig.esterna?.attiva) room.appendChild(buildExternalBlock(saleConfig.esterna.posti_totali));
-      if (saleConfig.interna?.attiva) room.appendChild(buildInternalBlock(saleConfig.interna.posti_totali));
+      if (saleConfig.giardino?.attiva) {
+        room.appendChild(buildGardenBlock(saleConfig.giardino.posti_totali, saleConfig.giardino.posti_extra));
+      }
+
+      if (saleConfig.esterna?.attiva) {
+        room.appendChild(buildExternalBlock(saleConfig.esterna.posti_totali, saleConfig.esterna.posti_extra));
+      }
+
+      if (saleConfig.interna?.attiva) {
+        room.appendChild(buildInternalBlock(saleConfig.interna.posti_totali));
+      }
     }
 
     function getAllSeatIds() {
@@ -614,14 +682,24 @@
 
       if (saleConfig.esterna?.attiva) {
         for (let i = 1; i <= saleConfig.esterna.posti_totali; i++) ids.push(`E${i}`);
-        ids = ids.concat(EXTERNAL_EXTRA);
+        for (let i = 1; i <= saleConfig.esterna.posti_extra; i++) ids.push(`M${i}`);
       }
 
       if (saleConfig.giardino?.attiva) {
-        ids = ids.concat(GARDEN_TABLE, GARDEN_EXTRA);
+        for (let i = 1; i <= saleConfig.giardino.posti_totali; i++) ids.push(`G${i}`);
+        for (let i = 1; i <= saleConfig.giardino.posti_extra; i++) ids.push(`P${i}`);
       }
 
       return ids;
+    }
+
+    function countByType(seats) {
+      const summary = { tavolo: 0, divano: 0, muretto: 0, poltrona: 0 };
+      seats.forEach(id => {
+        const meta = getSeatMeta(id);
+        if (summary[meta.tipo] !== undefined) summary[meta.tipo]++;
+      });
+      return summary;
     }
 
     function updateAvailabilityInfo(){
@@ -631,6 +709,26 @@
 
       document.getElementById("availableSeatsText").textContent = `${available} / ${total}`;
       document.getElementById("occupiedSeatsText").textContent = `${occupied} / ${total}`;
+
+      const tavoloTot =
+        (saleConfig.interna?.attiva ? saleConfig.interna.posti_totali : 0) +
+        (saleConfig.esterna?.attiva ? saleConfig.esterna.posti_totali : 0) +
+        (saleConfig.giardino?.attiva ? saleConfig.giardino.posti_totali : 0);
+
+      const dopocenaTot =
+        (saleConfig.interna?.attiva ? INTERNAL_EXTRA.length : 0) +
+        (saleConfig.esterna?.attiva ? saleConfig.esterna.posti_extra : 0) +
+        (saleConfig.giardino?.attiva ? saleConfig.giardino.posti_extra : 0);
+
+      const occupiedCounts = countByType(occupiedSeats);
+      const tavoloOcc = occupiedCounts.tavolo;
+      const dopocenaOcc = occupiedCounts.divano + occupiedCounts.muretto + occupiedCounts.poltrona;
+
+      document.getElementById("summaryBox").innerHTML = `
+        <h4>Riepilogo coperti</h4>
+        <div><strong>Cena:</strong> ${tavoloOcc} / ${tavoloTot}</div>
+        <div><strong>Dopocena:</strong> ${dopocenaOcc} / ${dopocenaTot}</div>
+      `;
     }
 
     function setSalaInfoText() {
@@ -650,7 +748,7 @@
     async function loadSaleConfig() {
       const { data, error } = await supabaseClient
         .from("serata_sale")
-        .select("sala_codice, attiva, posti_totali")
+        .select("sala_codice, attiva, posti_totali, posti_extra")
         .eq("serata_id", serataId);
 
       if (error) {
@@ -662,7 +760,8 @@
       (data || []).forEach(row => {
         saleConfig[row.sala_codice] = {
           attiva: !!row.attiva,
-          posti_totali: Number(row.posti_totali || 0)
+          posti_totali: Number(row.posti_totali || 0),
+          posti_extra: Number(row.posti_extra || 0)
         };
       });
 
@@ -683,7 +782,8 @@
           richieste,
           creato_il,
           prenotazione_posti (
-            posto_numero
+            posto_numero,
+            posto_tipo
           )
         `)
         .eq("serata_id", serataId)
@@ -707,6 +807,17 @@
           .map(p => String(p.posto_numero))
           .sort(seatSort);
 
+        const counts = { tavolo: 0, divano: 0, muretto: 0, poltrona: 0 };
+        (pr.prenotazione_posti || []).forEach(p => {
+          const tipo = p.posto_tipo || getSeatMeta(String(p.posto_numero)).tipo;
+          if (counts[tipo] !== undefined) counts[tipo]++;
+        });
+
+        const tags = [];
+        if (counts.tavolo) tags.push(`cena: ${counts.tavolo}`);
+        const after = counts.divano + counts.muretto + counts.poltrona;
+        if (after) tags.push(`dopocena: ${after}`);
+
         const item = document.createElement("div");
         item.className = "pren-item";
 
@@ -717,6 +828,7 @@
           <p><strong>Allergie/intolleranze:</strong> ${pr.allergie || "-"}</p>
           <p><strong>Richieste:</strong> ${pr.richieste || "-"}</p>
           <p><strong>Posti:</strong> ${posti.join(", ")}</p>
+          <p><strong>Tipo:</strong> ${tags.join(" / ") || "-"}</p>
           <div class="button-row">
             <button class="button danger delete-pren-btn" type="button">Elimina prenotazione</button>
           </div>
@@ -777,7 +889,7 @@
 
       const { data: seatRows, error: seatError } = await supabaseClient
         .from("prenotazione_posti")
-        .select("posto_numero")
+        .select("posto_numero, posto_tipo")
         .eq("serata_id", serataId);
 
       if (seatError) {
@@ -787,6 +899,10 @@
       }
 
       occupiedSeats = (seatRows || []).map(r => String(r.posto_numero)).sort(seatSort);
+      occupiedSeatTypes = {};
+      (seatRows || []).forEach(r => {
+        occupiedSeatTypes[String(r.posto_numero)] = r.posto_tipo || getSeatMeta(String(r.posto_numero)).tipo;
+      });
 
       renderRoom();
       updateAvailabilityInfo();
@@ -846,7 +962,8 @@
       const postiRows = bookedSeats.map(seatId => ({
         prenotazione_id: prenotazione.id,
         serata_id: serataId,
-        posto_numero: seatId
+        posto_numero: seatId,
+        posto_tipo: getSeatMeta(seatId).tipo
       }));
 
       const { error: postiError } = await supabaseClient
