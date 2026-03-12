@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin evento – Tavernetta da Kevin</title>
+  <title>Manager Evento – Tavernetta da Kevin</title>
 
-  <link rel="icon" type="image/png" href="img/logo.png">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/png" href="../img/logo.png">
+  <link rel="stylesheet" href="../css/style.css">
 
   <style>
     .booking-wrap{
@@ -127,7 +127,6 @@
         0 8px 20px rgba(0,0,0,.12);
     }
 
-    /* INTERNA */
     .internal-wrap{
       width:100%;
       display:grid;
@@ -174,7 +173,6 @@
       padding-right:18px;
     }
 
-    /* ESTERNA */
     .external-wrap{
       display:flex;
       flex-direction:column;
@@ -183,77 +181,76 @@
       width:100%;
     }
 
-    /* GIARDINO */
-   .garden-wrap{
-  display:grid;
-  grid-template-columns:auto auto;
-  column-gap:20px;
-  align-items:center;
-  justify-items:center;
-  width:fit-content;
-}
+    .garden-wrap{
+      display:grid;
+      grid-template-columns:auto auto;
+      column-gap:18px;
+      align-items:center;
+      justify-items:center;
+      width:fit-content;
+    }
 
-.garden-table-wrap{
-  display:grid;
-  grid-template-columns:56px 96px 56px;
-  grid-template-rows:auto auto var(--garden-mid, 120px) auto auto;
-  column-gap:14px;
-  row-gap:10px;
-  align-items:center;
-  justify-items:center;
-  width:fit-content;
-}
+    .garden-table-wrap{
+      display:grid;
+      grid-template-columns:56px 96px 56px;
+      grid-template-rows:auto auto var(--garden-mid, 120px) auto auto;
+      column-gap:14px;
+      row-gap:10px;
+      align-items:center;
+      justify-items:center;
+      width:fit-content;
+    }
 
-.garden-table{
-  grid-column:2;
-  grid-row:2 / span 3;
-  width:96px;
-  height:var(--garden-height, 220px);
-  background:linear-gradient(180deg,#9a6732 0%,#7b4e24 100%);
-  border-radius:22px;
-  box-shadow:
-    inset 0 0 0 4px rgba(255,255,255,.14),
-    0 8px 20px rgba(0,0,0,.12);
-}
+    .garden-table{
+      grid-column:2;
+      grid-row:2 / span 3;
+      width:96px;
+      height:var(--garden-height, 220px);
+      background:linear-gradient(180deg,#9a6732 0%,#7b4e24 100%);
+      border-radius:22px;
+      box-shadow:
+        inset 0 0 0 4px rgba(255,255,255,.14),
+        0 8px 20px rgba(0,0,0,.12);
+    }
 
-.g-top{
-  grid-column:2;
-  grid-row:1;
-}
+    .g-top{
+      grid-column:2;
+      grid-row:1;
+    }
 
-.g-bottom{
-  grid-column:2;
-  grid-row:5;
-}
+    .g-bottom{
+      grid-column:2;
+      grid-row:5;
+    }
 
-.g-left-col{
-  grid-column:1;
-  grid-row:2 / span 3;
-  display:flex;
-  flex-direction:column;
-  justify-content:space-between;
-  align-items:center;
-  height:var(--garden-height, 220px);
-}
+    .g-left-col{
+      grid-column:1;
+      grid-row:2 / span 3;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      align-items:center;
+      height:var(--garden-height, 220px);
+    }
 
-.g-right-col{
-  grid-column:3;
-  grid-row:2 / span 3;
-  display:flex;
-  flex-direction:column;
-  justify-content:space-between;
-  align-items:center;
-  height:var(--garden-height, 220px);
-}
+    .g-right-col{
+      grid-column:3;
+      grid-row:2 / span 3;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      align-items:center;
+      height:var(--garden-height, 220px);
+    }
 
-.garden-right-poltrone{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-  align-items:center;
-  justify-content:center;
-  min-width:56px;
-}
+    .garden-right-poltrone{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      align-items:center;
+      justify-content:center;
+      min-width:56px;
+    }
 
     .form-box input,
     .form-box textarea{
@@ -327,32 +324,31 @@
 </head>
 <body>
   <div class="top-bar">
-    <img src="img/logo.png" alt="Tavernetta da Kevin" class="logo-top">
+    <img src="../img/logo.png" alt="Tavernetta da Kevin" class="logo-top">
     <button id="hamburger" class="hamburger" aria-label="Apri menu">☰</button>
   </div>
 
   <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
 
   <aside id="sidebar" class="sidebar">
-    <img src="img/logo.png" alt="Logo" class="side-logo">
+    <img src="../img/logo.png" alt="Logo" class="side-logo">
     <nav>
-      <a href="index.html">Home</a>
+      <a href="index.html">Dashboard</a>
       <a href="serate.html">Serate</a>
-      <a href="calendario.html">Calendario</a>
-      <a href="dove.html">Dove siamo</a>
-      <a href="contatti.html">Contattaci</a>
-      <a href="admin.html">Admin</a>
+      <a href="inventario.html">Inventario</a>
+      <a href="../index.html">Sito pubblico</a>
+      <a href="#" id="logoutBtn">Esci</a>
     </nav>
   </aside>
 
   <main class="page">
     <section class="section">
-      <h2>Admin serata</h2>
+      <h2>Gestione serata</h2>
       <div id="eventDetail"></div>
     </section>
 
     <section class="section">
-      <h2>Prenota posti da admin</h2>
+      <h2>Gestisci posti</h2>
 
       <div class="seat-legend">
         <div class="legend-item"><span class="legend-dot dot-free"></span> Disponibile</div>
@@ -366,7 +362,7 @@
         </div>
 
         <div class="card form-box">
-          <h3 class="event-title">Nuova prenotazione admin</h3>
+          <h3 class="event-title">Nuova prenotazione</h3>
           <p id="salaInfoText" class="note"></p>
 
           <div id="summaryBox" class="summary-box"></div>
@@ -376,16 +372,6 @@
           <input id="emailInput" type="email" placeholder="Email (opzionale)">
           <textarea id="allergieInput" placeholder="Allergie e intolleranze (opzionale)"></textarea>
           <textarea id="richiesteInput" placeholder="Richieste (opzionale)"></textarea>
-
-          <div class="selected-box">
-            <strong>Posti disponibili:</strong>
-            <span id="availableSeatsText">0</span>
-          </div>
-
-          <div class="selected-box">
-            <strong>Posti occupati:</strong>
-            <span id="occupiedSeatsText">0</span>
-          </div>
 
           <div class="selected-box">
             <strong>Posti selezionati:</strong>
@@ -410,9 +396,9 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase-client.js"></script>
-  <script src="js/admin-guard.js"></script>
-  <script src="js/site.js"></script>
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/manager-guard.js"></script>
+  <script src="../js/site.js"></script>
 
   <script>
     const params = new URLSearchParams(window.location.search);
@@ -540,82 +526,72 @@
       return wrap;
     }
 
-    function buildGardenTableSeats(totalSeats) {
-      const ids = [];
-      for (let i = 1; i <= totalSeats; i++) ids.push(`G${i}`);
-      return ids;
-    }
-
     function buildGardenBlock(totalSeats, extraSeats) {
-  const wrap = document.createElement("div");
-  wrap.className = "plan-block";
+      const wrap = document.createElement("div");
+      wrap.className = "plan-block";
 
-  const garden = document.createElement("div");
-  garden.className = "garden-wrap";
+      const garden = document.createElement("div");
+      garden.className = "garden-wrap";
 
-  const tableWrap = document.createElement("div");
-  tableWrap.className = "garden-table-wrap";
+      const tableWrap = document.createElement("div");
+      tableWrap.className = "garden-table-wrap";
 
-  // Regola:
-  // 2 posti fissi: 1 sopra, 1 sotto
-  // tutti gli altri sui lati lunghi, divisi metà sinistra metà destra
-  const sideSeatsCount = Math.max(4, totalSeats - 2); // con 6 => 4 laterali
-  const perSide = Math.ceil(sideSeatsCount / 2);
+      const sideSeatsCount = Math.max(4, totalSeats - 2);
+      const perSide = Math.ceil(sideSeatsCount / 2);
 
-  // altezza tavolo dinamica in base ai posti laterali
-  const tableHeight = 140 + Math.max(0, perSide - 2) * 44;
-  const midHeight = 70 + Math.max(0, perSide - 2) * 22;
+      const tableHeight = 140 + Math.max(0, perSide - 2) * 44;
+      const midHeight = 70 + Math.max(0, perSide - 2) * 22;
 
-  tableWrap.style.setProperty("--garden-height", `${tableHeight}px`);
-  tableWrap.style.setProperty("--garden-mid", `${midHeight}px`);
+      tableWrap.style.setProperty("--garden-height", `${tableHeight}px`);
+      tableWrap.style.setProperty("--garden-mid", `${midHeight}px`);
 
-  const gIds = [];
-  for (let i = 1; i <= totalSeats; i++) gIds.push(`G${i}`);
+      const gIds = [];
+      for (let i = 1; i <= totalSeats; i++) gIds.push(`G${i}`);
 
-  const topId = gIds[0] || null;
-  const bottomId = gIds[1] || null;
+      const topId = gIds[0] || null;
+      const bottomId = gIds[1] || null;
 
-  const sideIds = gIds.slice(2);
-  const leftIds = sideIds.slice(0, Math.ceil(sideIds.length / 2));
-  const rightIds = sideIds.slice(Math.ceil(sideIds.length / 2));
+      const sideIds = gIds.slice(2);
+      const leftIds = sideIds.slice(0, Math.ceil(sideIds.length / 2));
+      const rightIds = sideIds.slice(Math.ceil(sideIds.length / 2));
 
-  const gTop = topId ? createSeatButton(topId) : document.createElement("div");
-  gTop.classList.add("g-top");
-  if (!topId) gTop.style.visibility = "hidden";
+      const gTop = topId ? createSeatButton(topId) : document.createElement("div");
+      gTop.classList.add("g-top");
+      if (!topId) gTop.style.visibility = "hidden";
 
-  const gBottom = bottomId ? createSeatButton(bottomId) : document.createElement("div");
-  gBottom.classList.add("g-bottom");
-  if (!bottomId) gBottom.style.visibility = "hidden";
+      const gBottom = bottomId ? createSeatButton(bottomId) : document.createElement("div");
+      gBottom.classList.add("g-bottom");
+      if (!bottomId) gBottom.style.visibility = "hidden";
 
-  const leftCol = document.createElement("div");
-  leftCol.className = "g-left-col";
-  leftIds.forEach(id => leftCol.appendChild(createSeatButton(id)));
+      const leftCol = document.createElement("div");
+      leftCol.className = "g-left-col";
+      leftIds.forEach(id => leftCol.appendChild(createSeatButton(id)));
 
-  const rightCol = document.createElement("div");
-  rightCol.className = "g-right-col";
-  rightIds.forEach(id => rightCol.appendChild(createSeatButton(id)));
+      const rightCol = document.createElement("div");
+      rightCol.className = "g-right-col";
+      rightIds.forEach(id => rightCol.appendChild(createSeatButton(id)));
 
-  const table = document.createElement("div");
-  table.className = "garden-table";
+      const table = document.createElement("div");
+      table.className = "garden-table";
 
-  tableWrap.appendChild(gTop);
-  tableWrap.appendChild(gBottom);
-  tableWrap.appendChild(leftCol);
-  tableWrap.appendChild(rightCol);
-  tableWrap.appendChild(table);
+      tableWrap.appendChild(gTop);
+      tableWrap.appendChild(gBottom);
+      tableWrap.appendChild(leftCol);
+      tableWrap.appendChild(rightCol);
+      tableWrap.appendChild(table);
 
-  const poltrone = document.createElement("div");
-  poltrone.className = "garden-right-poltrone";
-  for (let i = 1; i <= extraSeats; i++) {
-    poltrone.appendChild(createSeatButton(`P${i}`));
-  }
+      const poltrone = document.createElement("div");
+      poltrone.className = "garden-right-poltrone";
+      for (let i = 1; i <= extraSeats; i++) {
+        poltrone.appendChild(createSeatButton(`P${i}`));
+      }
 
-  garden.appendChild(tableWrap);
-  garden.appendChild(poltrone);
+      garden.appendChild(tableWrap);
+      garden.appendChild(poltrone);
 
-  wrap.appendChild(garden);
-  return wrap;
-}
+      wrap.appendChild(garden);
+      return wrap;
+    }
 
     function buildExternalBlock(totalSeats, extraSeats) {
       const wrap = document.createElement("div");
@@ -730,9 +706,6 @@
       const occupied = occupiedSeats.length;
       const available = total - occupied;
 
-      document.getElementById("availableSeatsText").textContent = `${available} / ${total}`;
-      document.getElementById("occupiedSeatsText").textContent = `${occupied} / ${total}`;
-
       const tavoloTot =
         (saleConfig.interna?.attiva ? saleConfig.interna.posti_totali : 0) +
         (saleConfig.esterna?.attiva ? saleConfig.esterna.posti_totali : 0) +
@@ -749,7 +722,8 @@
 
       document.getElementById("summaryBox").innerHTML = `
         <h4>Riepilogo coperti</h4>
-        <div><strong>Cena:</strong> ${tavoloOcc} / ${tavoloTot}</div>
+        <div><strong>Posti disponibili:</strong> ${available} / ${total}</div>
+        <div style="margin-top:6px;"><strong>Cena:</strong> ${tavoloOcc} / ${tavoloTot}</div>
         <div><strong>Dopocena:</strong> ${dopocenaOcc} / ${dopocenaTot}</div>
       `;
     }
@@ -999,7 +973,7 @@
         return;
       }
 
-      msg.textContent = "Prenotazione admin salvata con successo.";
+      msg.textContent = "Prenotazione salvata con successo.";
       document.getElementById("nomeInput").value = "";
       document.getElementById("telefonoInput").value = "";
       document.getElementById("emailInput").value = "";
@@ -1011,6 +985,13 @@
       await loadPrenotazioniList();
     }
 
+    document.getElementById("logoutBtn").addEventListener("click", (e) => {
+      e.preventDefault();
+      localStorage.removeItem("manager_auth_ok");
+      localStorage.removeItem("manager_auth_mode");
+      window.location.href = "login.html";
+    });
+
     document.addEventListener("DOMContentLoaded", async () => {
       setupMenu();
       await loadEventAndSeats();
@@ -1020,7 +1001,3 @@
   </script>
 </body>
 </html>
-
-
-
-
