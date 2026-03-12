@@ -166,13 +166,20 @@
       transform:scale(1.08);
     }
 
-    .form-box input{
+    .form-box input,
+    .form-box textarea{
       width:100%;
       padding:12px;
       margin:0 0 12px;
       border-radius:10px;
       border:1px solid #d6b98a;
       font-size:16px;
+      font-family:inherit;
+      resize:vertical;
+    }
+
+    .form-box textarea{
+      min-height:84px;
     }
 
     .selected-box{
@@ -259,7 +266,10 @@
           <h3 class="event-title">Nuova prenotazione admin</h3>
 
           <input id="nomeInput" type="text" placeholder="Nome e cognome">
-          <input id="telefonoInput" type="text" placeholder="Telefono">
+          <input id="telefonoInput" type="text" placeholder="Telefono (opzionale)">
+          <input id="emailInput" type="email" placeholder="Email (opzionale)">
+          <textarea id="allergieInput" placeholder="Allergie e intolleranze (opzionale)"></textarea>
+          <textarea id="richiesteInput" placeholder="Richieste (opzionale)"></textarea>
 
           <div class="selected-box">
             <strong>Posti disponibili:</strong>
@@ -472,6 +482,9 @@
           id,
           nome,
           telefono,
+          email,
+          allergie,
+          richieste,
           creato_il,
           prenotazione_posti (
             posto_numero
@@ -504,6 +517,9 @@
         item.innerHTML = `
           <h4>${pr.nome}</h4>
           <p><strong>Telefono:</strong> ${pr.telefono || "-"}</p>
+          <p><strong>Email:</strong> ${pr.email || "-"}</p>
+          <p><strong>Allergie/intolleranze:</strong> ${pr.allergie || "-"}</p>
+          <p><strong>Richieste:</strong> ${pr.richieste || "-"}</p>
           <p><strong>Posti:</strong> ${posti.join(", ")}</p>
           <div class="button-row">
             <button class="button danger delete-pren-btn" type="button">Elimina prenotazione</button>
@@ -578,12 +594,15 @@
     async function saveBooking(){
       const nome = document.getElementById("nomeInput").value.trim();
       const telefono = document.getElementById("telefonoInput").value.trim();
+      const email = document.getElementById("emailInput").value.trim();
+      const allergie = document.getElementById("allergieInput").value.trim();
+      const richieste = document.getElementById("richiesteInput").value.trim();
       const msg = document.getElementById("bookingMsg");
 
       msg.textContent = "";
 
-      if (!nome || !telefono) {
-        msg.textContent = "Inserisci nome e telefono.";
+      if (!nome) {
+        msg.textContent = "Inserisci almeno il nome.";
         return;
       }
 
@@ -608,7 +627,10 @@
         .insert([{
           serata_id: serataId,
           nome,
-          telefono
+          telefono: telefono || null,
+          email: email || null,
+          allergie: allergie || null,
+          richieste: richieste || null
         }])
         .select()
         .single();
@@ -638,6 +660,9 @@
       msg.textContent = "Prenotazione admin salvata con successo.";
       document.getElementById("nomeInput").value = "";
       document.getElementById("telefonoInput").value = "";
+      document.getElementById("emailInput").value = "";
+      document.getElementById("allergieInput").value = "";
+      document.getElementById("richiesteInput").value = "";
       selectedSeats = [];
 
       await loadEventAndSeats();
