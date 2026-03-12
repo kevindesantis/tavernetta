@@ -127,7 +127,7 @@
         0 8px 20px rgba(0,0,0,.12);
     }
 
-    /* INTERNA */
+    /* SALA INTERNA */
     .internal-wrap{
       width:100%;
       display:grid;
@@ -148,13 +148,9 @@
       padding-right:70px;
     }
 
-    .top-divans .seat-row{
-      display:flex;
-      gap:10px;
-      align-items:center;
-    }
-
     .right-side{
+      grid-column:3;
+      grid-row:2 / span 2;
       display:flex;
       flex-direction:column;
       align-items:center;
@@ -170,19 +166,15 @@
     }
 
     .bottom-divans{
+      grid-column:2;
+      grid-row:4;
       width:100%;
       display:flex;
       justify-content:flex-end;
       padding-right:18px;
     }
 
-    .bottom-divans .seat-row{
-      display:flex;
-      gap:10px;
-      align-items:center;
-    }
-
-    /* ESTERNA */
+    /* SALA ESTERNA */
     .external-wrap{
       display:flex;
       flex-direction:column;
@@ -194,49 +186,37 @@
     /* GIARDINO */
     .garden-wrap{
       display:grid;
-      grid-template-columns:auto auto auto;
+      grid-template-columns:auto;
       grid-template-rows:auto auto auto;
       row-gap:14px;
-      column-gap:14px;
       align-items:center;
       justify-items:center;
       width:fit-content;
     }
 
-    .garden-p-top{
-      grid-column:2;
-      grid-row:1;
-      display:flex;
-      gap:10px;
-      justify-content:center;
-    }
-
+    .garden-p-top,
     .garden-p-bottom{
-      grid-column:2;
-      grid-row:3;
       display:flex;
       gap:10px;
       justify-content:center;
     }
 
     .garden-table-wrap{
-      grid-column:2;
-      grid-row:2;
       display:grid;
-      grid-template-columns:54px 48px 220px 48px 54px;
-      grid-template-rows:auto 96px auto;
-      column-gap:8px;
-      row-gap:8px;
+      grid-template-columns:48px 96px 48px;
+      grid-template-rows:48px 48px 120px 48px 48px;
+      column-gap:10px;
+      row-gap:10px;
       align-items:center;
       justify-items:center;
       width:fit-content;
     }
 
     .garden-table{
-      grid-column:3;
-      grid-row:2;
-      width:220px;
-      height:96px;
+      grid-column:2;
+      grid-row:2 / span 3;
+      width:96px;
+      height:220px;
       background:linear-gradient(180deg,#9a6732 0%,#7b4e24 100%);
       border-radius:22px;
       box-shadow:
@@ -244,35 +224,12 @@
         0 8px 20px rgba(0,0,0,.12);
     }
 
-    .g-top{
-      grid-column:3;
-      grid-row:1;
-    }
-
-    .g-bottom{
-      grid-column:3;
-      grid-row:3;
-    }
-
-    .g-left-top{
-      grid-column:2;
-      grid-row:2;
-    }
-
-    .g-left-bottom{
-      grid-column:1;
-      grid-row:2;
-    }
-
-    .g-right-top{
-      grid-column:4;
-      grid-row:2;
-    }
-
-    .g-right-bottom{
-      grid-column:5;
-      grid-row:2;
-    }
+    .g-top{ grid-column:2; grid-row:1; }
+    .g-bottom{ grid-column:2; grid-row:5; }
+    .g-left-top{ grid-column:1; grid-row:2; }
+    .g-left-bottom{ grid-column:1; grid-row:4; }
+    .g-right-top{ grid-column:3; grid-row:2; }
+    .g-right-bottom{ grid-column:3; grid-row:4; }
 
     .form-box input,
     .form-box textarea{
@@ -449,7 +406,6 @@
 
     function createSeatButton(id){
       const isTaken = occupiedSeats.includes(id);
-
       const btn = document.createElement("button");
       btn.className = "seat " + (isTaken ? "taken" : "free");
       btn.textContent = id;
@@ -554,23 +510,12 @@
       const tableWrap = document.createElement("div");
       tableWrap.className = "garden-table-wrap";
 
-      const g1 = createSeatButton("G1");
-      g1.classList.add("g-top");
-
-      const g2 = createSeatButton("G2");
-      g2.classList.add("g-bottom");
-
-      const g3 = createSeatButton("G3");
-      g3.classList.add("g-left-top");
-
-      const g4 = createSeatButton("G4");
-      g4.classList.add("g-left-bottom");
-
-      const g5 = createSeatButton("G5");
-      g5.classList.add("g-right-top");
-
-      const g6 = createSeatButton("G6");
-      g6.classList.add("g-right-bottom");
+      const g1 = createSeatButton("G1"); g1.classList.add("g-top");
+      const g2 = createSeatButton("G2"); g2.classList.add("g-bottom");
+      const g3 = createSeatButton("G3"); g3.classList.add("g-left-top");
+      const g4 = createSeatButton("G4"); g4.classList.add("g-left-bottom");
+      const g5 = createSeatButton("G5"); g5.classList.add("g-right-top");
+      const g6 = createSeatButton("G6"); g6.classList.add("g-right-bottom");
 
       const table = document.createElement("div");
       table.className = "garden-table";
@@ -629,23 +574,17 @@
 
       const rightSide = document.createElement("div");
       rightSide.className = "right-side";
-      rightSide.style.gridColumn = "3";
-      rightSide.style.gridRow = "2 / span 2";
       const rightCol = document.createElement("div");
       rightCol.className = "seat-col";
       ["D6","D7","S1"].forEach(id => rightCol.appendChild(createSeatButton(id)));
       rightSide.appendChild(rightCol);
 
       const bottomDivans = document.createElement("div");
-bottomDivans.className = "bottom-divans";
-bottomDivans.style.gridColumn = "2";
-bottomDivans.style.gridRow = "4";
-
-const bottomRow = document.createElement("div");
-bottomRow.className = "seat-row";
-["D8","S2"].forEach(id => bottomRow.appendChild(createSeatButton(id)));
-
-bottomDivans.appendChild(bottomRow);
+      bottomDivans.className = "bottom-divans";
+      const bottomRow = document.createElement("div");
+      bottomRow.className = "seat-row";
+      ["D8","S2"].forEach(id => bottomRow.appendChild(createSeatButton(id)));
+      bottomDivans.appendChild(bottomRow);
 
       internal.appendChild(topDivans);
       internal.appendChild(tableWrap);
@@ -941,4 +880,3 @@ bottomDivans.appendChild(bottomRow);
   </script>
 </body>
 </html>
-
