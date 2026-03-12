@@ -106,6 +106,12 @@
       box-shadow:var(--shadow);
     }
 
+    .mini-note{
+      font-size:13px;
+      opacity:.8;
+      margin-top:8px;
+    }
+
     @media (max-width: 900px){
       .admin-grid{
         grid-template-columns:1fr;
@@ -169,37 +175,55 @@
 
             <div class="sala-box">
               <h4>Sala interna</h4>
+
               <div class="sala-row">
                 <input type="checkbox" id="internaAttiva">
                 <label for="internaAttiva">Attiva</label>
               </div>
+
               <div class="sala-row">
                 <label for="internaPosti">Posti tavolo</label>
                 <input id="internaPosti" type="number" min="4" step="2">
               </div>
+
+              <p class="mini-note">I posti divani/sedie interni sono fissi e vengono gestiti a parte.</p>
             </div>
 
             <div class="sala-box">
               <h4>Sala esterna</h4>
+
               <div class="sala-row">
                 <input type="checkbox" id="esternaAttiva">
                 <label for="esternaAttiva">Attiva</label>
               </div>
+
               <div class="sala-row">
                 <label for="esternaPosti">Posti tavolo</label>
                 <input id="esternaPosti" type="number" min="4" step="2">
+              </div>
+
+              <div class="sala-row">
+                <label for="esternaExtra">Posti muretto</label>
+                <input id="esternaExtra" type="number" min="0" step="1" value="10">
               </div>
             </div>
 
             <div class="sala-box">
               <h4>Sala giardino</h4>
+
               <div class="sala-row">
                 <input type="checkbox" id="giardinoAttiva">
                 <label for="giardinoAttiva">Attiva</label>
               </div>
+
               <div class="sala-row">
                 <label for="giardinoPosti">Posti tavolo</label>
                 <input id="giardinoPosti" type="number" min="6" step="2" value="6">
+              </div>
+
+              <div class="sala-row">
+                <label for="giardinoExtra">Posti poltrone</label>
+                <input id="giardinoExtra" type="number" min="0" step="1" value="10">
               </div>
             </div>
 
@@ -243,9 +267,11 @@
 
       document.getElementById("esternaAttiva").checked = false;
       document.getElementById("esternaPosti").value = "";
+      document.getElementById("esternaExtra").value = "10";
 
       document.getElementById("giardinoAttiva").checked = false;
       document.getElementById("giardinoPosti").value = "6";
+      document.getElementById("giardinoExtra").value = "10";
 
       msg.textContent = "";
     }
@@ -286,15 +312,30 @@
         if (s.sala_codice === "esterna") {
           document.getElementById("esternaAttiva").checked = !!s.attiva;
           document.getElementById("esternaPosti").value = s.posti_totali || "";
+          document.getElementById("esternaExtra").value = s.posti_extra ?? 10;
         }
 
         if (s.sala_codice === "giardino") {
           document.getElementById("giardinoAttiva").checked = !!s.attiva;
           document.getElementById("giardinoPosti").value = s.posti_totali || 6;
+          document.getElementById("giardinoExtra").value = s.posti_extra ?? 10;
         }
       });
 
       window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function formatSaleRow(s) {
+      if (s.sala_codice === "interna") {
+        return `interna tavolo (${s.posti_totali})`;
+      }
+      if (s.sala_codice === "esterna") {
+        return `esterna tavolo (${s.posti_totali}) / muretto (${s.posti_extra ?? 0})`;
+      }
+      if (s.sala_codice === "giardino") {
+        return `giardino tavolo (${s.posti_totali}) / poltrone (${s.posti_extra ?? 0})`;
+      }
+      return s.sala_codice;
     }
 
     async function caricaSerate(){
@@ -322,8 +363,8 @@
 
         const saleText = sale
           .filter(s => s.attiva)
-          .map(s => `${s.sala_codice} (${s.posti_totali})`)
-          .join(", ") || "-";
+          .map(formatSaleRow)
+          .join("<br>") || "-";
 
         const div = document.createElement("div");
         div.className = "admin-item";
@@ -331,7 +372,7 @@
         div.innerHTML = `
           <h4>${ev.titolo || ""}</h4>
           <p><strong>Data:</strong> ${ev.data || ""}</p>
-          <p><strong>Sale:</strong> ${saleText}</p>
+          <p><strong>Sale:</strong><br>${saleText}</p>
           ${ev.locandina ? `<img class="thumb" src="${ev.locandina}" alt="${ev.titolo}">` : ""}
 
           <div class="admin-actions">
@@ -387,7 +428,9 @@
 
       const internaPosti = parseInt(document.getElementById("internaPosti").value || "0", 10);
       const esternaPosti = parseInt(document.getElementById("esternaPosti").value || "0", 10);
+      const esternaExtra = parseInt(document.getElementById("esternaExtra").value || "0", 10);
       const giardinoPosti = parseInt(document.getElementById("giardinoPosti").value || "6", 10);
+      const giardinoExtra = parseInt(document.getElementById("giardinoExtra").value || "0", 10);
 
       if (!titolo || !data) {
         msg.textContent = "Inserisci almeno titolo e data.";
@@ -409,8 +452,18 @@
         return;
       }
 
-      if (giardinoAttiva && giardinoPosti !== 6) {
-        msg.textContent = "Il tavolo giardino è fisso a 6 posti.";
+      if (esternaAttiva && esternaExtra < 0) {
+        msg.textContent = "I posti muretto non possono essere negativi.";
+        return;
+      }
+
+      if (giardinoAttiva && (giardinoPosti < 6 || giardinoPosti % 2 !== 0)) {
+        msg.textContent = "I posti tavolo del giardino devono essere pari e almeno 6.";
+        return;
+      }
+
+      if (giardinoAttiva && giardinoExtra < 0) {
+        msg.textContent = "I posti poltrone non possono essere negativi.";
         return;
       }
 
@@ -464,7 +517,8 @@
           serata_id: savedId,
           sala_codice: "interna",
           attiva: true,
-          posti_totali: internaPosti
+          posti_totali: internaPosti,
+          posti_extra: 0
         });
       }
 
@@ -473,7 +527,8 @@
           serata_id: savedId,
           sala_codice: "esterna",
           attiva: true,
-          posti_totali: esternaPosti
+          posti_totali: esternaPosti,
+          posti_extra: esternaExtra
         });
       }
 
@@ -482,7 +537,8 @@
           serata_id: savedId,
           sala_codice: "giardino",
           attiva: true,
-          posti_totali: 6
+          posti_totali: giardinoPosti,
+          posti_extra: giardinoExtra
         });
       }
 
