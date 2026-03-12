@@ -473,7 +473,10 @@
 
     viewport.addEventListener("pointerup", stopDrag);
     viewport.addEventListener("pointercancel", stopDrag);
-
+    viewport.addEventListener("click", (e) => {
+  const seatBtn = e.target.closest(".seat");
+  if (!seatBtn) return;
+});
     viewport.addEventListener("touchstart", (e) => {
       if (e.touches.length === 2) {
         const dx = e.touches[0].clientX - e.touches[1].clientX;
@@ -1034,4 +1037,5 @@
   </script>
 </body>
 </html>
+
 
