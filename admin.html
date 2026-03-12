@@ -3,30 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Admin – Tavernetta da Kevin</title>
-  <meta name="description" content="Pannello admin per gestire le serate della Tavernetta da Kevin.">
 
   <link rel="icon" type="image/png" href="img/logo.png">
   <link rel="stylesheet" href="css/style.css">
-  <link rel="canonical" href="https://tavernettadakevin.it/admin.html">
-
-  <meta property="og:title" content="Admin – Tavernetta da Kevin">
-  <meta property="og:description" content="Pannello admin per gestire le serate della Tavernetta da Kevin.">
-  <meta property="og:image" content="https://tavernettadakevin.it/img/whatsapp-preview.png">
-  <meta property="og:url" content="https://tavernettadakevin.it/admin.html">
-  <meta property="og:type" content="website">
 
   <style>
     .admin-grid{
       display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:20px;
+      grid-template-columns:1fr 1fr;
+      gap:25px;
     }
 
     .admin-form label{
       display:block;
-      margin:12px 0 6px;
+      margin-top:12px;
       font-weight:bold;
       color:var(--brown);
     }
@@ -34,46 +25,71 @@
     .admin-form input,
     .admin-form textarea{
       width:100%;
-      padding:12px;
-      border:1px solid rgba(107,62,38,.18);
+      padding:10px;
       border-radius:10px;
-      font-size:15px;
-      background:#fffaf2;
+      border:1px solid #ddd;
+      margin-top:6px;
+      font-family:inherit;
+      background:#fff;
     }
 
     .admin-form textarea{
-      min-height:110px;
+      min-height:100px;
       resize:vertical;
+    }
+
+    .sala-box{
+      border:1px solid #ddd;
+      border-radius:12px;
+      padding:12px;
+      margin-top:10px;
+      background:#fffaf2;
+    }
+
+    .sala-box h4{
+      margin:0 0 6px 0;
+      color:var(--brown);
+    }
+
+    .sala-row{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-top:6px;
+      flex-wrap:wrap;
+    }
+
+    .sala-row input[type="checkbox"]{
+      width:auto;
+      margin:0;
+    }
+
+    .sala-row input[type="number"]{
+      max-width:140px;
     }
 
     .admin-list{
       display:grid;
-      gap:14px;
+      gap:12px;
     }
 
     .admin-item{
-      background:var(--card);
-      border-radius:14px;
-      box-shadow:var(--shadow);
-      padding:14px;
+      background:#fff;
+      border-radius:12px;
+      padding:12px;
+      box-shadow:0 2px 6px rgba(0,0,0,.1);
     }
 
-    .admin-item h3{
-      margin:0 0 8px;
+    .admin-item h4{
+      margin:0 0 6px 0;
       color:var(--brown);
     }
 
     .admin-actions{
+      margin-top:8px;
       display:flex;
-      gap:10px;
+      gap:8px;
       flex-wrap:wrap;
-      margin-top:12px;
-    }
-
-    .small-note{
-      font-size:14px;
-      opacity:.8;
-      margin-top:10px;
     }
 
     .danger{
@@ -82,15 +98,11 @@
       border:none !important;
     }
 
-    .preview-box{
-      margin-top:12px;
-    }
-
-    .preview-box img{
+    .thumb{
       width:100%;
-      max-width:260px;
-      border-radius:12px;
-      display:none;
+      max-width:220px;
+      border-radius:10px;
+      margin-top:8px;
       box-shadow:var(--shadow);
     }
 
@@ -102,6 +114,7 @@
   </style>
 </head>
 <body>
+
   <div class="top-bar">
     <img src="img/logo.png" alt="Tavernetta da Kevin" class="logo-top">
     <button id="hamburger" class="hamburger" aria-label="Apri menu">☰</button>
@@ -129,53 +142,79 @@
         <div class="card">
           <h3 class="event-title">Aggiungi / modifica serata</h3>
 
-          <form id="adminEventForm" class="admin-form">
-            <input type="hidden" id="eventId">
-            <input type="hidden" id="locandinaCurrent">
+          <form id="formSerata" class="admin-form">
+            <input type="hidden" id="serataId">
 
             <label for="titolo">Titolo</label>
-            <input id="titolo" type="text" placeholder="Es. Fave e Salato">
+            <input id="titolo" required>
 
             <label for="data">Data</label>
-            <input id="data" type="date">
+            <input id="data" type="date" required>
 
             <label for="menu">Menù</label>
-            <textarea id="menu" placeholder="Scrivi il menù della serata"></textarea>
+            <textarea id="menu"></textarea>
 
             <label for="programma">Programma</label>
-            <textarea id="programma" placeholder="Scrivi il programma della serata"></textarea>
+            <textarea id="programma"></textarea>
 
-            <label for="locandinaFile">Locandina</label>
-            <input id="locandinaFile" type="file" accept="image/*">
+            <label for="locandina">Locandina URL</label>
+            <input id="locandina">
 
-            <div class="preview-box">
-              <img id="locandinaPreview" alt="Anteprima locandina">
+            <label for="linkApple">Link Apple</label>
+            <input id="linkApple">
+
+            <hr style="margin:16px 0;">
+
+            <h3 class="event-title">Sale attive</h3>
+
+            <div class="sala-box">
+              <h4>Sala interna</h4>
+              <div class="sala-row">
+                <input type="checkbox" id="internaAttiva">
+                <label for="internaAttiva">Attiva</label>
+              </div>
+              <div class="sala-row">
+                <label for="internaPosti">Posti tavolo</label>
+                <input id="internaPosti" type="number" min="4" step="2">
+              </div>
             </div>
 
-            <label for="linkApple">Link Invito Apple</label>
-            <input id="linkApple" type="text" placeholder="https://...">
+            <div class="sala-box">
+              <h4>Sala esterna</h4>
+              <div class="sala-row">
+                <input type="checkbox" id="esternaAttiva">
+                <label for="esternaAttiva">Attiva</label>
+              </div>
+              <div class="sala-row">
+                <label for="esternaPosti">Posti tavolo</label>
+                <input id="esternaPosti" type="number" min="4" step="2">
+              </div>
+            </div>
 
-            <label for="postiTotali">Posti totali</label>
-            <input id="postiTotali" type="number" min="4" step="2" placeholder="Es. 14">
+            <div class="sala-box">
+              <h4>Sala giardino</h4>
+              <div class="sala-row">
+                <input type="checkbox" id="giardinoAttiva">
+                <label for="giardinoAttiva">Attiva</label>
+              </div>
+              <div class="sala-row">
+                <label for="giardinoPosti">Posti tavolo</label>
+                <input id="giardinoPosti" type="number" min="6" step="2" value="6">
+              </div>
+            </div>
 
-            <div class="button-row">
+            <div class="button-row" style="margin-top:14px;">
               <button type="submit" class="button">Salva serata</button>
-              <button type="button" id="resetFormBtn" class="button secondary">Nuova serata</button>
+              <button type="button" id="resetBtn" class="button secondary">Nuova serata</button>
             </div>
 
-            <p class="small-note">
-              I posti devono essere pari: 14, 16, 18, 20...
-            </p>
-
-            <p id="adminMsg" class="note"></p>
+            <p id="msg" class="note"></p>
           </form>
         </div>
 
-        <div>
-          <div class="card">
-            <h3 class="event-title">Serate salvate</h3>
-            <div id="adminEventsList" class="admin-list"></div>
-          </div>
+        <div class="card">
+          <h3 class="event-title">Serate salvate</h3>
+          <div id="listaSerate" class="admin-list"></div>
         </div>
       </div>
     </section>
@@ -187,90 +226,113 @@
   <script src="js/site.js"></script>
 
   <script>
-    const form = document.getElementById("adminEventForm");
-    const adminMsg = document.getElementById("adminMsg");
-    const listBox = document.getElementById("adminEventsList");
-    const resetBtn = document.getElementById("resetFormBtn");
-    const fileInput = document.getElementById("locandinaFile");
-    const previewImg = document.getElementById("locandinaPreview");
+    const form = document.getElementById("formSerata");
+    const msg = document.getElementById("msg");
 
-    function showPreview(src) {
-      if (!src) {
-        previewImg.style.display = "none";
-        previewImg.src = "";
-        return;
-      }
-      previewImg.src = src;
-      previewImg.style.display = "block";
-    }
-
-    fileInput.addEventListener("change", () => {
-      const file = fileInput.files[0];
-      if (!file) {
-        const current = document.getElementById("locandinaCurrent").value.trim();
-        showPreview(current);
-        return;
-      }
-
-      const objectUrl = URL.createObjectURL(file);
-      showPreview(objectUrl);
-    });
-
-    function clearForm() {
-      document.getElementById("eventId").value = "";
+    function clearForm(){
+      document.getElementById("serataId").value = "";
       document.getElementById("titolo").value = "";
       document.getElementById("data").value = "";
       document.getElementById("menu").value = "";
       document.getElementById("programma").value = "";
-      document.getElementById("locandinaFile").value = "";
-      document.getElementById("locandinaCurrent").value = "";
+      document.getElementById("locandina").value = "";
       document.getElementById("linkApple").value = "";
-      document.getElementById("postiTotali").value = "";
-      adminMsg.textContent = "";
-      showPreview("");
+
+      document.getElementById("internaAttiva").checked = false;
+      document.getElementById("internaPosti").value = "";
+
+      document.getElementById("esternaAttiva").checked = false;
+      document.getElementById("esternaPosti").value = "";
+
+      document.getElementById("giardinoAttiva").checked = false;
+      document.getElementById("giardinoPosti").value = "6";
+
+      msg.textContent = "";
     }
 
-    function fillForm(ev) {
-      document.getElementById("eventId").value = ev.id || "";
+    async function loadSerataSale(serataId){
+      const { data, error } = await supabaseClient
+        .from("serata_sale")
+        .select("*")
+        .eq("serata_id", serataId);
+
+      if (error) {
+        console.error(error);
+        return [];
+      }
+
+      return data || [];
+    }
+
+    async function fillForm(ev){
+      clearForm();
+
+      document.getElementById("serataId").value = ev.id || "";
       document.getElementById("titolo").value = ev.titolo || "";
       document.getElementById("data").value = (ev.data || "").slice(0, 10);
       document.getElementById("menu").value = ev.menu || "";
       document.getElementById("programma").value = ev.programma || "";
-      document.getElementById("locandinaCurrent").value = ev.locandina || "";
+      document.getElementById("locandina").value = ev.locandina || "";
       document.getElementById("linkApple").value = ev.link_apple || "";
-      document.getElementById("postiTotali").value = ev.posti_totali || "";
-      document.getElementById("locandinaFile").value = "";
-      showPreview(ev.locandina || "");
+
+      const sale = await loadSerataSale(ev.id);
+
+      sale.forEach(s => {
+        if (s.sala_codice === "interna") {
+          document.getElementById("internaAttiva").checked = !!s.attiva;
+          document.getElementById("internaPosti").value = s.posti_totali || "";
+        }
+
+        if (s.sala_codice === "esterna") {
+          document.getElementById("esternaAttiva").checked = !!s.attiva;
+          document.getElementById("esternaPosti").value = s.posti_totali || "";
+        }
+
+        if (s.sala_codice === "giardino") {
+          document.getElementById("giardinoAttiva").checked = !!s.attiva;
+          document.getElementById("giardinoPosti").value = s.posti_totali || 6;
+        }
+      });
+
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
-    async function loadAdminEvents() {
+    async function caricaSerate(){
       const { data, error } = await supabaseClient
         .from("serate")
         .select("*")
         .order("data", { ascending: false });
 
+      const box = document.getElementById("listaSerate");
+      box.innerHTML = "";
+
       if (error) {
-        listBox.innerHTML = `<div class="note">Errore nel caricamento serate.</div>`;
+        console.error(error);
+        box.innerHTML = `<div class="note">Errore caricamento serate.</div>`;
         return;
       }
 
       if (!data || !data.length) {
-        listBox.innerHTML = `<div class="note">Nessuna serata presente.</div>`;
+        box.innerHTML = `<div class="note">Nessuna serata presente.</div>`;
         return;
       }
 
-      listBox.innerHTML = "";
+      for (const ev of data) {
+        const sale = await loadSerataSale(ev.id);
 
-      data.forEach(ev => {
-        const item = document.createElement("div");
-        item.className = "admin-item";
+        const saleText = sale
+          .filter(s => s.attiva)
+          .map(s => `${s.sala_codice} (${s.posti_totali})`)
+          .join(", ") || "-";
 
-        item.innerHTML = `
-          <h3>${ev.titolo || "Senza titolo"}</h3>
-          <p><strong>Data:</strong> ${ev.data}</p>
-          <p><strong>Posti:</strong> ${ev.posti_totali}</p>
-          ${ev.locandina ? `<img src="${ev.locandina}" alt="${ev.titolo}" style="width:100%;max-width:220px;border-radius:10px;margin-top:8px;">` : ""}
+        const div = document.createElement("div");
+        div.className = "admin-item";
+
+        div.innerHTML = `
+          <h4>${ev.titolo || ""}</h4>
+          <p><strong>Data:</strong> ${ev.data || ""}</p>
+          <p><strong>Sale:</strong> ${saleText}</p>
+          ${ev.locandina ? `<img class="thumb" src="${ev.locandina}" alt="${ev.titolo}">` : ""}
 
           <div class="admin-actions">
             <button class="button secondary edit-btn" type="button">Modifica</button>
@@ -279,13 +341,13 @@
           </div>
         `;
 
-        item.querySelector(".edit-btn").addEventListener("click", () => {
-          fillForm(ev);
+        div.querySelector(".edit-btn").addEventListener("click", async () => {
+          await fillForm(ev);
         });
 
-        item.querySelector(".delete-btn").addEventListener("click", async () => {
-          const conferma = confirm(`Vuoi eliminare la serata "${ev.titolo}"?`);
-          if (!conferma) return;
+        div.querySelector(".delete-btn").addEventListener("click", async () => {
+          const ok = confirm(`Eliminare la serata "${ev.titolo}"?`);
+          if (!ok) return;
 
           const { error: delError } = await supabaseClient
             .from("serate")
@@ -293,75 +355,62 @@
             .eq("id", ev.id);
 
           if (delError) {
-            adminMsg.textContent = "Errore nell'eliminazione della serata.";
+            console.error(delError);
+            msg.textContent = "Errore eliminazione serata.";
             return;
           }
 
-          adminMsg.textContent = "Serata eliminata correttamente.";
+          msg.textContent = "Serata eliminata.";
           clearForm();
-          loadAdminEvents();
+          await caricaSerate();
         });
 
-        listBox.appendChild(item);
-      });
+        box.appendChild(div);
+      }
     }
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      adminMsg.textContent = "";
+      msg.textContent = "";
 
-      const id = document.getElementById("eventId").value.trim();
+      const serataId = document.getElementById("serataId").value.trim();
       const titolo = document.getElementById("titolo").value.trim();
       const data = document.getElementById("data").value.trim();
       const menu = document.getElementById("menu").value.trim();
       const programma = document.getElementById("programma").value.trim();
+      const locandina = document.getElementById("locandina").value.trim();
       const linkApple = document.getElementById("linkApple").value.trim();
-      const postiTotali = parseInt(document.getElementById("postiTotali").value, 10);
 
-      const currentLocandina = document.getElementById("locandinaCurrent").value.trim();
-      const selectedFile = fileInput.files[0];
+      const internaAttiva = document.getElementById("internaAttiva").checked;
+      const esternaAttiva = document.getElementById("esternaAttiva").checked;
+      const giardinoAttiva = document.getElementById("giardinoAttiva").checked;
 
-      let locandinaUrl = currentLocandina;
+      const internaPosti = parseInt(document.getElementById("internaPosti").value || "0", 10);
+      const esternaPosti = parseInt(document.getElementById("esternaPosti").value || "0", 10);
+      const giardinoPosti = parseInt(document.getElementById("giardinoPosti").value || "6", 10);
 
-      if (!titolo || !data || !menu || !programma || !postiTotali) {
-        adminMsg.textContent = "Compila tutti i campi obbligatori.";
+      if (!titolo || !data) {
+        msg.textContent = "Inserisci almeno titolo e data.";
         return;
       }
 
-      if (postiTotali < 4 || postiTotali % 2 !== 0) {
-        adminMsg.textContent = "I posti totali devono essere pari e almeno 4.";
+      if (!internaAttiva && !esternaAttiva && !giardinoAttiva) {
+        msg.textContent = "Attiva almeno una sala.";
         return;
       }
 
-      if (selectedFile) {
-        const safeName = selectedFile.name.replace(/\s+/g, "-");
-        const filePath = `serate/${Date.now()}-${safeName}`;
-
-        const { error: uploadError } = await supabaseClient
-          .storage
-          .from("locandine")
-          .upload(filePath, selectedFile, {
-            cacheControl: "3600",
-            upsert: false,
-            contentType: selectedFile.type
-          });
-
-        if (uploadError) {
-          console.error(uploadError);
-          adminMsg.textContent = "Errore nel caricamento della locandina.";
-          return;
-        }
-
-        const { data: publicData } = supabaseClient
-          .storage
-          .from("locandine")
-          .getPublicUrl(filePath);
-
-        locandinaUrl = publicData.publicUrl;
+      if (internaAttiva && (internaPosti < 4 || internaPosti % 2 !== 0)) {
+        msg.textContent = "I posti tavolo della sala interna devono essere pari e almeno 4.";
+        return;
       }
 
-      if (!locandinaUrl) {
-        adminMsg.textContent = "Carica una locandina.";
+      if (esternaAttiva && (esternaPosti < 4 || esternaPosti % 2 !== 0)) {
+        msg.textContent = "I posti tavolo della sala esterna devono essere pari e almeno 4.";
+        return;
+      }
+
+      if (giardinoAttiva && giardinoPosti !== 6) {
+        msg.textContent = "Il tavolo giardino è fisso a 6 posti.";
         return;
       }
 
@@ -370,47 +419,93 @@
         data,
         menu,
         programma,
-        locandina: locandinaUrl,
-        link_apple: linkApple,
-        posti_totali: postiTotali
+        locandina,
+        link_apple: linkApple
       };
 
-      if (id) {
+      let savedId = serataId;
+
+      if (serataId) {
         const { error } = await supabaseClient
           .from("serate")
           .update(payload)
-          .eq("id", id);
+          .eq("id", serataId);
 
         if (error) {
           console.error(error);
-          adminMsg.textContent = "Errore nella modifica della serata.";
+          msg.textContent = "Errore modifica serata.";
           return;
         }
-
-        adminMsg.textContent = "Serata modificata correttamente.";
       } else {
-        const { error } = await supabaseClient
+        const { data: inserted, error } = await supabaseClient
           .from("serate")
-          .insert([payload]);
+          .insert([payload])
+          .select()
+          .single();
 
-        if (error) {
+        if (error || !inserted) {
           console.error(error);
-          adminMsg.textContent = "Errore nel salvataggio della serata.";
+          msg.textContent = "Errore salvataggio serata.";
           return;
         }
 
-        adminMsg.textContent = "Serata aggiunta correttamente.";
+        savedId = inserted.id;
       }
 
+      await supabaseClient
+        .from("serata_sale")
+        .delete()
+        .eq("serata_id", savedId);
+
+      const saleRows = [];
+
+      if (internaAttiva) {
+        saleRows.push({
+          serata_id: savedId,
+          sala_codice: "interna",
+          attiva: true,
+          posti_totali: internaPosti
+        });
+      }
+
+      if (esternaAttiva) {
+        saleRows.push({
+          serata_id: savedId,
+          sala_codice: "esterna",
+          attiva: true,
+          posti_totali: esternaPosti
+        });
+      }
+
+      if (giardinoAttiva) {
+        saleRows.push({
+          serata_id: savedId,
+          sala_codice: "giardino",
+          attiva: true,
+          posti_totali: 6
+        });
+      }
+
+      const { error: saleError } = await supabaseClient
+        .from("serata_sale")
+        .insert(saleRows);
+
+      if (saleError) {
+        console.error(saleError);
+        msg.textContent = "Serata salvata, ma errore nel salvataggio sale.";
+        return;
+      }
+
+      msg.textContent = serataId ? "Serata modificata." : "Serata salvata.";
       clearForm();
-      loadAdminEvents();
+      await caricaSerate();
     });
 
-    resetBtn.addEventListener("click", clearForm);
+    document.getElementById("resetBtn").addEventListener("click", clearForm);
 
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", async () => {
       setupMenu();
-      loadAdminEvents();
+      await caricaSerate();
     });
   </script>
 </body>
