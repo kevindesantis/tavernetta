@@ -4,353 +4,89 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tavernetta Manager</title>
-  <meta name="description" content="Dashboard privata di gestione della Tavernetta da Kevin.">
-
-  <link rel="icon" type="image/png" href="../img/logoapp.png">
-  <link rel="apple-touch-icon" href="../img/logoapp.png">
+  <link rel="icon" type="image/png" href="../img/logo.png">
   <link rel="stylesheet" href="../css/style.css">
-
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="Tavernetta Manager">
-  <meta name="theme-color" content="#6b3e26">
-
   <style>
-    .manager-page{
-      width:min(1100px, calc(100% - 20px));
-      margin:20px auto 40px;
-    }
-
-    .manager-header{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:18px;
-    }
-
-    .manager-brand{
-      display:flex;
-      align-items:center;
-      gap:12px;
-    }
-
-    .manager-brand img{
-      height:54px;
-      width:auto;
-      object-fit:contain;
-    }
-
-    .manager-title{
-      margin:0;
-      color:var(--brown);
-      font-size:28px;
-    }
-
-    .manager-subtitle{
-      margin:4px 0 0;
-      font-size:14px;
-      opacity:.8;
-    }
-
     .manager-grid{
       display:grid;
-      grid-template-columns:repeat(12, 1fr);
-      gap:16px;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:18px;
+      margin-top:24px;
     }
-
     .manager-card{
       background:var(--card);
       border-radius:16px;
       box-shadow:var(--shadow);
-      padding:18px;
+      padding:20px;
+      text-align:center;
     }
-
-    .span-12{ grid-column:span 12; }
-    .span-8{ grid-column:span 8; }
-    .span-6{ grid-column:span 6; }
-    .span-4{ grid-column:span 4; }
-
     .manager-card h3{
       margin:0 0 10px;
       color:var(--brown);
-      font-size:20px;
     }
-
-    .quick-stats{
-      display:grid;
-      grid-template-columns:repeat(3, 1fr);
-      gap:12px;
-    }
-
-    .stat-box{
-      background:#fff7eb;
-      border-radius:12px;
-      padding:14px;
-      text-align:center;
-      border:1px solid rgba(107,62,38,.12);
-    }
-
-    .stat-label{
-      font-size:13px;
-      opacity:.8;
-      margin-bottom:8px;
-    }
-
-    .stat-value{
-      font-size:24px;
-      font-weight:bold;
-      color:var(--brown);
-    }
-
-    .manager-actions{
-      display:grid;
-      grid-template-columns:repeat(2, 1fr);
-      gap:12px;
-    }
-
-    .manager-actions a{
-      text-align:center;
-    }
-
-    .mini-list{
-      display:grid;
-      gap:10px;
-    }
-
-    .mini-item{
-      background:#fff7eb;
-      border-radius:12px;
-      padding:12px;
-      border:1px solid rgba(107,62,38,.12);
-    }
-
-    .mini-item strong{
-      color:var(--brown);
-    }
-
-    .event-preview{
-      display:grid;
-      grid-template-columns:220px 1fr;
-      gap:16px;
-      align-items:start;
-    }
-
-    .event-preview img{
-      width:100%;
-      border-radius:12px;
-      box-shadow:var(--shadow);
-    }
-
-    .manager-empty{
-      opacity:.8;
-      font-size:14px;
-    }
-
-    .manager-topbar{
-      background:var(--bg);
-      position:sticky;
-      top:0;
-      z-index:30;
-      padding:14px 0 10px;
-    }
-
-    .install-note{
-      font-size:13px;
-      opacity:.8;
-      margin-top:8px;
-    }
-
-    @media (max-width: 900px){
-      .span-8, .span-6, .span-4{
-        grid-column:span 12;
-      }
-
-      .event-preview{
-        grid-template-columns:1fr;
-      }
-
-      .quick-stats{
-        grid-template-columns:1fr;
-      }
-
-      .manager-actions{
-        grid-template-columns:1fr;
-      }
-
-      .manager-title{
-        font-size:24px;
-      }
-
-      .manager-brand img{
-        height:46px;
-      }
+    .manager-card p{
+      margin:0 0 16px;
     }
   </style>
 </head>
 <body>
-  <main class="manager-page">
-    <div class="manager-topbar">
-      <div class="manager-header">
-        <div class="manager-brand">
-          <img src="../img/logoapp.png" alt="Tavernetta Manager">
-          <div>
-            <h1 class="manager-title">Tavernetta Manager</h1>
-            <p class="manager-subtitle">Dashboard privata di gestione</p>
-          </div>
+  <div class="top-bar">
+    <img src="../img/logo.png" alt="Tavernetta da Kevin" class="logo-top">
+    <button id="hamburger" class="hamburger" aria-label="Apri menu">☰</button>
+  </div>
+
+  <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+
+  <aside id="sidebar" class="sidebar">
+    <img src="../img/logo.png" alt="Logo" class="side-logo">
+    <nav>
+      <a href="index.html">Dashboard</a>
+      <a href="serate.html">Serate</a>
+      <a href="inventario.html">Inventario</a>
+      <a href="../index.html">Sito pubblico</a>
+      <a href="#" id="logoutBtn">Esci</a>
+    </nav>
+  </aside>
+
+  <main class="page">
+    <section class="section">
+      <h2>Tavernetta Manager</h2>
+      <p class="note">Gestionale unico della Tavernetta.</p>
+
+      <div class="manager-grid">
+        <div class="manager-card">
+          <h3>Serate</h3>
+          <p>Crea, modifica e gestisci i posti delle serate.</p>
+          <a class="button" href="serate.html">Apri serate</a>
         </div>
 
-        <a class="button secondary" href="../index.html">Apri sito</a>
-      </div>
-    </div>
-
-    <section class="manager-grid">
-      <div class="manager-card span-12">
-        <h3>Azioni rapide</h3>
-        <div class="manager-actions">
-          <a class="button" href="../admin.html">Gestisci serate</a>
-          <a class="button" href="../prossima-serata.html">Condividi prossima serata</a>
-          <a class="button" href="inventario.html">Inventario</a>
-          <a class="button secondary" href="../serate.html">Apri elenco serate</a>
+        <div class="manager-card">
+          <h3>Inventario</h3>
+          <p>Controlla bevande, cucina e prodotti.</p>
+          <a class="button" href="inventario.html">Apri inventario</a>
         </div>
-        <p class="install-note">Da Safari su iPhone fai Condividi → Aggiungi a schermata Home.</p>
-      </div>
 
-      <div class="manager-card span-8">
-        <h3>Prossima serata</h3>
-        <div id="managerNextEvent" class="manager-empty">Caricamento...</div>
-      </div>
-
-      <div class="manager-card span-4">
-        <h3>Statistiche veloci</h3>
-        <div class="quick-stats">
-          <div class="stat-box">
-            <div class="stat-label">Posti totali</div>
-            <div id="statTotalSeats" class="stat-value">-</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-label">Prenotati</div>
-            <div id="statBookedSeats" class="stat-value">-</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-label">Disponibili</div>
-            <div id="statAvailableSeats" class="stat-value">-</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="manager-card span-6">
-        <h3>Ultima serata</h3>
-        <div id="managerLastEvent" class="manager-empty">Caricamento...</div>
-      </div>
-
-      <div class="manager-card span-6">
-        <h3>Promemoria rapidi</h3>
-        <div class="mini-list">
-          <div class="mini-item">
-            <strong>Condivisione WhatsApp</strong><br>
-            Usa sempre <code>prossima-serata.html</code> per la preview corretta.
-          </div>
-          <div class="mini-item">
-            <strong>Locandine</strong><br>
-            Caricale da <code>admin.html</code> direttamente dal telefono.
-          </div>
-          <div class="mini-item">
-            <strong>Inventario</strong><br>
-            Da qui gestirai bevande, cucina, materiale e altro.
-          </div>
+        <div class="manager-card">
+          <h3>Sito pubblico</h3>
+          <p>Apri il sito come lo vedono i clienti.</p>
+          <a class="button secondary" href="../index.html">Apri sito</a>
         </div>
       </div>
     </section>
   </main>
 
-  <script src="manager-guard.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="../js/supabase-client.js"></script>
   <script src="../js/site.js"></script>
-
+  <script src="../js/manager-guard.js"></script>
   <script>
-    async function loadManagerDashboard() {
-      const events = await loadEvents();
+    document.addEventListener("DOMContentLoaded", () => {
+      setupMenu();
 
-      const nextBox = document.getElementById("managerNextEvent");
-      const lastBox = document.getElementById("managerLastEvent");
-
-      const { nextEvent, lastEvent } = getNextAndLast(events);
-
-      if (nextEvent) {
-        const { total, booked, available } = await getSeatStats(nextEvent.id, nextEvent.posti_totali);
-
-        nextBox.innerHTML = `
-          <div class="event-preview">
-            <img src="${nextEvent.locandina}" alt="${nextEvent.titolo}">
-            <div>
-              <h3 class="event-title">${nextEvent.titolo}</h3>
-              <p class="meta">${formatDateIT(nextEvent.data)}</p>
-              <p><strong>Menù:</strong> ${nextEvent.menu}</p>
-              <p><strong>Programma:</strong> ${nextEvent.programma}</p>
-              <div class="button-row">
-                <a class="button" href="../evento.html?id=${nextEvent.id}">Apri evento</a>
-                <a class="button secondary" href="../admin-evento.html?id=${nextEvent.id}">Gestisci posti</a>
-              </div>
-            </div>
-          </div>
-        `;
-
-        document.getElementById("statTotalSeats").textContent = total;
-        document.getElementById("statBookedSeats").textContent = booked;
-        document.getElementById("statAvailableSeats").textContent = available;
-      } else {
-        nextBox.innerHTML = `<div class="manager-empty">Nessuna serata futura disponibile.</div>`;
-        document.getElementById("statTotalSeats").textContent = "0";
-        document.getElementById("statBookedSeats").textContent = "0";
-        document.getElementById("statAvailableSeats").textContent = "0";
-      }
-
-      if (lastEvent) {
-        lastBox.innerHTML = `
-          <div class="event-preview">
-            <img src="${lastEvent.locandina}" alt="${lastEvent.titolo}">
-            <div>
-              <h3 class="event-title">${lastEvent.titolo}</h3>
-              <p class="meta">${formatDateIT(lastEvent.data)}</p>
-              <p><strong>Menù:</strong> ${lastEvent.menu}</p>
-              <div class="button-row">
-                <a class="button secondary" href="../evento.html?id=${lastEvent.id}">Apri serata</a>
-              </div>
-            </div>
-          </div>
-        `;
-      } else {
-        lastBox.innerHTML = `<div class="manager-empty">Nessuna serata passata disponibile.</div>`;
-      }
-    }
-
-    async function getSeatStats(serataId, totalSeats) {
-      const { data, error } = await supabaseClient
-        .from("prenotazione_posti")
-        .select("posto_numero")
-        .eq("serata_id", serataId);
-
-      if (error) {
-        console.error(error);
-        return {
-          total: totalSeats || 0,
-          booked: 0,
-          available: totalSeats || 0
-        };
-      }
-
-      const booked = (data || []).length;
-      const total = totalSeats || 0;
-      const available = total - booked;
-
-      return { total, booked, available };
-    }
-
-    document.addEventListener("DOMContentLoaded", async () => {
-      await loadManagerDashboard();
+      document.getElementById("logoutBtn").addEventListener("click", (e) => {
+        e.preventDefault();
+        localStorage.removeItem("manager_auth_ok");
+        localStorage.removeItem("manager_auth_mode");
+        window.location.href = "login.html";
+      });
     });
   </script>
 </body>
