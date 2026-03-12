@@ -1,138 +1,265 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<title>Programmazione settimana</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Programmazione settimana – Tavernetta Manager</title>
 
-<link rel="stylesheet" href="../css/style.css">
+  <link rel="icon" type="image/png" href="../img/logo.png">
+  <link rel="stylesheet" href="../css/style.css">
 
-<style>
+  <style>
+    .week-wrap{
+      margin-top:20px;
+    }
 
-.week-table{
-width:100%;
-border-collapse:collapse;
-margin-top:20px;
-}
+    .week-table{
+      width:100%;
+      border-collapse:collapse;
+      background:var(--card);
+      border-radius:16px;
+      overflow:hidden;
+      box-shadow:var(--shadow);
+    }
 
-.week-table th,
-.week-table td{
-padding:12px;
-border-bottom:1px solid #eee;
-text-align:center;
-}
+    .week-table th,
+    .week-table td{
+      padding:14px 12px;
+      border-bottom:1px solid #eee;
+      text-align:center;
+    }
 
-.week-table th{
-background:#f5f5f5;
-}
+    .week-table th{
+      background:#f8f2e8;
+      color:var(--brown);
+    }
 
-select{
-padding:6px;
-}
+    .week-table tr:last-child td{
+      border-bottom:none;
+    }
 
-</style>
+    .week-table select{
+      padding:8px 10px;
+      border-radius:8px;
+      border:1px solid #ddd;
+      font-family:inherit;
+      width:100%;
+      max-width:260px;
+    }
+
+    .week-table input[type="checkbox"]{
+      transform:scale(1.2);
+    }
+
+    .actions{
+      margin-top:18px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .note-box{
+      margin-top:14px;
+    }
+
+    @media (max-width: 900px){
+      .week-table{
+        display:block;
+        overflow-x:auto;
+        white-space:nowrap;
+      }
+    }
+  </style>
 </head>
-
 <body>
+  <div class="top-bar">
+    <img src="../img/logo.png" alt="Tavernetta da Kevin" class="logo-top">
+    <button id="hamburger" class="hamburger" aria-label="Apri menu">☰</button>
+  </div>
 
-<h2>Programmazione settimana</h2>
+  <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
 
-<table class="week-table">
-<thead>
-<tr>
-<th>Giorno</th>
-<th>Data</th>
-<th>Attiva</th>
-<th>Tipo serata</th>
-</tr>
-</thead>
+  <aside id="sidebar" class="sidebar">
+    <img src="../img/logo.png" alt="Logo" class="side-logo">
+    <nav>
+      <a href="index.html">Dashboard</a>
+      <a href="serate.html">Serate</a>
+      <a href="settimana.html">Programmazione settimana</a>
+      <a href="inventario.html">Inventario</a>
+      <a href="../index.html">Sito pubblico</a>
+      <a href="#" id="logoutBtn">Esci</a>
+    </nav>
+  </aside>
 
-<tbody id="weekBody"></tbody>
-</table>
+  <main class="page">
+    <section class="section">
+      <h2>Programmazione settimana</h2>
+      <p class="note">
+        Qui attivi le serate standard dei prossimi 7 giorni.
+        Se per una data crei una serata personalizzata in “Serate”, quella personalizzata avrà la priorità.
+      </p>
 
-<button id="saveBtn">Salva</button>
+      <div class="week-wrap">
+        <table class="week-table">
+          <thead>
+            <tr>
+              <th>Giorno</th>
+              <th>Data</th>
+              <th>Attiva</th>
+              <th>Tipo serata standard</th>
+            </tr>
+          </thead>
+          <tbody id="weekBody"></tbody>
+        </table>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../js/supabase-client.js"></script>
+        <div class="actions">
+          <button id="saveBtn" class="button">Salva programmazione</button>
+          <button id="reloadBtn" class="button secondary" type="button">Ricarica</button>
+        </div>
 
-<script>
+        <p id="msg" class="note note-box"></p>
+      </div>
+    </section>
+  </main>
 
-function getNext7Days(){
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/manager-guard.js"></script>
+  <script src="../js/site.js"></script>
 
-const days=[]
+  <script>
+    const weekBody = document.getElementById("weekBody");
+    const msg = document.getElementById("msg");
 
-for(let i=0;i<7;i++){
+    function getNext7Days(){
+      const days = [];
+      const now = new Date();
 
-const d=new Date()
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(now);
+        d.setDate(now.getDate() + i);
+        days.push(d);
+      }
 
-d.setDate(d.getDate()+i)
+      return days;
+    }
 
-days.push(d)
+    function toDateStringLocal(dateObj){
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+      const day = String(dateObj.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
 
-}
+    function buildRows(days, savedMap = {}){
+      weekBody.innerHTML = "";
 
-return days
+      days.forEach(day => {
+        const dateStr = toDateStringLocal(day);
+        const saved = savedMap[dateStr] || { attiva: false, tipo_standard: "" };
 
-}
+        const tr = document.createElement("tr");
 
-const body=document.getElementById("weekBody")
+        tr.innerHTML = `
+          <td>${day.toLocaleDateString("it-IT", { weekday: "long" })}</td>
+          <td>${dateStr}</td>
+          <td>
+            <input type="checkbox" data-date="${dateStr}" ${saved.attiva ? "checked" : ""}>
+          </td>
+          <td>
+            <select data-type="${dateStr}">
+              <option value="">Nessuna</option>
+              <option value="standard_dopocena" ${saved.tipo_standard === "standard_dopocena" ? "selected" : ""}>
+                Serata Dopocena alla Tavernetta
+              </option>
+              <option value="fedelissimi_dopocena" ${saved.tipo_standard === "fedelissimi_dopocena" ? "selected" : ""}>
+                Dopocena per i Fedelissimi
+              </option>
+            </select>
+          </td>
+        `;
 
-const days=getNext7Days()
+        weekBody.appendChild(tr);
+      });
+    }
 
-days.forEach(day=>{
+    async function loadWeekProgrammazione(){
+      msg.textContent = "";
 
-const dateStr=day.toISOString().slice(0,10)
+      const days = getNext7Days();
+      const startDate = toDateStringLocal(days[0]);
+      const endDate = toDateStringLocal(days[days.length - 1]);
 
-const tr=document.createElement("tr")
+      const { data, error } = await supabaseClient
+        .from("programmazione_settimana")
+        .select("*")
+        .gte("data", startDate)
+        .lte("data", endDate)
+        .order("data", { ascending: true });
 
-tr.innerHTML=`
+      if (error) {
+        console.error(error);
+        msg.textContent = "Errore nel caricamento della programmazione.";
+        buildRows(days, {});
+        return;
+      }
 
-<td>${day.toLocaleDateString("it-IT",{weekday:"long"})}</td>
+      const savedMap = {};
+      (data || []).forEach(row => {
+        savedMap[row.data] = {
+          attiva: !!row.attiva,
+          tipo_standard: row.tipo_standard || ""
+        };
+      });
 
-<td>${dateStr}</td>
+      buildRows(days, savedMap);
+    }
 
-<td>
-<input type="checkbox" data-date="${dateStr}">
-</td>
+    async function saveWeekProgrammazione(){
+      msg.textContent = "";
 
-<td>
-<select data-type="${dateStr}">
-<option value="">Nessuna</option>
-<option value="standard_dopocena">Standard dopocena</option>
-<option value="fedelissimi_dopocena">Dopocena fedelissimi</option>
-</select>
-</td>
+      const days = getNext7Days();
 
-`
+      for (const day of days) {
+        const dateStr = toDateStringLocal(day);
+        const check = document.querySelector(`input[data-date="${dateStr}"]`);
+        const select = document.querySelector(`select[data-type="${dateStr}"]`);
 
-body.appendChild(tr)
+        const payload = {
+          data: dateStr,
+          attiva: !!check.checked,
+          tipo_standard: select.value || null
+        };
 
-})
+        const { error } = await supabaseClient
+          .from("programmazione_settimana")
+          .upsert(payload, { onConflict: "data" });
 
-document.getElementById("saveBtn").onclick=async()=>{
+        if (error) {
+          console.error(error);
+          msg.textContent = `Errore nel salvataggio del giorno ${dateStr}.`;
+          return;
+        }
+      }
 
-for(const day of days){
+      msg.textContent = "Programmazione salvata.";
+      await loadWeekProgrammazione();
+    }
 
-const dateStr=day.toISOString().slice(0,10)
+    document.addEventListener("DOMContentLoaded", async () => {
+      setupMenu();
+      await loadWeekProgrammazione();
 
-const check=document.querySelector(`input[data-date="${dateStr}"]`)
+      document.getElementById("saveBtn").addEventListener("click", saveWeekProgrammazione);
+      document.getElementById("reloadBtn").addEventListener("click", loadWeekProgrammazione);
 
-const select=document.querySelector(`select[data-type="${dateStr}"]`)
-
-await supabaseClient
-.from("programmazione_settimana")
-.upsert({
-data:dateStr,
-attiva:check.checked,
-tipo_standard:select.value
-})
-
-}
-
-alert("Programmazione salvata")
-
-}
-
-</script>
-
+      document.getElementById("logoutBtn").addEventListener("click", (e) => {
+        e.preventDefault();
+        localStorage.removeItem("manager_auth_ok");
+        localStorage.removeItem("manager_auth_mode");
+        window.location.href = "login.html";
+      });
+    });
+  </script>
 </body>
 </html>
