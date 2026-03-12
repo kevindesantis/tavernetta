@@ -6,25 +6,56 @@
   <title>Tavernetta Manager</title>
   <link rel="icon" type="image/png" href="../img/logo.png">
   <link rel="stylesheet" href="../css/style.css">
+
   <style>
-    .manager-grid{
+    .dashboard-grid{
       display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
       gap:18px;
       margin-top:24px;
     }
-    .manager-card{
+
+    .dash-card{
+      background:var(--card);
+      border-radius:16px;
+      box-shadow:var(--shadow);
+      padding:18px;
+    }
+
+    .dash-card h3{
+      margin:0 0 8px;
+      color:var(--brown);
+    }
+
+    .dash-value{
+      font-size:32px;
+      font-weight:700;
+      color:var(--brown);
+      line-height:1.1;
+      margin:8px 0;
+    }
+
+    .quick-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+      gap:18px;
+      margin-top:24px;
+    }
+
+    .quick-card{
       background:var(--card);
       border-radius:16px;
       box-shadow:var(--shadow);
       padding:20px;
       text-align:center;
     }
-    .manager-card h3{
+
+    .quick-card h3{
       margin:0 0 10px;
       color:var(--brown);
     }
-    .manager-card p{
+
+    .quick-card p{
       margin:0 0 16px;
     }
   </style>
@@ -53,20 +84,52 @@
       <h2>Tavernetta Manager</h2>
       <p class="note">Gestionale unico della Tavernetta.</p>
 
-      <div class="manager-grid">
-        <div class="manager-card">
+      <div class="dashboard-grid">
+        <div class="dash-card">
+          <h3>Visite sito</h3>
+          <div id="visiteTotali" class="dash-value">-</div>
+          <div class="note">Totali registrate</div>
+        </div>
+
+        <div class="dash-card">
+          <h3>Visite oggi</h3>
+          <div id="visiteOggi" class="dash-value">-</div>
+          <div class="note">Pagine pubbliche</div>
+        </div>
+
+        <div class="dash-card">
+          <h3>Prenotazioni prossima serata</h3>
+          <div id="prenotazioniProssima" class="dash-value">-</div>
+          <div id="titoloProssima" class="note">Nessuna serata</div>
+        </div>
+
+        <div class="dash-card">
+          <h3>Coperti cena</h3>
+          <div id="copertiCena" class="dash-value">-</div>
+          <div class="note">Prossima serata</div>
+        </div>
+
+        <div class="dash-card">
+          <h3>Coperti dopocena</h3>
+          <div id="copertiDopocena" class="dash-value">-</div>
+          <div class="note">Prossima serata</div>
+        </div>
+      </div>
+
+      <div class="quick-grid">
+        <div class="quick-card">
           <h3>Serate</h3>
           <p>Crea, modifica e gestisci i posti delle serate.</p>
           <a class="button" href="serate.html">Apri serate</a>
         </div>
 
-        <div class="manager-card">
+        <div class="quick-card">
           <h3>Inventario</h3>
-          <p>Controlla bevande, cucina e prodotti.</p>
+          <p>Controlla cucina, bevande e prodotti.</p>
           <a class="button" href="inventario.html">Apri inventario</a>
         </div>
 
-        <div class="manager-card">
+        <div class="quick-card">
           <h3>Sito pubblico</h3>
           <p>Apri il sito come lo vedono i clienti.</p>
           <a class="button secondary" href="../index.html">Apri sito</a>
@@ -75,11 +138,85 @@
     </section>
   </main>
 
-  <script src="../js/site.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-client.js"></script>
   <script src="../js/manager-guard.js"></script>
+  <script src="../js/site.js"></script>
+
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
+    function getSeatMeta(id) {
+      if (/^\d+$/.test(id)) return { tipo: "tavolo" };
+      if (/^D\d+$/.test(id) || /^S\d+$/.test(id)) return { tipo: "divano" };
+      if (/^E\d+$/.test(id)) return { tipo: "tavolo" };
+      if (/^M\d+$/.test(id)) return { tipo: "muretto" };
+      if (/^G\d+$/.test(id)) return { tipo: "tavolo" };
+      if (/^P\d+$/.test(id)) return { tipo: "poltrona" };
+      return { tipo: "" };
+    }
+
+    async function loadDashboard() {
+      const today = new Date().toISOString().slice(0, 10);
+
+      const { count: visitCount } = await supabaseClient
+        .from("site_visits")
+        .select("*", { count: "exact", head: true });
+
+      document.getElementById("visiteTotali").textContent = visitCount ?? 0;
+
+      const { count: visitTodayCount } = await supabaseClient
+        .from("site_visits")
+        .select("*", { count: "exact", head: true })
+        .gte("visited_at", `${today}T00:00:00`)
+        .lte("visited_at", `${today}T23:59:59`);
+
+      document.getElementById("visiteOggi").textContent = visitTodayCount ?? 0;
+
+      const { data: serate } = await supabaseClient
+        .from("serate")
+        .select("*")
+        .gte("data", today)
+        .order("data", { ascending: true })
+        .limit(1);
+
+      if (!serate || !serate.length) {
+        document.getElementById("prenotazioniProssima").textContent = "0";
+        document.getElementById("copertiCena").textContent = "0";
+        document.getElementById("copertiDopocena").textContent = "0";
+        document.getElementById("titoloProssima").textContent = "Nessuna prossima serata";
+        return;
+      }
+
+      const prossima = serate[0];
+      document.getElementById("titoloProssima").textContent = `${prossima.titolo} – ${prossima.data}`;
+
+      const { data: prenotazioni } = await supabaseClient
+        .from("prenotazioni")
+        .select("id")
+        .eq("serata_id", prossima.id);
+
+      document.getElementById("prenotazioniProssima").textContent = (prenotazioni || []).length;
+
+      const { data: posti } = await supabaseClient
+        .from("prenotazione_posti")
+        .select("posto_numero, posto_tipo")
+        .eq("serata_id", prossima.id);
+
+      let cena = 0;
+      let dopocena = 0;
+
+      (posti || []).forEach(p => {
+        const tipo = p.posto_tipo || getSeatMeta(String(p.posto_numero)).tipo;
+        if (tipo === "tavolo") cena++;
+        if (tipo === "divano" || tipo === "muretto" || tipo === "poltrona") dopocena++;
+      });
+
+      document.getElementById("copertiCena").textContent = cena;
+      document.getElementById("copertiDopocena").textContent = dopocena;
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
       setupMenu();
+      await loadDashboard();
 
       document.getElementById("logoutBtn").addEventListener("click", (e) => {
         e.preventDefault();
