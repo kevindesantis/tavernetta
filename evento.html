@@ -450,10 +450,14 @@
     }, { passive: false });
 
     viewport.addEventListener("pointerdown", (e) => {
-      isDragging = true;
-      dragStartX = e.clientX - translateX;
-      dragStartY = e.clientY - translateY;
-      viewport.setPointerCapture(e.pointerId);
+  const seatBtn = e.target.closest(".seat");
+  if (seatBtn) return;
+
+  isDragging = true;
+  dragStartX = e.clientX - translateX;
+  dragStartY = e.clientY - translateY;
+  viewport.setPointerCapture(e.pointerId);
+
     });
 
     viewport.addEventListener("pointermove", (e) => {
@@ -1030,3 +1034,4 @@
   </script>
 </body>
 </html>
+
