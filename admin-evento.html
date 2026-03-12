@@ -524,75 +524,105 @@
     }
 
     function buildGardenBlock(totalSeats, extraSeats) {
-      const wrap = document.createElement("div");
-      wrap.className = "plan-block";
+  const wrap = document.createElement("div");
+  wrap.className = "plan-block";
 
-      const garden = document.createElement("div");
-      garden.className = "garden-wrap";
+  const garden = document.createElement("div");
+  garden.className = "garden-wrap";
 
-      const tableWrap = document.createElement("div");
-      tableWrap.className = "garden-table-wrap";
+  const tableWrap = document.createElement("div");
+  tableWrap.className = "garden-table-wrap";
 
-      const gIds = buildGardenTableSeats(totalSeats);
+  // Tavolo più piccolo con 6 posti, più lungo se aumentano i posti
+  const extraPairs = Math.max(0, Math.floor((totalSeats - 6) / 2));
+  const tableWidth = 76;
+  const tableHeight = 140 + (extraPairs * 44);
+  const tableMid = 70 + (extraPairs * 22);
 
-      const topCount = Math.max(1, Math.floor((totalSeats - 4) / 2));
-      const bottomCount = Math.max(1, totalSeats - 4 - topCount);
+  tableWrap.style.setProperty("--garden-table-width", `${tableWidth}px`);
+  tableWrap.style.setProperty("--garden-table-height", `${tableHeight}px`);
+  tableWrap.style.setProperty("--garden-table-mid", `${tableMid}px`);
 
-      const topSeats = gIds.slice(0, topCount);
-      const leftSeats = gIds.slice(topCount, topCount + 2);
-      const rightSeats = gIds.slice(topCount + 2, topCount + 4);
-      const bottomSeats = gIds.slice(topCount + 4);
+  const gIds = [];
+  for (let i = 1; i <= totalSeats; i++) gIds.push(`G${i}`);
 
-      const gTop = document.createElement("div");
-      gTop.className = "seat-row";
-      gTop.style.gridColumn = "2";
-      gTop.style.gridRow = "1";
-      topSeats.forEach(id => gTop.appendChild(createSeatButton(id)));
+  // Regola:
+  // base 6 posti = G1 sopra, G2 sotto, G3/G4 sinistra, G5/G6 destra
+  // se aumentano, si aggiungono sopra e sotto
+  const topSeats = [];
+  const bottomSeats = [];
+  const leftSeats = [];
+  const rightSeats = [];
 
-      const gBottom = document.createElement("div");
-      gBottom.className = "seat-row";
-      gBottom.style.gridColumn = "2";
-      gBottom.style.gridRow = "5";
-      bottomSeats.forEach(id => gBottom.appendChild(createSeatButton(id)));
+  if (gIds.length >= 1) topSeats.push(gIds[0]);      // G1
+  if (gIds.length >= 2) bottomSeats.push(gIds[1]);   // G2
+  if (gIds.length >= 3) leftSeats.push(gIds[2]);     // G3
+  if (gIds.length >= 4) leftSeats.push(gIds[3]);     // G4
+  if (gIds.length >= 5) rightSeats.push(gIds[4]);    // G5
+  if (gIds.length >= 6) rightSeats.push(gIds[5]);    // G6
 
-      const gLeftTop = createSeatButton(leftSeats[0] || "");
-      const gLeftBottom = createSeatButton(leftSeats[1] || "");
-      const gRightTop = createSeatButton(rightSeats[0] || "");
-      const gRightBottom = createSeatButton(rightSeats[1] || "");
+  // Dal G7 in poi si allunga verso sopra e sotto
+  const extras = gIds.slice(6);
+  extras.forEach((id, index) => {
+    if (index % 2 === 0) topSeats.push(id);
+    else bottomSeats.push(id);
+  });
 
-      if (!leftSeats[0]) gLeftTop.style.visibility = "hidden";
-      if (!leftSeats[1]) gLeftBottom.style.visibility = "hidden";
-      if (!rightSeats[0]) gRightTop.style.visibility = "hidden";
-      if (!rightSeats[1]) gRightBottom.style.visibility = "hidden";
+  const gTop = document.createElement("div");
+  gTop.className = "seat-row";
+  gTop.style.gridColumn = "2";
+  gTop.style.gridRow = "1";
+  topSeats.forEach(id => gTop.appendChild(createSeatButton(id)));
 
-      gLeftTop.classList.add("g-left-top");
-      gLeftBottom.classList.add("g-left-bottom");
-      gRightTop.classList.add("g-right-top");
-      gRightBottom.classList.add("g-right-bottom");
+  const gBottom = document.createElement("div");
+  gBottom.className = "seat-row";
+  gBottom.style.gridColumn = "2";
+  gBottom.style.gridRow = "5";
+  bottomSeats.forEach(id => gBottom.appendChild(createSeatButton(id)));
 
-      const table = document.createElement("div");
-      table.className = "garden-table";
+  const leftTopId = leftSeats[0];
+  const leftBottomId = leftSeats[1];
+  const rightTopId = rightSeats[0];
+  const rightBottomId = rightSeats[1];
 
-      tableWrap.appendChild(gTop);
-      tableWrap.appendChild(gBottom);
-      tableWrap.appendChild(gLeftTop);
-      tableWrap.appendChild(gLeftBottom);
-      tableWrap.appendChild(gRightTop);
-      tableWrap.appendChild(gRightBottom);
-      tableWrap.appendChild(table);
+  const gLeftTop = leftTopId ? createSeatButton(leftTopId) : document.createElement("div");
+  const gLeftBottom = leftBottomId ? createSeatButton(leftBottomId) : document.createElement("div");
+  const gRightTop = rightTopId ? createSeatButton(rightTopId) : document.createElement("div");
+  const gRightBottom = rightBottomId ? createSeatButton(rightBottomId) : document.createElement("div");
 
-      const poltrone = document.createElement("div");
-      poltrone.className = "garden-right-poltrone";
-      for (let i = 1; i <= extraSeats; i++) {
-        poltrone.appendChild(createSeatButton(`P${i}`));
-      }
+  gLeftTop.classList.add("g-left-top");
+  gLeftBottom.classList.add("g-left-bottom");
+  gRightTop.classList.add("g-right-top");
+  gRightBottom.classList.add("g-right-bottom");
 
-      garden.appendChild(tableWrap);
-      garden.appendChild(poltrone);
+  if (!leftTopId) gLeftTop.style.visibility = "hidden";
+  if (!leftBottomId) gLeftBottom.style.visibility = "hidden";
+  if (!rightTopId) gRightTop.style.visibility = "hidden";
+  if (!rightBottomId) gRightBottom.style.visibility = "hidden";
 
-      wrap.appendChild(garden);
-      return wrap;
-    }
+  const table = document.createElement("div");
+  table.className = "garden-table";
+
+  tableWrap.appendChild(gTop);
+  tableWrap.appendChild(gBottom);
+  tableWrap.appendChild(gLeftTop);
+  tableWrap.appendChild(gLeftBottom);
+  tableWrap.appendChild(gRightTop);
+  tableWrap.appendChild(gRightBottom);
+  tableWrap.appendChild(table);
+
+  const poltrone = document.createElement("div");
+  poltrone.className = "garden-right-poltrone";
+  for (let i = 1; i <= extraSeats; i++) {
+    poltrone.appendChild(createSeatButton(`P${i}`));
+  }
+
+  garden.appendChild(tableWrap);
+  garden.appendChild(poltrone);
+
+  wrap.appendChild(garden);
+  return wrap;
+}
 
     function buildExternalBlock(totalSeats, extraSeats) {
       const wrap = document.createElement("div");
@@ -997,3 +1027,4 @@
   </script>
 </body>
 </html>
+
