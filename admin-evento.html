@@ -637,11 +637,15 @@
       rightSide.appendChild(rightCol);
 
       const bottomDivans = document.createElement("div");
-      bottomDivans.className = "bottom-divans";
-      const bottomRow = document.createElement("div");
-      bottomRow.className = "seat-row";
-      ["D8","S2"].forEach(id => bottomRow.appendChild(createSeatButton(id)));
-      bottomDivans.appendChild(bottomRow);
+bottomDivans.className = "bottom-divans";
+bottomDivans.style.gridColumn = "2";
+bottomDivans.style.gridRow = "4";
+
+const bottomRow = document.createElement("div");
+bottomRow.className = "seat-row";
+["D8","S2"].forEach(id => bottomRow.appendChild(createSeatButton(id)));
+
+bottomDivans.appendChild(bottomRow);
 
       internal.appendChild(topDivans);
       internal.appendChild(tableWrap);
@@ -937,3 +941,4 @@
   </script>
 </body>
 </html>
+
