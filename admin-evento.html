@@ -1,6 +1,316 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Admin Serata – Tavernetta</title>
+
+<link rel="icon" type="image/png" href="img/logo.png">
+<link rel="stylesheet" href="css/style.css">
+
+<style>
+
+.room-layout{
+display:flex;
+flex-direction:column;
+gap:40px;
+align-items:center;
+margin-top:20px;
+}
+
+.seat{
+width:42px;
+height:42px;
+border-radius:50%;
+border:none;
+font-weight:bold;
+cursor:pointer;
+color:white;
+}
+
+.free{background:#2e9d50}
+.taken{background:#c43b2f}
+.selected{background:#d4a017;color:black}
+
+.seat-row{
+display:flex;
+gap:10px;
+}
+
+.rect-table{
+height:80px;
+background:#7b4e24;
+border-radius:20px;
+margin:10px 0;
+}
+
+.simple-table-wrap{
+display:flex;
+flex-direction:column;
+align-items:center;
+}
+
+.right-col{
+display:flex;
+flex-direction:column;
+gap:10px;
+}
+
+.top-divans{
+display:flex;
+gap:10px;
+margin-bottom:10px;
+}
+
+.bottom-divans{
+display:flex;
+gap:10px;
+margin-top:10px;
+}
+
+.external-extra{
+display:flex;
+gap:10px;
+margin-bottom:10px;
+}
+
+.garden-benches{
+display:flex;
+gap:10px;
+margin-bottom:10px;
+}
+
+.pren-list{
+margin-top:40px;
+display:grid;
+gap:10px;
+}
+
+.pren-item{
+background:#fff;
+padding:12px;
+border-radius:10px;
+box-shadow:var(--shadow);
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="top-bar">
+<img src="img/logo.png" class="logo-top">
+</div>
+
+<main class="page">
+
+<h2>Gestione serata</h2>
+
+<div id="roomLayout" class="room-layout"></div>
+
+<div class="pren-list" id="prenList"></div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-client.js"></script>
+
+<script>
+
+const params=new URLSearchParams(location.search)
+const serataId=params.get("id")
+
+let sale={}
+let occupati=[]
+let selezionati=[]
+
+function seatButton(id){
+
+const btn=document.createElement("button")
+
+btn.textContent=id
+btn.className="seat"
+
+if(occupati.includes(id)){
+btn.classList.add("taken")
+}else{
+btn.classList.add("free")
+
+btn.onclick=()=>{
+if(selezionati.includes(id)){
+selezionati=selezionati.filter(x=>x!==id)
+btn.classList.remove("selected")
+btn.classList.add("free")
+}else{
+selezionati.push(id)
+btn.classList.remove("free")
+btn.classList.add("selected")
+}
+}
+}
+
+return btn
+}
+
+function tavolo(posti,prefix=""){
+
+const wrap=document.createElement("div")
+wrap.className="simple-table-wrap"
+
+const lato=(posti-2)/2
+
+const top=document.createElement("div")
+top.className="seat-row"
+
+for(let i=0;i<lato;i++){
+top.appendChild(seatButton(prefix+(2+i)))
+}
+
+const center=document.createElement("div")
+center.className="rect-table"
+
+const bottom=document.createElement("div")
+bottom.className="seat-row"
+
+for(let i=0;i<lato;i++){
+bottom.appendChild(seatButton(prefix+(2+lato+i)))
+}
+
+const sides=document.createElement("div")
+sides.style.display="flex"
+sides.style.gap="20px"
+
+sides.appendChild(seatButton(prefix+"1"))
+sides.appendChild(seatButton(prefix+posti))
+
+wrap.appendChild(top)
+wrap.appendChild(center)
+wrap.appendChild(bottom)
+wrap.appendChild(sides)
+
+return wrap
+}
+
+function salaInterna(posti){
+
+const block=document.createElement("div")
+
+const top=document.createElement("div")
+top.className="top-divans"
+
+;["D1","D2","D3","D4","D5"].forEach(x=>top.appendChild(seatButton(x)))
+
+const table=tavolo(posti)
+
+const right=document.createElement("div")
+right.className="right-col"
+
+;["D6","D7","S1"].forEach(x=>right.appendChild(seatButton(x)))
+
+const bottom=document.createElement("div")
+bottom.className="bottom-divans"
+
+;["D8","S2"].forEach(x=>bottom.appendChild(seatButton(x)))
+
+block.appendChild(top)
+block.appendChild(table)
+block.appendChild(right)
+block.appendChild(bottom)
+
+return block
+}
+
+function salaEsterna(posti){
+
+const block=document.createElement("div")
+
+const extra=document.createElement("div")
+extra.className="external-extra"
+
+for(let i=1;i<=10;i++){
+extra.appendChild(seatButton("M"+i))
+}
+
+block.appendChild(extra)
+block.appendChild(tavolo(posti,"E"))
+
+return block
+}
+
+function salaGiardino(){
+
+const block=document.createElement("div")
+
+const benches=document.createElement("div")
+benches.className="garden-benches"
+
+for(let i=1;i<=10;i++){
+benches.appendChild(seatButton("P"+i))
+}
+
+block.appendChild(benches)
+
+const table=document.createElement("div")
+
+table.appendChild(seatButton("G1"))
+table.appendChild(seatButton("G2"))
+table.appendChild(seatButton("G3"))
+table.appendChild(seatButton("G4"))
+table.appendChild(seatButton("G5"))
+table.appendChild(seatButton("G6"))
+
+block.appendChild(table)
+
+return block
+}
+
+async function carica(){
+
+const saleRes=await supabaseClient
+.from("serata_sale")
+.select("*")
+.eq("serata_id",serataId)
+
+saleRes.data.forEach(s=>{
+sale[s.sala_codice]=s
+})
+
+const postiRes=await supabaseClient
+.from("prenotazione_posti")
+.select("posto_numero")
+.eq("serata_id",serataId)
+
+occupati=postiRes.data.map(x=>x.posto_numero)
+
+const room=document.getElementById("roomLayout")
+
+room.innerHTML=""
+
+if(sale.giardino?.attiva){
+room.appendChild(salaGiardino())
+}
+
+if(sale.esterna?.attiva){
+room.appendChild(salaEsterna(sale.esterna.posti_totali))
+}
+
+if(sale.interna?.attiva){
+room.appendChild(salaInterna(sale.interna.posti_totali))
+}
+
+}
+
+carica()
+
+</script>
+
+</body>
+</html><!DOCTYPE html>
+<html lang="it">
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin – Tavernetta da Kevin</title>
@@ -510,3 +820,4 @@
   </script>
 </body>
 </html>
+
