@@ -58,6 +58,17 @@
     .quick-card p{
       margin:0 0 16px;
     }
+
+    .button-row-manager{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:12px;
+    }
+
+    .button-row-manager .button{
+      min-width:auto;
+    }
   </style>
 </head>
 <body>
@@ -101,6 +112,11 @@
           <h3>Prenotazioni prossima serata</h3>
           <div id="prenotazioniProssima" class="dash-value">-</div>
           <div id="titoloProssima" class="note">Nessuna serata</div>
+
+          <div id="prossimaActions" class="button-row-manager" style="display:none;">
+            <a id="apriProssimaBtn" class="button secondary" href="#">Apri serata</a>
+            <button id="shareProssimaBtn" type="button" class="button">Condividi</button>
+          </div>
         </div>
 
         <div class="dash-card">
@@ -144,6 +160,8 @@
   <script src="../js/site.js"></script>
 
   <script>
+    let prossimaSerata = null;
+
     function getSeatMeta(id) {
       if (/^\d+$/.test(id)) return { tipo: "tavolo" };
       if (/^D\d+$/.test(id) || /^S\d+$/.test(id)) return { tipo: "divano" };
@@ -152,6 +170,45 @@
       if (/^G\d+$/.test(id)) return { tipo: "tavolo" };
       if (/^P\d+$/.test(id)) return { tipo: "poltrona" };
       return { tipo: "" };
+    }
+
+    function formatDateItalian(dateStr) {
+      try {
+        return new Date(dateStr).toLocaleDateString("it-IT", {
+          weekday: "long",
+          day: "2-digit",
+          month: "long"
+        });
+      } catch {
+        return dateStr;
+      }
+    }
+
+    async function shareNextEvent() {
+      if (!prossimaSerata) return;
+
+      const publicUrl = `${window.location.origin}/evento.html?id=${prossimaSerata.id}`;
+      const text = `${prossimaSerata.titolo}\n${formatDateItalian(prossimaSerata.data)}\n\nPrenota qui:\n${publicUrl}`;
+
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: prossimaSerata.titolo,
+            text,
+            url: publicUrl
+          });
+          return;
+        } catch (err) {
+          if (err && err.name === "AbortError") return;
+        }
+      }
+
+      try {
+        await navigator.clipboard.writeText(text);
+        alert("Link della prossima serata copiato.");
+      } catch {
+        prompt("Copia questo link:", publicUrl);
+      }
     }
 
     async function loadDashboard() {
@@ -183,23 +240,28 @@
         document.getElementById("copertiCena").textContent = "0";
         document.getElementById("copertiDopocena").textContent = "0";
         document.getElementById("titoloProssima").textContent = "Nessuna prossima serata";
+        document.getElementById("prossimaActions").style.display = "none";
         return;
       }
 
-      const prossima = serate[0];
-      document.getElementById("titoloProssima").textContent = `${prossima.titolo} – ${prossima.data}`;
+      prossimaSerata = serate[0];
+      document.getElementById("titoloProssima").textContent =
+        `${prossimaSerata.titolo} – ${prossimaSerata.data}`;
+
+      document.getElementById("apriProssimaBtn").href = `evento.html?id=${prossimaSerata.id}`;
+      document.getElementById("prossimaActions").style.display = "flex";
 
       const { data: prenotazioni } = await supabaseClient
         .from("prenotazioni")
         .select("id")
-        .eq("serata_id", prossima.id);
+        .eq("serata_id", prossimaSerata.id);
 
       document.getElementById("prenotazioniProssima").textContent = (prenotazioni || []).length;
 
       const { data: posti } = await supabaseClient
         .from("prenotazione_posti")
         .select("posto_numero, posto_tipo")
-        .eq("serata_id", prossima.id);
+        .eq("serata_id", prossimaSerata.id);
 
       let cena = 0;
       let dopocena = 0;
@@ -217,6 +279,8 @@
     document.addEventListener("DOMContentLoaded", async () => {
       setupMenu();
       await loadDashboard();
+
+      document.getElementById("shareProssimaBtn").addEventListener("click", shareNextEvent);
 
       document.getElementById("logoutBtn").addEventListener("click", (e) => {
         e.preventDefault();
