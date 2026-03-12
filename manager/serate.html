@@ -530,14 +530,38 @@
         msg.textContent = "I posti poltrone non possono essere negativi.";
         return;
       }
+// Se sto salvando una serata personalizzata, elimino l'eventuale serata standard dello stesso giorno
+const { data: existingStandardOnDate } = await supabaseClient
+  .from("serate")
+  .select("id")
+  .eq("data", data)
+  .eq("is_standard", true)
+  .maybeSingle();
 
+if (existingStandardOnDate) {
+  // Se sto modificando proprio quella standard, non la cancello qui
+  if (!serataId || existingStandardOnDate.id !== serataId) {
+    const { error: deleteStdError } = await supabaseClient
+      .from("serate")
+      .delete()
+      .eq("id", existingStandardOnDate.id);
+
+    if (deleteStdError) {
+      console.error(deleteStdError);
+      msg.textContent = "Errore nella sostituzione della serata standard.";
+      return;
+    }
+  }
+}
       const payload = {
         titolo,
         data,
         menu,
         programma,
         locandina,
-        link_apple: linkApple
+        link_apple: linkApple,
+        is_standard: false,
+        standard_type: null
       };
 
       let savedId = serataId;
