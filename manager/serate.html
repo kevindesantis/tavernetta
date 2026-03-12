@@ -1,13 +1,12 @@
-
 <!DOCTYPE html>
 <html lang="it">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin – Tavernetta da Kevin</title>
+  <title>Manager Serate – Tavernetta da Kevin</title>
 
-  <link rel="icon" type="image/png" href="img/logo.png">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/png" href="../img/logo.png">
+  <link rel="stylesheet" href="../css/style.css">
 
   <style>
     .admin-grid{
@@ -123,27 +122,26 @@
 <body>
 
   <div class="top-bar">
-    <img src="img/logo.png" alt="Tavernetta da Kevin" class="logo-top">
+    <img src="../img/logo.png" alt="Tavernetta da Kevin" class="logo-top">
     <button id="hamburger" class="hamburger" aria-label="Apri menu">☰</button>
   </div>
 
   <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
 
   <aside id="sidebar" class="sidebar">
-    <img src="img/logo.png" alt="Logo" class="side-logo">
+    <img src="../img/logo.png" alt="Logo" class="side-logo">
     <nav>
-      <a href="index.html">Home</a>
+      <a href="index.html">Dashboard</a>
       <a href="serate.html">Serate</a>
-      <a href="calendario.html">Calendario</a>
-      <a href="dove.html">Dove siamo</a>
-      <a href="contatti.html">Contattaci</a>
-      <a href="admin.html">Admin</a>
+      <a href="inventario.html">Inventario</a>
+      <a href="../index.html">Sito pubblico</a>
+      <a href="#" id="logoutBtn">Esci</a>
     </nav>
   </aside>
 
   <main class="page">
     <section class="section">
-      <h2>Admin serate</h2>
+      <h2>Gestione serate</h2>
 
       <div class="admin-grid">
         <div class="card">
@@ -246,9 +244,9 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase-client.js"></script>
-  <script src="js/admin-guard.js"></script>
-  <script src="js/site.js"></script>
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/manager-guard.js"></script>
+  <script src="../js/site.js"></script>
 
   <script>
     const form = document.getElementById("formSerata");
@@ -378,7 +376,7 @@
 
           <div class="admin-actions">
             <button class="button secondary edit-btn" type="button">Modifica</button>
-            <a class="button secondary" href="admin-evento.html?id=${ev.id}">Gestisci serata</a>
+            <a class="button secondary" href="evento.html?id=${ev.id}">Gestisci serata</a>
             <button class="button danger delete-btn" type="button">Elimina</button>
           </div>
         `;
@@ -559,6 +557,13 @@
     });
 
     document.getElementById("resetBtn").addEventListener("click", clearForm);
+
+    document.getElementById("logoutBtn").addEventListener("click", (e) => {
+      e.preventDefault();
+      localStorage.removeItem("manager_auth_ok");
+      localStorage.removeItem("manager_auth_mode");
+      window.location.href = "login.html";
+    });
 
     document.addEventListener("DOMContentLoaded", async () => {
       setupMenu();
