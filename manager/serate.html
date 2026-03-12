@@ -106,6 +106,18 @@
       box-shadow:var(--shadow);
     }
 
+    .preview-box{
+      margin-top:10px;
+    }
+
+    .preview-box img{
+      width:100%;
+      max-width:240px;
+      border-radius:12px;
+      display:none;
+      box-shadow:var(--shadow);
+    }
+
     .mini-note{
       font-size:13px;
       opacity:.8;
@@ -149,6 +161,7 @@
 
           <form id="formSerata" class="admin-form">
             <input type="hidden" id="serataId">
+            <input type="hidden" id="locandina">
 
             <label for="titolo">Titolo</label>
             <input id="titolo" required>
@@ -162,8 +175,12 @@
             <label for="programma">Programma</label>
             <textarea id="programma"></textarea>
 
-            <label for="locandina">Locandina URL</label>
-            <input id="locandina">
+            <label for="locandinaFile">Locandina</label>
+            <input id="locandinaFile" type="file" accept="image/*">
+
+            <div class="preview-box">
+              <img id="locandinaPreview" alt="Anteprima locandina">
+            </div>
 
             <label for="linkApple">Link Apple</label>
             <input id="linkApple">
@@ -251,6 +268,52 @@
   <script>
     const form = document.getElementById("formSerata");
     const msg = document.getElementById("msg");
+    const locandinaFile = document.getElementById("locandinaFile");
+    const locandinaPreview = document.getElementById("locandinaPreview");
+
+    function showPreview(src) {
+      if (!src) {
+        locandinaPreview.style.display = "none";
+        locandinaPreview.src = "";
+        return;
+      }
+      locandinaPreview.src = src;
+      locandinaPreview.style.display = "block";
+    }
+
+    locandinaFile.addEventListener("change", async () => {
+      const file = locandinaFile.files[0];
+      if (!file) return;
+
+      showPreview(URL.createObjectURL(file));
+      msg.textContent = "Caricamento locandina...";
+
+      const ext = file.name.split(".").pop() || "jpg";
+      const fileName = `serate/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+
+      const { error: uploadError } = await supabaseClient
+        .storage
+        .from("locandine")
+        .upload(fileName, file, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: file.type
+        });
+
+      if (uploadError) {
+        console.error(uploadError);
+        msg.textContent = "Errore caricamento locandina.";
+        return;
+      }
+
+      const { data: publicData } = supabaseClient
+        .storage
+        .from("locandine")
+        .getPublicUrl(fileName);
+
+      document.getElementById("locandina").value = publicData.publicUrl;
+      msg.textContent = "Locandina caricata.";
+    });
 
     function clearForm(){
       document.getElementById("serataId").value = "";
@@ -260,6 +323,7 @@
       document.getElementById("programma").value = "";
       document.getElementById("locandina").value = "";
       document.getElementById("linkApple").value = "";
+      document.getElementById("locandinaFile").value = "";
 
       document.getElementById("internaAttiva").checked = false;
       document.getElementById("internaPosti").value = "";
@@ -272,6 +336,7 @@
       document.getElementById("giardinoPosti").value = "6";
       document.getElementById("giardinoExtra").value = "10";
 
+      showPreview("");
       msg.textContent = "";
     }
 
@@ -299,6 +364,7 @@
       document.getElementById("programma").value = ev.programma || "";
       document.getElementById("locandina").value = ev.locandina || "";
       document.getElementById("linkApple").value = ev.link_apple || "";
+      showPreview(ev.locandina || "");
 
       const sale = await loadSerataSale(ev.id);
 
@@ -325,15 +391,9 @@
     }
 
     function formatSaleRow(s) {
-      if (s.sala_codice === "interna") {
-        return `interna tavolo (${s.posti_totali})`;
-      }
-      if (s.sala_codice === "esterna") {
-        return `esterna tavolo (${s.posti_totali}) / muretto (${s.posti_extra ?? 0})`;
-      }
-      if (s.sala_codice === "giardino") {
-        return `giardino tavolo (${s.posti_totali}) / poltrone (${s.posti_extra ?? 0})`;
-      }
+      if (s.sala_codice === "interna") return `interna tavolo (${s.posti_totali})`;
+      if (s.sala_codice === "esterna") return `esterna tavolo (${s.posti_totali}) / muretto (${s.posti_extra ?? 0})`;
+      if (s.sala_codice === "giardino") return `giardino tavolo (${s.posti_totali}) / poltrone (${s.posti_extra ?? 0})`;
       return s.sala_codice;
     }
 
@@ -433,6 +493,11 @@
 
       if (!titolo || !data) {
         msg.textContent = "Inserisci almeno titolo e data.";
+        return;
+      }
+
+      if (!locandina) {
+        msg.textContent = "Carica una locandina.";
         return;
       }
 
