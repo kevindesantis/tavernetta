@@ -89,42 +89,42 @@
     }
 
     .table-wrap{
-  grid-column:2;
-  grid-row:2 / span 2;
-  width:fit-content;
-  display:grid;
-  grid-template-columns:48px auto 48px;
-  grid-template-rows:auto 96px auto;
-  gap:8px;
-  align-items:center;
-  justify-items:center;
-}
+      grid-column:2;
+      grid-row:2 / span 2;
+      width:fit-content;
+      display:grid;
+      grid-template-columns:48px auto 48px;
+      grid-template-rows:auto 96px auto;
+      gap:8px;
+      align-items:center;
+      justify-items:center;
+    }
 
-.top-seats,
-.bottom-seats{
-  display:flex;
-  gap:10px;
-  flex-wrap:nowrap;
-  width:auto;
-  justify-content:center;
-}
+    .top-seats,
+    .bottom-seats{
+      display:flex;
+      gap:10px;
+      flex-wrap:nowrap;
+      width:auto;
+      justify-content:center;
+    }
 
-.left-seat,
-.right-seat{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
+    .left-seat,
+    .right-seat{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
 
-.rect-table{
-  width:var(--table-width, 340px);
-  background:linear-gradient(180deg,#9a6732 0%,#7b4e24 100%);
-  border-radius:22px;
-  height:96px;
-  box-shadow:
-    inset 0 0 0 4px rgba(255,255,255,.14),
-    0 8px 20px rgba(0,0,0,.12);
-}
+    .rect-table{
+      width:var(--table-width, 340px);
+      background:linear-gradient(180deg,#9a6732 0%,#7b4e24 100%);
+      border-radius:22px;
+      height:96px;
+      box-shadow:
+        inset 0 0 0 4px rgba(255,255,255,.14),
+        0 8px 20px rgba(0,0,0,.12);
+    }
 
     .right-side{
       grid-column:3;
@@ -179,13 +179,20 @@
       transform:scale(1.08);
     }
 
-    .form-box input{
+    .form-box input,
+    .form-box textarea{
       width:100%;
       padding:12px;
       margin-bottom:12px;
       border-radius:10px;
       border:1px solid #d6b98a;
       font-size:16px;
+      font-family:inherit;
+      resize:vertical;
+    }
+
+    .form-box textarea{
+      min-height:84px;
     }
 
     .selected-box{
@@ -250,7 +257,10 @@
           <h3 class="event-title">Prenotazione</h3>
 
           <input id="nomeInput" type="text" placeholder="Nome e cognome">
-          <input id="telefonoInput" type="text" placeholder="Telefono">
+          <input id="telefonoInput" type="text" placeholder="Telefono (opzionale)">
+          <input id="emailInput" type="email" placeholder="Email (opzionale)">
+          <textarea id="allergieInput" placeholder="Allergie e intolleranze (opzionale)"></textarea>
+          <textarea id="richiesteInput" placeholder="Richieste (opzionale)"></textarea>
 
           <div class="selected-box">
             <strong>Posti disponibili:</strong>
@@ -304,6 +314,9 @@
     function lockPastEvent(){
       document.getElementById("nomeInput").disabled = true;
       document.getElementById("telefonoInput").disabled = true;
+      document.getElementById("emailInput").disabled = true;
+      document.getElementById("allergieInput").disabled = true;
+      document.getElementById("richiesteInput").disabled = true;
       document.getElementById("bookBtn").disabled = true;
       document.getElementById("bookingMsg").textContent =
         "Le prenotazioni per questa serata sono chiuse.";
@@ -407,6 +420,7 @@
       const tableMap = buildTableSeatMap(tableTotal);
       const seatWidth = 52;
       const tableWidth = Math.max(220, tableMap.top.length * seatWidth);
+
       const tableWrap = document.createElement("div");
       tableWrap.className = "table-wrap";
 
@@ -423,10 +437,10 @@
       left.appendChild(createSeatButton(tableMap.left));
 
       const center = document.createElement("div");
-center.className = "rect-table";
-center.style.gridColumn = "2";
-center.style.gridRow = "2";
-center.style.setProperty("--table-width", `${tableWidth}px`);
+      center.className = "rect-table";
+      center.style.gridColumn = "2";
+      center.style.gridRow = "2";
+      center.style.setProperty("--table-width", `${tableWidth}px`);
 
       const right = document.createElement("div");
       right.className = "right-seat";
@@ -455,10 +469,10 @@ center.style.setProperty("--table-width", `${tableWidth}px`);
 
       const bottomDivans = document.createElement("div");
       bottomDivans.className = "bottom-divans";
-      const bottomDivanRow = document.createElement("div");
-      bottomDivanRow.className = "seat-row";
-      ["D8","S2"].forEach(id => bottomDivanRow.appendChild(createSeatButton(id)));
-      bottomDivans.appendChild(bottomDivanRow);
+      const bottomRow = document.createElement("div");
+      bottomRow.className = "seat-row";
+      ["D8","S2"].forEach(id => bottomRow.appendChild(createSeatButton(id)));
+      bottomDivans.appendChild(bottomRow);
 
       room.appendChild(topDivans);
       room.appendChild(tableWrap);
@@ -517,6 +531,9 @@ center.style.setProperty("--table-width", `${tableWidth}px`);
     async function saveBooking(){
       const nome = document.getElementById("nomeInput").value.trim();
       const telefono = document.getElementById("telefonoInput").value.trim();
+      const email = document.getElementById("emailInput").value.trim();
+      const allergie = document.getElementById("allergieInput").value.trim();
+      const richieste = document.getElementById("richiesteInput").value.trim();
       const msg = document.getElementById("bookingMsg");
 
       msg.textContent = "";
@@ -526,8 +543,8 @@ center.style.setProperty("--table-width", `${tableWidth}px`);
         return;
       }
 
-      if (!nome || !telefono) {
-        msg.textContent = "Inserisci nome e telefono.";
+      if (!nome) {
+        msg.textContent = "Inserisci almeno il nome.";
         return;
       }
 
@@ -552,7 +569,10 @@ center.style.setProperty("--table-width", `${tableWidth}px`);
         .insert([{
           serata_id: serataId,
           nome,
-          telefono
+          telefono: telefono || null,
+          email: email || null,
+          allergie: allergie || null,
+          richieste: richieste || null
         }])
         .select()
         .single();
@@ -583,6 +603,9 @@ center.style.setProperty("--table-width", `${tableWidth}px`);
 
       document.getElementById("nomeInput").value = "";
       document.getElementById("telefonoInput").value = "";
+      document.getElementById("emailInput").value = "";
+      document.getElementById("allergieInput").value = "";
+      document.getElementById("richiesteInput").value = "";
       selectedSeats = [];
 
       await loadEventAndSeats();
@@ -596,5 +619,3 @@ center.style.setProperty("--table-width", `${tableWidth}px`);
   </script>
 </body>
 </html>
-
-
