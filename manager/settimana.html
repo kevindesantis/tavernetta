@@ -96,7 +96,7 @@
       <h2>Programmazione settimana</h2>
       <p class="note">
         Qui attivi le serate standard dei prossimi 7 giorni.
-        Se per una data crei una serata personalizzata in “Serate”, quella personalizzata avrà la priorità.
+        Se per una data esiste una serata personalizzata, quella personalizzata avrà la priorità.
       </p>
 
       <div class="week-wrap">
@@ -130,6 +130,21 @@
   <script>
     const weekBody = document.getElementById("weekBody");
     const msg = document.getElementById("msg");
+
+    const STANDARD_CONFIG = {
+      standard_dopocena: {
+        titolo: "Serata Dopocena alla Tavernetta",
+        programma:
+          "La Tavernetta apre dopocena per stare insieme tra amici.\n\nMusica, drink e chiacchiere in un ambiente tranquillo e conviviale.",
+        locandina: `${window.location.origin}/img/locandina-standard-weekend.jpg`
+      },
+      fedelissimi_dopocena: {
+        titolo: "Dopocena per i Fedelissimi",
+        programma:
+          "Una serata dopocena dedicata ai fedelissimi della Tavernetta.\n\nMusica, drink e compagnia per chiudere la serata in un’atmosfera rilassata.",
+        locandina: `${window.location.origin}/img/locandina-standard-domenica.jpg`
+      }
+    };
 
     function getNext7Days(){
       const days = [];
@@ -215,6 +230,97 @@
       buildRows(days, savedMap);
     }
 
+    async function upsertStandardSerata(dateStr, tipoStandard){
+      const cfg = STANDARD_CONFIG[tipoStandard];
+      if (!cfg) return;
+
+      // Se esiste una serata personalizzata in quella data, non creare la standard
+      const { data: customEvent } = await supabaseClient
+        .from("serate")
+        .select("id")
+        .eq("data", dateStr)
+        .or("is_standard.is.false,is_standard.is.null")
+        .maybeSingle();
+
+      if (customEvent) return;
+
+      // Cerca standard già esistente
+      const { data: existingStandard } = await supabaseClient
+        .from("serate")
+        .select("id")
+        .eq("data", dateStr)
+        .eq("is_standard", true)
+        .maybeSingle();
+
+      let serataId = null;
+
+      const payload = {
+        titolo: cfg.titolo,
+        data: dateStr,
+        menu: "",
+        programma: cfg.programma,
+        locandina: cfg.locandina,
+        link_apple: null,
+        is_standard: true,
+        standard_type: tipoStandard
+      };
+
+      if (existingStandard) {
+        serataId = existingStandard.id;
+
+        const { error } = await supabaseClient
+          .from("serate")
+          .update(payload)
+          .eq("id", serataId);
+
+        if (error) throw error;
+      } else {
+        const { data: inserted, error } = await supabaseClient
+          .from("serate")
+          .insert([payload])
+          .select()
+          .single();
+
+        if (error) throw error;
+        serataId = inserted.id;
+      }
+
+      await supabaseClient
+        .from("serata_sale")
+        .delete()
+        .eq("serata_id", serataId);
+
+      const { error: saleError } = await supabaseClient
+        .from("serata_sale")
+        .insert([{
+          serata_id: serataId,
+          sala_codice: "interna",
+          attiva: true,
+          posti_totali: 14,
+          posti_extra: 0
+        }]);
+
+      if (saleError) throw saleError;
+    }
+
+    async function deleteStandardSerata(dateStr){
+      const { data: existingStandard } = await supabaseClient
+        .from("serate")
+        .select("id")
+        .eq("data", dateStr)
+        .eq("is_standard", true)
+        .maybeSingle();
+
+      if (!existingStandard) return;
+
+      const { error } = await supabaseClient
+        .from("serate")
+        .delete()
+        .eq("id", existingStandard.id);
+
+      if (error) throw error;
+    }
+
     async function saveWeekProgrammazione(){
       msg.textContent = "";
 
@@ -225,24 +331,39 @@
         const check = document.querySelector(`input[data-date="${dateStr}"]`);
         const select = document.querySelector(`select[data-type="${dateStr}"]`);
 
+        const attiva = !!check.checked;
+        const tipoStandard = select.value || null;
+
         const payload = {
           data: dateStr,
-          attiva: !!check.checked,
-          tipo_standard: select.value || null
+          attiva,
+          tipo_standard: tipoStandard
         };
 
-        const { error } = await supabaseClient
+        const { error: upsertProgError } = await supabaseClient
           .from("programmazione_settimana")
           .upsert(payload, { onConflict: "data" });
 
-        if (error) {
-          console.error(error);
+        if (upsertProgError) {
+          console.error(upsertProgError);
           msg.textContent = `Errore nel salvataggio del giorno ${dateStr}.`;
+          return;
+        }
+
+        try {
+          if (attiva && tipoStandard) {
+            await upsertStandardSerata(dateStr, tipoStandard);
+          } else {
+            await deleteStandardSerata(dateStr);
+          }
+        } catch (err) {
+          console.error(err);
+          msg.textContent = `Errore nella sincronizzazione della serata standard del ${dateStr}.`;
           return;
         }
       }
 
-      msg.textContent = "Programmazione salvata.";
+      msg.textContent = "Programmazione salvata e serate standard sincronizzate.";
       await loadWeekProgrammazione();
     }
 
