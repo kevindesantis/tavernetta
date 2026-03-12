@@ -684,82 +684,52 @@
   const tableWrap = document.createElement("div");
   tableWrap.className = "garden-table-wrap";
 
-  // Tavolo più piccolo con 6 posti, più lungo se aumentano i posti
-  const extraPairs = Math.max(0, Math.floor((totalSeats - 6) / 2));
-  const tableWidth = 76;
-  const tableHeight = 140 + (extraPairs * 44);
-  const tableMid = 70 + (extraPairs * 22);
+  // Regola:
+  // 2 posti fissi: 1 sopra, 1 sotto
+  // tutti gli altri sui lati lunghi, divisi metà sinistra metà destra
+  const sideSeatsCount = Math.max(4, totalSeats - 2); // con 6 => 4 laterali
+  const perSide = Math.ceil(sideSeatsCount / 2);
 
-  tableWrap.style.setProperty("--garden-table-width", `${tableWidth}px`);
-  tableWrap.style.setProperty("--garden-table-height", `${tableHeight}px`);
-  tableWrap.style.setProperty("--garden-table-mid", `${tableMid}px`);
+  // altezza tavolo dinamica in base ai posti laterali
+  const tableHeight = 140 + Math.max(0, perSide - 2) * 44;
+  const midHeight = 70 + Math.max(0, perSide - 2) * 22;
+
+  tableWrap.style.setProperty("--garden-height", `${tableHeight}px`);
+  tableWrap.style.setProperty("--garden-mid", `${midHeight}px`);
 
   const gIds = [];
   for (let i = 1; i <= totalSeats; i++) gIds.push(`G${i}`);
 
-  // Regola:
-  // base 6 posti = G1 sopra, G2 sotto, G3/G4 sinistra, G5/G6 destra
-  // se aumentano, si aggiungono sopra e sotto
-  const topSeats = [];
-  const bottomSeats = [];
-  const leftSeats = [];
-  const rightSeats = [];
+  const topId = gIds[0] || null;
+  const bottomId = gIds[1] || null;
 
-  if (gIds.length >= 1) topSeats.push(gIds[0]);      // G1
-  if (gIds.length >= 2) bottomSeats.push(gIds[1]);   // G2
-  if (gIds.length >= 3) leftSeats.push(gIds[2]);     // G3
-  if (gIds.length >= 4) leftSeats.push(gIds[3]);     // G4
-  if (gIds.length >= 5) rightSeats.push(gIds[4]);    // G5
-  if (gIds.length >= 6) rightSeats.push(gIds[5]);    // G6
+  const sideIds = gIds.slice(2);
+  const leftIds = sideIds.slice(0, Math.ceil(sideIds.length / 2));
+  const rightIds = sideIds.slice(Math.ceil(sideIds.length / 2));
 
-  // Dal G7 in poi si allunga verso sopra e sotto
-  const extras = gIds.slice(6);
-  extras.forEach((id, index) => {
-    if (index % 2 === 0) topSeats.push(id);
-    else bottomSeats.push(id);
-  });
+  const gTop = topId ? createSeatButton(topId) : document.createElement("div");
+  gTop.classList.add("g-top");
+  if (!topId) gTop.style.visibility = "hidden";
 
-  const gTop = document.createElement("div");
-  gTop.className = "seat-row";
-  gTop.style.gridColumn = "2";
-  gTop.style.gridRow = "1";
-  topSeats.forEach(id => gTop.appendChild(createSeatButton(id)));
+  const gBottom = bottomId ? createSeatButton(bottomId) : document.createElement("div");
+  gBottom.classList.add("g-bottom");
+  if (!bottomId) gBottom.style.visibility = "hidden";
 
-  const gBottom = document.createElement("div");
-  gBottom.className = "seat-row";
-  gBottom.style.gridColumn = "2";
-  gBottom.style.gridRow = "5";
-  bottomSeats.forEach(id => gBottom.appendChild(createSeatButton(id)));
+  const leftCol = document.createElement("div");
+  leftCol.className = "g-left-col";
+  leftIds.forEach(id => leftCol.appendChild(createSeatButton(id)));
 
-  const leftTopId = leftSeats[0];
-  const leftBottomId = leftSeats[1];
-  const rightTopId = rightSeats[0];
-  const rightBottomId = rightSeats[1];
-
-  const gLeftTop = leftTopId ? createSeatButton(leftTopId) : document.createElement("div");
-  const gLeftBottom = leftBottomId ? createSeatButton(leftBottomId) : document.createElement("div");
-  const gRightTop = rightTopId ? createSeatButton(rightTopId) : document.createElement("div");
-  const gRightBottom = rightBottomId ? createSeatButton(rightBottomId) : document.createElement("div");
-
-  gLeftTop.classList.add("g-left-top");
-  gLeftBottom.classList.add("g-left-bottom");
-  gRightTop.classList.add("g-right-top");
-  gRightBottom.classList.add("g-right-bottom");
-
-  if (!leftTopId) gLeftTop.style.visibility = "hidden";
-  if (!leftBottomId) gLeftBottom.style.visibility = "hidden";
-  if (!rightTopId) gRightTop.style.visibility = "hidden";
-  if (!rightBottomId) gRightBottom.style.visibility = "hidden";
+  const rightCol = document.createElement("div");
+  rightCol.className = "g-right-col";
+  rightIds.forEach(id => rightCol.appendChild(createSeatButton(id)));
 
   const table = document.createElement("div");
   table.className = "garden-table";
 
   tableWrap.appendChild(gTop);
   tableWrap.appendChild(gBottom);
-  tableWrap.appendChild(gLeftTop);
-  tableWrap.appendChild(gLeftBottom);
-  tableWrap.appendChild(gRightTop);
-  tableWrap.appendChild(gRightBottom);
+  tableWrap.appendChild(leftCol);
+  tableWrap.appendChild(rightCol);
   tableWrap.appendChild(table);
 
   const poltrone = document.createElement("div");
@@ -1085,6 +1055,7 @@
   </script>
 </body>
 </html>
+
 
 
 
