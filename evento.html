@@ -197,19 +197,19 @@
     }
 
     .garden-wrap{
-      display:grid;
-      grid-template-columns:auto auto;
-      column-gap:18px;
-      align-items:center;
-      justify-items:center;
-      width:fit-content;
-    }
-
-   .garden-table-wrap{
   display:grid;
-  grid-template-columns:48px var(--garden-table-width, 76px) 48px;
-  grid-template-rows:auto auto var(--garden-table-mid, 70px) auto auto;
-  column-gap:10px;
+  grid-template-columns:auto auto;
+  column-gap:20px;
+  align-items:center;
+  justify-items:center;
+  width:fit-content;
+}
+
+.garden-table-wrap{
+  display:grid;
+  grid-template-columns:56px 96px 56px;
+  grid-template-rows:auto auto var(--garden-mid, 120px) auto auto;
+  column-gap:14px;
   row-gap:10px;
   align-items:center;
   justify-items:center;
@@ -219,30 +219,53 @@
 .garden-table{
   grid-column:2;
   grid-row:2 / span 3;
-  width:var(--garden-table-width, 76px);
-  height:var(--garden-table-height, 140px);
+  width:96px;
+  height:var(--garden-height, 220px);
   background:linear-gradient(180deg,#9a6732 0%,#7b4e24 100%);
-  border-radius:18px;
+  border-radius:22px;
   box-shadow:
     inset 0 0 0 4px rgba(255,255,255,.14),
     0 8px 20px rgba(0,0,0,.12);
 }
 
-    .g-top{ grid-column:2; grid-row:1; }
-    .g-bottom{ grid-column:2; grid-row:5; }
-    .g-left-top{ grid-column:1; grid-row:2; }
-    .g-left-bottom{ grid-column:1; grid-row:4; }
-    .g-right-top{ grid-column:3; grid-row:2; }
-    .g-right-bottom{ grid-column:3; grid-row:4; }
+.g-top{
+  grid-column:2;
+  grid-row:1;
+}
 
-    .garden-right-poltrone{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      align-items:center;
-      justify-content:center;
-      min-width:56px;
-    }
+.g-bottom{
+  grid-column:2;
+  grid-row:5;
+}
+
+.g-left-col{
+  grid-column:1;
+  grid-row:2 / span 3;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  align-items:center;
+  height:var(--garden-height, 220px);
+}
+
+.g-right-col{
+  grid-column:3;
+  grid-row:2 / span 3;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  align-items:center;
+  height:var(--garden-height, 220px);
+}
+
+.garden-right-poltrone{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  align-items:center;
+  justify-content:center;
+  min-width:56px;
+}
 
     .form-box input,
     .form-box textarea{
@@ -1062,6 +1085,7 @@
   </script>
 </body>
 </html>
+
 
 
 
