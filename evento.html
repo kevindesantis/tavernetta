@@ -935,29 +935,45 @@
     }
 
     function renderEventHero(ev){
-      const hero = document.getElementById("eventHero");
-      const imgSrc = ev.locandina || "img/logo.png";
-      const description = ev.programma || "Serata alla Tavernetta.";
-      const closed = bookingClosedForEvent(ev.data);
-      const quotaText =
-        `Quota tavolo € ${Number(ev.quota_tavolo || 0).toFixed(2)}<br>Quota dopocena € ${Number(ev.quota_dopocena || 0).toFixed(2)}`;
+  const hero = document.getElementById("eventHero");
+  const imgSrc = ev.locandina || "img/logo.png";
+  const description = ev.programma || "";
+  const menuText = ev.menu || "";
+  const closed = bookingClosedForEvent(ev.data);
+  const quotaText =
+    `Quota tavolo € ${Number(ev.quota_tavolo || 0).toFixed(2)}<br>Quota dopocena € ${Number(ev.quota_dopocena || 0).toFixed(2)}`;
 
-      hero.innerHTML = `
-        <img class="event-cover" src="${imgSrc}" alt="${ev.titolo}">
-        <div class="event-meta">
-          <h2>${ev.titolo}</h2>
-          <p><strong>Data:</strong> ${formatDateItalian(ev.data)}</p>
-          <p><strong>Quote:</strong><br>${quotaText}</p>
-          <div class="event-programma">${description}</div>
-          ${closed ? `<p class="note" style="margin-top:12px;">Le prenotazioni sono chiuse per questa serata.</p>` : ""}
-          <div class="event-actions">
-            <button id="shareEventBtn" type="button" class="button">Condividi</button>
-          </div>
+  hero.innerHTML = `
+    <img class="event-cover" src="${imgSrc}" alt="${ev.titolo}">
+    <div class="event-meta">
+      <h2>${ev.titolo}</h2>
+      <p><strong>Data:</strong> ${formatDateItalian(ev.data)}</p>
+      <p><strong>Quote:</strong><br>${quotaText}</p>
+
+      ${menuText ? `
+        <div style="margin-top:14px;">
+          <strong>Menù</strong>
+          <div class="event-programma">${menuText}</div>
         </div>
-      `;
+      ` : ""}
 
-      document.getElementById("shareEventBtn").addEventListener("click", () => shareEvent(ev));
-    }
+      ${description ? `
+        <div style="margin-top:14px;">
+          <strong>Programma</strong>
+          <div class="event-programma">${description}</div>
+        </div>
+      ` : ""}
+
+      ${closed ? `<p class="note" style="margin-top:12px;">Le prenotazioni sono chiuse per questa serata.</p>` : ""}
+
+      <div class="event-actions">
+        <button id="shareEventBtn" type="button" class="button">Condividi</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("shareEventBtn").addEventListener("click", () => shareEvent(ev));
+}
 
     function updateMetaTags(ev){
       const title = `${ev.titolo} | Tavernetta da Kevin`;
@@ -1191,3 +1207,4 @@ ${url}`;
   </script>
 </body>
 </html>
+
