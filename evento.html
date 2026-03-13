@@ -435,6 +435,7 @@
           <p id="salaInfoText" class="note"></p>
 
           <div id="summaryBox" class="summary-box"></div>
+          <div id="quotaBox" class="summary-box"></div>
 
           <input id="nomeInput" type="text" placeholder="Nome e cognome" required>
           <input id="telefonoInput" type="text" placeholder="Telefono (opzionale)">
@@ -617,11 +618,17 @@
       return summary;
     }
 
+    function countSelectedQuotaSeats() {
+      return selectedSeats.filter(id => getSeatMeta(id).tipo === "tavolo").length;
+    }
+
     function updateSelectedInfo(){
       const ordered = [...selectedSeats].sort(seatSort);
       document.getElementById("selectedSeatsText").textContent =
         ordered.length ? ordered.join(", ") : "nessuno";
       document.getElementById("selectedCountText").textContent = ordered.length;
+
+      updateQuotaInfo();
     }
 
     function createSeatButton(id){
@@ -886,6 +893,34 @@
       `;
     }
 
+    function updateQuotaInfo() {
+      const box = document.getElementById("quotaBox");
+      if (!currentEvent) {
+        box.innerHTML = "";
+        return;
+      }
+
+      const quotaTipo = currentEvent.quota_tipo || "free";
+      const quotaImporto = Number(currentEvent.quota_importo || 0);
+      const tavoloCount = countSelectedQuotaSeats();
+      const totale = quotaTipo === "quota" ? tavoloCount * quotaImporto : 0;
+
+      if (quotaTipo === "quota") {
+        box.innerHTML = `
+          <h4>Quota serata</h4>
+          <div><strong>Quota a persona al tavolo:</strong> € ${quotaImporto.toFixed(2)}</div>
+          <div><strong>Posti tavolo selezionati:</strong> ${tavoloCount}</div>
+          <div><strong>Totale quota:</strong> € ${totale.toFixed(2)}</div>
+          <div style="margin-top:6px;">I posti dopocena non incidono sulla quota.</div>
+        `;
+      } else {
+        box.innerHTML = `
+          <h4>Ingresso</h4>
+          <div><strong>Free entry</strong></div>
+        `;
+      }
+    }
+
     function setSalaInfoText() {
       const box = document.getElementById("salaInfoText");
       const names = [];
@@ -905,12 +940,16 @@
       const imgSrc = ev.locandina || "img/logo.png";
       const description = ev.programma || "Serata alla Tavernetta.";
       const closed = bookingClosedForEvent(ev.data);
+      const quotaText = (ev.quota_tipo === "quota")
+        ? `Quota € ${Number(ev.quota_importo || 0).toFixed(2)} a persona al tavolo`
+        : "Free entry";
 
       hero.innerHTML = `
         <img class="event-cover" src="${imgSrc}" alt="${ev.titolo}">
         <div class="event-meta">
           <h2>${ev.titolo}</h2>
           <p><strong>Data:</strong> ${formatDateItalian(ev.data)}</p>
+          <p><strong>Ingresso:</strong> ${quotaText}</p>
           <div class="event-programma">${description}</div>
           ${closed ? `<p class="note" style="margin-top:12px;">Le prenotazioni sono chiuse per questa serata.</p>` : ""}
           <div class="event-actions">
@@ -1058,6 +1097,7 @@ ${url}`;
       renderRoom();
       updateAvailabilityInfo();
       updateSelectedInfo();
+      updateQuotaInfo();
       resetTransform();
     }
 
