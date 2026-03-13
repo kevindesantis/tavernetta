@@ -507,6 +507,9 @@
     let lastTouchDistance = null;
     let pinchStartScale = 1;
 
+    seatPopup.addEventListener("pointerdown", (e) => e.stopPropagation());
+    seatPopup.addEventListener("click", (e) => e.stopPropagation());
+
     function applyTransform() {
       zoomSurface.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
     }
@@ -543,7 +546,8 @@
 
     viewport.addEventListener("pointerdown", (e) => {
       const seatBtn = e.target.closest(".seat");
-      if (seatBtn) return;
+      const insidePopup = seatPopup.contains(e.target);
+      if (seatBtn || insidePopup) return;
 
       isDragging = true;
       dragStartX = e.clientX - translateX;
@@ -591,7 +595,9 @@
     });
 
     document.addEventListener("click", (e) => {
-      if (!e.target.closest(".seat") && !e.target.closest("#seatPopup")) {
+      const clickedInsidePopup = seatPopup.contains(e.target);
+      const clickedSeat = e.target.closest(".seat");
+      if (!clickedInsidePopup && !clickedSeat) {
         hideSeatPopup();
       }
     });
@@ -1017,6 +1023,8 @@
     }
 
     function showSeatPopup(e, pr, clickedSeat){
+      e.stopPropagation();
+
       const seats = (pr.prenotazione_posti || []).map(p => String(p.posto_numero)).sort(seatSort);
       const amounts = calculateBookingAmounts(seats);
       const importoPagato = Number(pr.importo_pagato || 0);
