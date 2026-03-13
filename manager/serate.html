@@ -176,16 +176,11 @@
             <label for="programma">Programma</label>
             <textarea id="programma"></textarea>
 
-            <label>Ingresso</label>
-            <div class="sala-row">
-              <label><input type="radio" name="quotaTipo" id="quotaFree" value="free" checked> Free entry</label>
-              <label><input type="radio" name="quotaTipo" id="quotaPaid" value="quota"> Quota a persona</label>
-            </div>
+            <label for="quotaTavolo">Quota tavolo (€)</label>
+            <input id="quotaTavolo" type="number" min="0" step="0.01" value="0">
 
-            <div class="sala-row">
-              <label for="quotaImporto">Importo quota (€)</label>
-              <input id="quotaImporto" type="number" min="0" step="0.01" value="0">
-            </div>
+            <label for="quotaDopocena">Quota dopocena (€)</label>
+            <input id="quotaDopocena" type="number" min="0" step="0.01" value="0">
 
             <label for="locandinaFile">Locandina</label>
             <input id="locandinaFile" type="file" accept="image/*">
@@ -336,10 +331,8 @@
       document.getElementById("locandina").value = "";
       document.getElementById("linkApple").value = "";
       document.getElementById("locandinaFile").value = "";
-
-      document.getElementById("quotaFree").checked = true;
-      document.getElementById("quotaPaid").checked = false;
-      document.getElementById("quotaImporto").value = "0";
+      document.getElementById("quotaTavolo").value = "0";
+      document.getElementById("quotaDopocena").value = "0";
 
       document.getElementById("internaAttiva").checked = false;
       document.getElementById("internaPosti").value = "";
@@ -380,14 +373,9 @@
       document.getElementById("programma").value = ev.programma || "";
       document.getElementById("locandina").value = ev.locandina || "";
       document.getElementById("linkApple").value = ev.link_apple || "";
+      document.getElementById("quotaTavolo").value = Number(ev.quota_tavolo || 0);
+      document.getElementById("quotaDopocena").value = Number(ev.quota_dopocena || 0);
       showPreview(ev.locandina || "");
-
-      const quotaTipo = ev.quota_tipo || "free";
-      const quotaImporto = Number(ev.quota_importo || 0);
-
-      document.getElementById("quotaFree").checked = quotaTipo === "free";
-      document.getElementById("quotaPaid").checked = quotaTipo === "quota";
-      document.getElementById("quotaImporto").value = quotaImporto;
 
       const sale = await loadSerataSale(ev.id);
 
@@ -448,9 +436,8 @@
           .map(formatSaleRow)
           .join("<br>") || "-";
 
-        const quotaText = (ev.quota_tipo === "quota")
-          ? `Quota € ${Number(ev.quota_importo || 0).toFixed(2)} a persona al tavolo`
-          : "Free entry";
+        const quotaText =
+          `Tavolo € ${Number(ev.quota_tavolo || 0).toFixed(2)} / Dopocena € ${Number(ev.quota_dopocena || 0).toFixed(2)}`;
 
         const div = document.createElement("div");
         div.className = "admin-item";
@@ -458,7 +445,7 @@
         div.innerHTML = `
           <h4>${ev.titolo || ""}</h4>
           <p><strong>Data:</strong> ${ev.data || ""}</p>
-          <p><strong>Ingresso:</strong> ${quotaText}</p>
+          <p><strong>Quote:</strong> ${quotaText}</p>
           <p><strong>Sale:</strong><br>${saleText}</p>
           ${ev.locandina ? `<img class="thumb" src="${ev.locandina}" alt="${ev.titolo}">` : ""}
 
@@ -508,8 +495,8 @@
       const programma = document.getElementById("programma").value.trim();
       const locandina = document.getElementById("locandina").value.trim();
       const linkApple = document.getElementById("linkApple").value.trim();
-      const quotaTipo = document.querySelector('input[name="quotaTipo"]:checked')?.value || "free";
-      const quotaImporto = parseFloat(document.getElementById("quotaImporto").value || "0");
+      const quotaTavolo = parseFloat(document.getElementById("quotaTavolo").value || "0");
+      const quotaDopocena = parseFloat(document.getElementById("quotaDopocena").value || "0");
 
       const internaAttiva = document.getElementById("internaAttiva").checked;
       const esternaAttiva = document.getElementById("esternaAttiva").checked;
@@ -531,8 +518,8 @@
         return;
       }
 
-      if (quotaTipo === "quota" && quotaImporto <= 0) {
-        msg.textContent = "Inserisci un importo quota valido.";
+      if (quotaTavolo < 0 || quotaDopocena < 0) {
+        msg.textContent = "Le quote non possono essere negative.";
         return;
       }
 
@@ -595,8 +582,8 @@
         programma,
         locandina,
         link_apple: linkApple,
-        quota_tipo: quotaTipo,
-        quota_importo: quotaTipo === "quota" ? quotaImporto : 0,
+        quota_tavolo: quotaTavolo,
+        quota_dopocena: quotaDopocena,
         is_standard: false,
         standard_type: null
       };
