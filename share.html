@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Tavernetta da Kevin</title>
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Tavernetta da Kevin">
+
+<meta property="og:title" content="Serata alla Tavernetta">
+<meta property="og:description" content="Scopri la prossima serata alla Tavernetta da Kevin">
+<meta property="og:image" content="https://tavernettadakevin.it/img/logo.png">
+
+<meta property="og:url" content="https://tavernettadakevin.it">
+
+<meta name="twitter:card" content="summary_large_image">
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-client.js"></script>
+
+<script>
+
+async function loadShare(){
+
+const params = new URLSearchParams(window.location.search)
+const id = params.get("id")
+
+if(!id){
+location.href="/"
+return
+}
+
+const { data, error } = await supabaseClient
+.from("serate")
+.select("*")
+.eq("id", id)
+.single()
+
+if(error || !data){
+location.href="/"
+return
+}
+
+const title = data.titolo
+const date = new Date(data.data).toLocaleDateString("it-IT",{
+weekday:"long",
+day:"2-digit",
+month:"long",
+year:"numeric"
+})
+
+const img = data.locandina || "https://tavernettadakevin.it/img/logo.png"
+
+document.querySelector('meta[property="og:title"]').setAttribute("content", title)
+document.querySelector('meta[property="og:description"]').setAttribute("content", date)
+document.querySelector('meta[property="og:image"]').setAttribute("content", img)
+
+document.title = title
+
+setTimeout(()=>{
+window.location.href = "/evento.html?id="+id
+},1200)
+
+}
+
+window.addEventListener("DOMContentLoaded",loadShare)
+
+</script>
+
+</head>
+
+<body style="font-family:sans-serif;text-align:center;padding:40px;">
+
+<img src="img/logo.png" style="max-width:140px;margin-bottom:20px">
+
+<h2>Caricamento serata...</h2>
+
+<p>Stai per essere reindirizzato alla pagina dell'evento.</p>
+
+</body>
+</html>
