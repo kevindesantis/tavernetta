@@ -65,7 +65,7 @@
     }
 
     .sala-row input[type="number"]{
-      max-width:140px;
+      max-width:160px;
     }
 
     .admin-list{
@@ -145,6 +145,7 @@
     <nav>
       <a href="index.html">Dashboard</a>
       <a href="serate.html">Serate</a>
+      <a href="storico.html">Storico eventi</a>
       <a href="settimana.html">Programmazione settimana</a>
       <a href="inventario.html">Inventario</a>
       <a href="../index.html">Sito pubblico</a>
@@ -286,6 +287,47 @@
       }
       locandinaPreview.src = src;
       locandinaPreview.style.display = "block";
+    }
+
+    function formatDateItalian(dateStr){
+      try {
+        return new Date(dateStr).toLocaleDateString("it-IT", {
+          weekday: "long",
+          day: "2-digit",
+          month: "long",
+          year: "numeric"
+        });
+      } catch {
+        return dateStr;
+      }
+    }
+
+    async function shareEvent(ev){
+      const url = `${window.location.origin}/evento.html?id=${ev.id}`;
+      const text = `${ev.titolo}
+${formatDateItalian(ev.data)}
+
+${url}`;
+
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: ev.titolo,
+            text,
+            url
+          });
+          return;
+        } catch (err) {
+          if (err && err.name === "AbortError") return;
+        }
+      }
+
+      try {
+        await navigator.clipboard.writeText(text);
+        alert("Link della serata copiato negli appunti.");
+      } catch {
+        prompt("Copia questo link:", url);
+      }
     }
 
     locandinaFile.addEventListener("change", async () => {
@@ -452,12 +494,17 @@
           <div class="admin-actions">
             <button class="button secondary edit-btn" type="button">Modifica</button>
             <a class="button secondary" href="evento.html?id=${ev.id}">Gestisci serata</a>
+            <button class="button secondary share-btn" type="button">Condividi</button>
             <button class="button danger delete-btn" type="button">Elimina</button>
           </div>
         `;
 
         div.querySelector(".edit-btn").addEventListener("click", async () => {
           await fillForm(ev);
+        });
+
+        div.querySelector(".share-btn").addEventListener("click", async () => {
+          await shareEvent(ev);
         });
 
         div.querySelector(".delete-btn").addEventListener("click", async () => {
