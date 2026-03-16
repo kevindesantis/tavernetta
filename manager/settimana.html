@@ -3,71 +3,75 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Programmazione settimana – Tavernetta Manager</title>
+  <title>Programmazione Settimana – Tavernetta Manager</title>
 
   <link rel="icon" type="image/png" href="../img/logo.png">
   <link rel="stylesheet" href="../css/style.css">
 
   <style>
-    .week-wrap{
-      margin-top:20px;
+    .week-grid{
+      display:grid;
+      gap:14px;
+      margin-top:18px;
     }
 
-    .week-table{
-      width:100%;
-      border-collapse:collapse;
+    .day-card{
       background:var(--card);
       border-radius:16px;
-      overflow:hidden;
       box-shadow:var(--shadow);
+      padding:16px;
     }
 
-    .week-table th,
-    .week-table td{
-      padding:14px 12px;
-      border-bottom:1px solid #eee;
-      text-align:center;
-    }
-
-    .week-table th{
-      background:#f8f2e8;
+    .day-card h3{
+      margin:0 0 6px;
       color:var(--brown);
     }
 
-    .week-table tr:last-child td{
-      border-bottom:none;
+    .day-date{
+      font-size:14px;
+      opacity:.8;
+      margin-bottom:10px;
     }
 
-    .week-table select{
-      padding:8px 10px;
-      border-radius:8px;
-      border:1px solid #ddd;
-      font-family:inherit;
-      width:100%;
-      max-width:260px;
-    }
-
-    .week-table input[type="checkbox"]{
-      transform:scale(1.2);
-    }
-
-    .actions{
-      margin-top:18px;
+    .day-row{
       display:flex;
       gap:10px;
       flex-wrap:wrap;
+      align-items:center;
+      margin-top:8px;
     }
 
-    .note-box{
-      margin-top:14px;
+    .day-row select{
+      padding:10px;
+      border-radius:10px;
+      border:1px solid #d6b98a;
+      font-family:inherit;
+      background:#fff;
+      min-width:240px;
     }
 
-    @media (max-width: 900px){
-      .week-table{
-        display:block;
-        overflow-x:auto;
-        white-space:nowrap;
-      }
+    .mini-preview{
+      margin-top:10px;
+      padding:10px;
+      border:1px solid #ead6b1;
+      background:#fffaf2;
+      border-radius:12px;
+      font-size:14px;
+    }
+
+    .toolbar{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:16px;
+    }
+
+    .ok{
+      color:#2e7d32;
+    }
+
+    .warning{
+      color:#9c5a00;
     }
   </style>
 </head>
@@ -84,6 +88,7 @@
     <nav>
       <a href="index.html">Dashboard</a>
       <a href="serate.html">Serate</a>
+      <a href="storico.html">Storico eventi</a>
       <a href="settimana.html">Programmazione settimana</a>
       <a href="inventario.html">Inventario</a>
       <a href="../index.html">Sito pubblico</a>
@@ -94,31 +99,16 @@
   <main class="page">
     <section class="section">
       <h2>Programmazione settimana</h2>
-      <p class="note">
-        Qui attivi le serate standard dei prossimi 7 giorni.
-        Se per una data esiste una serata personalizzata, quella personalizzata avrà la priorità.
-      </p>
+      <p class="note">Attiva rapidamente le serate standard della settimana. Se in una data esiste già una serata personalizzata, quella standard non verrà sovrascritta.</p>
 
-      <div class="week-wrap">
-        <table class="week-table">
-          <thead>
-            <tr>
-              <th>Giorno</th>
-              <th>Data</th>
-              <th>Attiva</th>
-              <th>Tipo serata standard</th>
-            </tr>
-          </thead>
-          <tbody id="weekBody"></tbody>
-        </table>
-
-        <div class="actions">
-          <button id="saveBtn" class="button">Salva programmazione</button>
-          <button id="reloadBtn" class="button secondary" type="button">Ricarica</button>
-        </div>
-
-        <p id="msg" class="note note-box"></p>
+      <div class="toolbar">
+        <button id="saveWeekBtn" class="button">Salva programmazione</button>
+        <button id="refreshBtn" class="button secondary">Ricarica</button>
       </div>
+
+      <p id="msg" class="note"></p>
+
+      <div id="weekGrid" class="week-grid"></div>
     </section>
   </main>
 
@@ -128,258 +118,314 @@
   <script src="../js/site.js"></script>
 
   <script>
-    const weekBody = document.getElementById("weekBody");
-    const msg = document.getElementById("msg");
-
-    const STANDARD_CONFIG = {
+    const STANDARD_TYPES = {
       standard_dopocena: {
         titolo: "Serata Dopocena alla Tavernetta",
-        programma:
-          "La Tavernetta apre dopocena per stare insieme tra amici.\n\nMusica, drink e chiacchiere in un ambiente tranquillo e conviviale.",
-        locandina: `${window.location.origin}/img/locandina-standard-weekend.jpg`
+        programma: "La Tavernetta ti aspetta per una serata dopocena in compagnia, relax, musica e convivialità.",
+        locandina: "../img/locandina-standard.jpg",
+        quota_tavolo: 0,
+        quota_dopocena: 0,
+        sale: [
+          { sala_codice: "interna", attiva: true, posti_totali: 14, posti_extra: 0 }
+        ]
       },
       fedelissimi_dopocena: {
         titolo: "Dopocena per i Fedelissimi",
-        programma:
-          "Una serata dopocena dedicata ai fedelissimi della Tavernetta.\n\nMusica, drink e compagnia per chiudere la serata in un’atmosfera rilassata.",
-        locandina: `${window.location.origin}/img/locandina-standard-domenica.jpg`
+        programma: "Una serata dedicata ai fedelissimi della Tavernetta, per stare insieme in un’atmosfera ancora più intima e familiare.",
+        locandina: "../img/locandina-standard-fedelissimi.jpg",
+        quota_tavolo: 0,
+        quota_dopocena: 0,
+        sale: [
+          { sala_codice: "interna", attiva: true, posti_totali: 14, posti_extra: 0 }
+        ]
+      },
+      serata_privata: {
+        titolo: "Serata Privata",
+        programma: "La Tavernetta è riservata per una serata privata.",
+        locandina: "../img/locandina-standard-privata.jpg",
+        quota_tavolo: 0,
+        quota_dopocena: 0,
+        sale: [
+          { sala_codice: "interna", attiva: true, posti_totali: 14, posti_extra: 0 }
+        ]
       }
     };
 
-    function getNext7Days(){
-      const days = [];
-      const now = new Date();
+    function formatDateItalian(dateStr){
+      try {
+        return new Date(dateStr).toLocaleDateString("it-IT", {
+          weekday: "long",
+          day: "2-digit",
+          month: "long",
+          year: "numeric"
+        });
+      } catch {
+        return dateStr;
+      }
+    }
 
-      for (let i = 0; i < 7; i++) {
-        const d = new Date(now);
-        d.setDate(now.getDate() + i);
-        days.push(d);
+    function addDays(base, days){
+      const d = new Date(base);
+      d.setDate(d.getDate() + days);
+      return d;
+    }
+
+    function ymd(date){
+      return date.toISOString().slice(0,10);
+    }
+
+    function createDayCard(dateStr){
+      const card = document.createElement("article");
+      card.className = "day-card";
+      card.dataset.date = dateStr;
+
+      card.innerHTML = `
+        <h3>${formatDateItalian(dateStr)}</h3>
+        <div class="day-date">${dateStr}</div>
+
+        <div class="day-row">
+          <label>
+            <input type="checkbox" class="day-enabled">
+            Attiva serata standard
+          </label>
+
+          <select class="day-type" disabled>
+            <option value="standard_dopocena">Serata Dopocena</option>
+            <option value="fedelissimi_dopocena">Dopocena per i Fedelissimi</option>
+            <option value="serata_privata">Serata Privata</option>
+          </select>
+        </div>
+
+        <div class="mini-preview"></div>
+      `;
+
+      const enabled = card.querySelector(".day-enabled");
+      const typeSelect = card.querySelector(".day-type");
+      const preview = card.querySelector(".mini-preview");
+
+      function updatePreview(){
+        const type = typeSelect.value;
+        const cfg = STANDARD_TYPES[type];
+        if (!enabled.checked) {
+          preview.innerHTML = `<span class="warning">Nessuna serata standard attiva per questo giorno.</span>`;
+          return;
+        }
+
+        preview.innerHTML = `
+          <strong>${cfg.titolo}</strong><br>
+          ${cfg.programma}<br>
+          <span class="ok">Sala interna · 14 posti tavolo</span>
+        `;
       }
 
-      return days;
+      enabled.addEventListener("change", () => {
+        typeSelect.disabled = !enabled.checked;
+        updatePreview();
+      });
+
+      typeSelect.addEventListener("change", updatePreview);
+      updatePreview();
+
+      return card;
     }
 
-    function toDateStringLocal(dateObj){
-      const year = dateObj.getFullYear();
-      const month = String(dateObj.getMonth() + 1).padStart(2, "0");
-      const day = String(dateObj.getDate()).padStart(2, "0");
-      return `${year}-${month}-${day}`;
+    function getWeekDates(){
+      const today = new Date();
+      const dates = [];
+      for (let i = 0; i < 7; i++) {
+        dates.push(ymd(addDays(today, i)));
+      }
+      return dates;
     }
 
-    function buildRows(days, savedMap = {}){
-      weekBody.innerHTML = "";
-
-      days.forEach(day => {
-        const dateStr = toDateStringLocal(day);
-        const saved = savedMap[dateStr] || { attiva: false, tipo_standard: "" };
-
-        const tr = document.createElement("tr");
-
-        tr.innerHTML = `
-          <td>${day.toLocaleDateString("it-IT", { weekday: "long" })}</td>
-          <td>${dateStr}</td>
-          <td>
-            <input type="checkbox" data-date="${dateStr}" ${saved.attiva ? "checked" : ""}>
-          </td>
-          <td>
-            <select data-type="${dateStr}">
-              <option value="">Nessuna</option>
-              <option value="standard_dopocena" ${saved.tipo_standard === "standard_dopocena" ? "selected" : ""}>
-                Serata Dopocena alla Tavernetta
-              </option>
-              <option value="fedelissimi_dopocena" ${saved.tipo_standard === "fedelissimi_dopocena" ? "selected" : ""}>
-                Dopocena per i Fedelissimi
-              </option>
-            </select>
-          </td>
-        `;
-
-        weekBody.appendChild(tr);
+    function renderWeek(){
+      const grid = document.getElementById("weekGrid");
+      grid.innerHTML = "";
+      getWeekDates().forEach(dateStr => {
+        grid.appendChild(createDayCard(dateStr));
       });
     }
 
-    async function loadWeekProgrammazione(){
-      msg.textContent = "";
-
-      const days = getNext7Days();
-      const startDate = toDateStringLocal(days[0]);
-      const endDate = toDateStringLocal(days[days.length - 1]);
+    async function loadExistingWeekProgram(){
+      const dates = getWeekDates();
+      const start = dates[0];
+      const end = dates[dates.length - 1];
 
       const { data, error } = await supabaseClient
-        .from("programmazione_settimana")
-        .select("*")
-        .gte("data", startDate)
-        .lte("data", endDate)
+        .from("serate")
+        .select("id, data, titolo, is_standard, standard_type")
+        .gte("data", start)
+        .lte("data", end)
         .order("data", { ascending: true });
 
       if (error) {
         console.error(error);
-        msg.textContent = "Errore nel caricamento della programmazione.";
-        buildRows(days, {});
+        document.getElementById("msg").textContent = "Errore caricamento programmazione.";
         return;
       }
 
-      const savedMap = {};
-      (data || []).forEach(row => {
-        savedMap[row.data] = {
-          attiva: !!row.attiva,
-          tipo_standard: row.tipo_standard || ""
-        };
-      });
+      const events = data || [];
 
-      buildRows(days, savedMap);
+      dates.forEach(dateStr => {
+        const card = document.querySelector(`.day-card[data-date="${dateStr}"]`);
+        if (!card) return;
+
+        const enabled = card.querySelector(".day-enabled");
+        const typeSelect = card.querySelector(".day-type");
+        const preview = card.querySelector(".mini-preview");
+
+        const customEvent = events.find(ev => ev.data === dateStr && !ev.is_standard);
+        const stdEvent = events.find(ev => ev.data === dateStr && ev.is_standard);
+
+        if (customEvent) {
+          enabled.checked = false;
+          typeSelect.disabled = true;
+          preview.innerHTML = `
+            <span class="warning"><strong>Serata personalizzata già presente:</strong><br>${customEvent.titolo}</span>
+          `;
+          card.dataset.locked = "custom";
+          return;
+        }
+
+        if (stdEvent) {
+          enabled.checked = true;
+          typeSelect.disabled = false;
+          typeSelect.value = stdEvent.standard_type || "standard_dopocena";
+          const cfg = STANDARD_TYPES[typeSelect.value];
+          preview.innerHTML = `
+            <strong>${cfg.titolo}</strong><br>
+            ${cfg.programma}<br>
+            <span class="ok">Standard già attiva</span>
+          `;
+          card.dataset.locked = "";
+          return;
+        }
+
+        card.dataset.locked = "";
+      });
     }
 
-    async function upsertStandardSerata(dateStr, tipoStandard){
-      const cfg = STANDARD_CONFIG[tipoStandard];
+    async function deleteExistingStandardForDate(dateStr){
+      const { data, error } = await supabaseClient
+        .from("serate")
+        .select("id")
+        .eq("data", dateStr)
+        .eq("is_standard", true);
+
+      if (error) {
+        console.error(error);
+        throw error;
+      }
+
+      const rows = data || [];
+      for (const row of rows) {
+        const { error: delError } = await supabaseClient
+          .from("serate")
+          .delete()
+          .eq("id", row.id);
+
+        if (delError) {
+          console.error(delError);
+          throw delError;
+        }
+      }
+    }
+
+    async function createStandardEvent(dateStr, type){
+      const cfg = STANDARD_TYPES[type];
       if (!cfg) return;
-
-      // Se esiste una serata personalizzata in quella data, non creare la standard
-      const { data: customEvent } = await supabaseClient
-        .from("serate")
-        .select("id")
-        .eq("data", dateStr)
-        .or("is_standard.is.false,is_standard.is.null")
-        .maybeSingle();
-
-      if (customEvent) return;
-
-      // Cerca standard già esistente
-      const { data: existingStandard } = await supabaseClient
-        .from("serate")
-        .select("id")
-        .eq("data", dateStr)
-        .eq("is_standard", true)
-        .maybeSingle();
-
-      let serataId = null;
 
       const payload = {
         titolo: cfg.titolo,
         data: dateStr,
-        menu: "",
+        menu: null,
         programma: cfg.programma,
         locandina: cfg.locandina,
         link_apple: null,
+        quota_tavolo: cfg.quota_tavolo,
+        quota_dopocena: cfg.quota_dopocena,
         is_standard: true,
-        standard_type: tipoStandard
+        standard_type: type
       };
 
-      if (existingStandard) {
-        serataId = existingStandard.id;
+      const { data: inserted, error } = await supabaseClient
+        .from("serate")
+        .insert([payload])
+        .select()
+        .single();
 
-        const { error } = await supabaseClient
-          .from("serate")
-          .update(payload)
-          .eq("id", serataId);
-
-        if (error) throw error;
-      } else {
-        const { data: inserted, error } = await supabaseClient
-          .from("serate")
-          .insert([payload])
-          .select()
-          .single();
-
-        if (error) throw error;
-        serataId = inserted.id;
+      if (error || !inserted) {
+        console.error(error);
+        throw error || new Error("Inserimento standard fallito");
       }
 
-      await supabaseClient
-        .from("serata_sale")
-        .delete()
-        .eq("serata_id", serataId);
+      const saleRows = cfg.sale.map(s => ({
+        serata_id: inserted.id,
+        sala_codice: s.sala_codice,
+        attiva: s.attiva,
+        posti_totali: s.posti_totali,
+        posti_extra: s.posti_extra
+      }));
 
       const { error: saleError } = await supabaseClient
         .from("serata_sale")
-        .insert([{
-          serata_id: serataId,
-          sala_codice: "interna",
-          attiva: true,
-          posti_totali: 14,
-          posti_extra: 0
-        }]);
+        .insert(saleRows);
 
-      if (saleError) throw saleError;
-    }
-
-    async function deleteStandardSerata(dateStr){
-      const { data: existingStandard } = await supabaseClient
-        .from("serate")
-        .select("id")
-        .eq("data", dateStr)
-        .eq("is_standard", true)
-        .maybeSingle();
-
-      if (!existingStandard) return;
-
-      const { error } = await supabaseClient
-        .from("serate")
-        .delete()
-        .eq("id", existingStandard.id);
-
-      if (error) throw error;
-    }
-
-    async function saveWeekProgrammazione(){
-      msg.textContent = "";
-
-      const days = getNext7Days();
-
-      for (const day of days) {
-        const dateStr = toDateStringLocal(day);
-        const check = document.querySelector(`input[data-date="${dateStr}"]`);
-        const select = document.querySelector(`select[data-type="${dateStr}"]`);
-
-        const attiva = !!check.checked;
-        const tipoStandard = select.value || null;
-
-        const payload = {
-          data: dateStr,
-          attiva,
-          tipo_standard: tipoStandard
-        };
-
-        const { error: upsertProgError } = await supabaseClient
-          .from("programmazione_settimana")
-          .upsert(payload, { onConflict: "data" });
-
-        if (upsertProgError) {
-          console.error(upsertProgError);
-          msg.textContent = `Errore nel salvataggio del giorno ${dateStr}.`;
-          return;
-        }
-
-        try {
-          if (attiva && tipoStandard) {
-            await upsertStandardSerata(dateStr, tipoStandard);
-          } else {
-            await deleteStandardSerata(dateStr);
-          }
-        } catch (err) {
-          console.error(err);
-          msg.textContent = `Errore nella sincronizzazione della serata standard del ${dateStr}.`;
-          return;
-        }
+      if (saleError) {
+        console.error(saleError);
+        throw saleError;
       }
-
-      msg.textContent = "Programmazione salvata e serate standard sincronizzate.";
-      await loadWeekProgrammazione();
     }
+
+    async function saveWeekProgram(){
+      const msg = document.getElementById("msg");
+      msg.textContent = "Salvataggio in corso...";
+
+      try {
+        const cards = [...document.querySelectorAll(".day-card")];
+
+        for (const card of cards) {
+          const dateStr = card.dataset.date;
+          const enabled = card.querySelector(".day-enabled").checked;
+          const type = card.querySelector(".day-type").value;
+          const locked = card.dataset.locked === "custom";
+
+          if (locked) continue;
+
+          await deleteExistingStandardForDate(dateStr);
+
+          if (enabled) {
+            await createStandardEvent(dateStr, type);
+          }
+        }
+
+        msg.textContent = "Programmazione settimana salvata.";
+        renderWeek();
+        await loadExistingWeekProgram();
+      } catch (err) {
+        console.error(err);
+        msg.textContent = "Errore nel salvataggio della programmazione.";
+      }
+    }
+
+    document.getElementById("saveWeekBtn").addEventListener("click", saveWeekProgram);
+    document.getElementById("refreshBtn").addEventListener("click", async () => {
+      document.getElementById("msg").textContent = "";
+      renderWeek();
+      await loadExistingWeekProgram();
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", (e) => {
+      e.preventDefault();
+      localStorage.removeItem("manager_auth_ok");
+      localStorage.removeItem("manager_auth_mode");
+      window.location.href = "login.html";
+    });
 
     document.addEventListener("DOMContentLoaded", async () => {
       setupMenu();
-      await loadWeekProgrammazione();
-
-      document.getElementById("saveBtn").addEventListener("click", saveWeekProgrammazione);
-      document.getElementById("reloadBtn").addEventListener("click", loadWeekProgrammazione);
-
-      document.getElementById("logoutBtn").addEventListener("click", (e) => {
-        e.preventDefault();
-        localStorage.removeItem("manager_auth_ok");
-        localStorage.removeItem("manager_auth_mode");
-        window.location.href = "login.html";
-      });
+      renderWeek();
+      await loadExistingWeekProgram();
     });
   </script>
 </body>
