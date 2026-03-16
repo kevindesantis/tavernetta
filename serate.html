@@ -118,12 +118,9 @@
 
     async function shareEvent(ev){
       const url = `${window.location.origin}/evento.html?id=${ev.id}`;
-      const descrizione = (ev.programma || "").trim();
-
       const text = `${ev.titolo}
 ${formatDateItalian(ev.data)}
 
-${descrizione ? descrizione + "\n\n" : ""}Prenota qui:
 ${url}`;
 
       if (navigator.share) {
@@ -163,7 +160,7 @@ ${url}`;
 
           <div class="serata-actions">
             <a class="button secondary" href="evento.html?id=${ev.id}">Apri serata</a>
-            <button class="button share-btn" type="button">Condividi</button>
+            <button class="button secondary share-btn" type="button">Condividi</button>
           </div>
         </div>
       `;
