@@ -77,6 +77,7 @@
     <nav>
       <a href="index.html">Dashboard</a>
       <a href="serate.html">Serate</a>
+      <a href="storico.html">Storico eventi</a>
       <a href="settimana.html">Programmazione settimana</a>
       <a href="inventario.html">Inventario</a>
       <a href="../index.html">Sito pubblico</a>
@@ -175,7 +176,8 @@
         return new Date(dateStr).toLocaleDateString("it-IT", {
           weekday: "long",
           day: "2-digit",
-          month: "long"
+          month: "long",
+          year: "numeric"
         });
       } catch {
         return dateStr;
@@ -189,7 +191,6 @@
       const text = `${prossimaSerata.titolo}
 ${formatDateItalian(prossimaSerata.data)}
 
-Prenota qui:
 ${publicUrl}`;
 
       if (navigator.share) {
@@ -260,7 +261,7 @@ ${publicUrl}`;
 
       prossimaSerata = serate[0];
       document.getElementById("titoloProssima").textContent =
-        `${prossimaSerata.titolo} – ${prossimaSerata.data}`;
+        `${prossimaSerata.titolo} – ${formatDateItalian(prossimaSerata.data)}`;
 
       document.getElementById("apriProssimaBtn").href = `evento.html?id=${prossimaSerata.id}`;
       document.getElementById("prossimaActions").style.display = "flex";
