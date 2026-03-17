@@ -1,317 +1,41 @@
-<!DOCTYPE html>
-<html lang="it">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tavernetta Manager</title>
-  <link rel="icon" type="image/png" href="../img/logo.png">
-  <link rel="stylesheet" href="../css/style.css">
-
-  <style>
-    .dashboard-grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
-      gap:18px;
-      margin-top:24px;
-    }
-
-    .dash-card{
-      background:var(--card);
-      border-radius:16px;
-      box-shadow:var(--shadow);
-      padding:18px;
-    }
-
-    .dash-card h3{
-      margin:0 0 8px;
-      color:var(--brown);
-    }
-
-    .dash-value{
-      font-size:32px;
-      font-weight:700;
-      color:var(--brown);
-      line-height:1.1;
-      margin:8px 0;
-    }
-
-    .quick-card{
-      background:var(--card);
-      border-radius:16px;
-      box-shadow:var(--shadow);
-      padding:20px;
-      text-align:center;
-    }
-
-    .quick-card h3{
-      margin:0 0 10px;
-      color:var(--brown);
-    }
-
-    .quick-card p{
-      margin:0 0 16px;
-    }
-
-    .button-row-manager{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      margin-top:12px;
-    }
-
-    .button-row-manager .button{
-      min-width:auto;
-    }
-  </style>
-</head>
-<body>
-  <div class="top-bar">
-    <img src="../img/logo.png" alt="Tavernetta da Kevin" class="logo-top">
-    <button id="hamburger" class="hamburger" aria-label="Apri menu">☰</button>
-  </div>
-
-  <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
-
-  <aside id="sidebar" class="sidebar">
-    <img src="../img/logo.png" alt="Logo" class="side-logo">
-    <nav>
-      <a href="index.html">Dashboard</a>
-      <a href="serate.html">Serate</a>
-      <a href="storico.html">Storico eventi</a>
-      <a href="settimana.html">Programmazione settimana</a>
-      <a href="inventario.html">Inventario</a>
-      <a href="../index.html">Sito pubblico</a>
-      <a href="#" id="logoutBtn">Esci</a>
-    </nav>
-  </aside>
-
-  <main class="page">
-    <section class="section">
-      <h2>Tavernetta Manager</h2>
-      <p class="note">Gestionale unico della Tavernetta.</p>
-
-      <div class="dashboard-grid">
-        <div class="quick-card">
-          <h3>Serate</h3>
-          <p>Crea, modifica e gestisci i posti delle serate.</p>
-          <a class="button" href="serate.html">Apri serate</a>
-        </div>
-
-        <div class="quick-card">
-          <h3>Inventario</h3>
-          <p>Controlla cucina, bevande e prodotti.</p>
-          <a class="button" href="inventario.html">Apri inventario</a>
-        </div>
-
-        <div class="quick-card">
-          <h3>Programmazione settimana</h3>
-          <p>Decidi quali serate standard attivare nei prossimi giorni.</p>
-          <a class="button" href="settimana.html">Apri programmazione</a>
-        </div>
-
-        <div class="quick-card">
-          <h3>Sito pubblico</h3>
-          <p>Apri il sito come lo vedono i clienti.</p>
-          <a class="button secondary" href="../index.html">Apri sito</a>
-        </div>
-
-        <div class="dash-card">
-          <h3>Prenotazioni prossima serata</h3>
-          <div id="prenotazioniProssima" class="dash-value">-</div>
-          <div id="titoloProssima" class="note">Nessuna serata</div>
-
-          <div id="prossimaActions" class="button-row-manager" style="display:none;">
-            <a id="apriProssimaBtn" class="button secondary" href="#">Apri serata</a>
-            <button id="shareProssimaBtn" type="button" class="button">Condividi</button>
-          </div>
-        </div>
-
-        <div class="dash-card">
-          <h3>Coperti cena</h3>
-          <div id="copertiCena" class="dash-value">-</div>
-          <div class="note">Prossima serata</div>
-        </div>
-
-        <div class="dash-card">
-          <h3>Coperti dopocena</h3>
-          <div id="copertiDopocena" class="dash-value">-</div>
-          <div class="note">Prossima serata</div>
-        </div>
-
-        <div class="dash-card">
-          <h3>Visite sito</h3>
-          <div id="visiteTotali" class="dash-value">-</div>
-          <div class="note">Totali registrate</div>
-        </div>
-
-        <div class="dash-card">
-          <h3>Visite oggi</h3>
-          <div id="visiteOggi" class="dash-value">-</div>
-          <div class="note">Pagine pubbliche</div>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="../js/supabase-client.js"></script>
-  <script src="../js/manager-guard.js"></script>
-  <script src="../js/site.js"></script>
-
-  <script>
-    let prossimaSerata = null;
-
-    function getSeatMeta(id) {
-      if (/^\d+$/.test(id)) return { tipo: "tavolo" };
-      if (/^D\d+$/.test(id) || /^S\d+$/.test(id)) return { tipo: "divano" };
-      if (/^E\d+$/.test(id)) return { tipo: "tavolo" };
-      if (/^M\d+$/.test(id)) return { tipo: "muretto" };
-      if (/^G\d+$/.test(id)) return { tipo: "tavolo" };
-      if (/^P\d+$/.test(id)) return { tipo: "poltrona" };
-      return { tipo: "" };
-    }
-
-    function formatDateItalian(dateStr) {
-      try {
-        return new Date(dateStr).toLocaleDateString("it-IT", {
-          weekday: "long",
-          day: "2-digit",
-          month: "long",
-          year: "numeric"
-        });
-      } catch {
-        return dateStr;
-      }
-    }
-
-    async function shareNextEvent() {
-      if (!prossimaSerata) return;
-
-      const publicUrl = `${window.location.origin}/evento.html?id=${prossimaSerata.id}`;
-      const text = `${prossimaSerata.titolo}
-${formatDateItalian(prossimaSerata.data)}
-
-${publicUrl}`;
-
-      if (navigator.share) {
-        try {
-          await navigator.share({
-            title: prossimaSerata.titolo,
-            text,
-            url: publicUrl
-          });
-          return;
-        } catch (err) {
-          if (err && err.name === "AbortError") return;
-        }
-      }
-
-      try {
-        await navigator.clipboard.writeText(text);
-        alert("Link della prossima serata copiato.");
-      } catch {
-        prompt("Copia questo link:", publicUrl);
-      }
-    }
-
-    async function loadDashboard() {
-      const today = new Date().toISOString().slice(0, 10);
-
-      const { count: visitCount, error: visitError } = await supabaseClient
-        .from("site_visits")
-        .select("*", { count: "exact", head: true });
-
-      if (visitError) {
-        console.error("Errore visite totali:", visitError);
-      }
-
-      document.getElementById("visiteTotali").textContent = visitCount ?? 0;
-
-      const { count: visitTodayCount, error: visitTodayError } = await supabaseClient
-        .from("site_visits")
-        .select("*", { count: "exact", head: true })
-        .gte("visited_at", `${today}T00:00:00`)
-        .lte("visited_at", `${today}T23:59:59`);
-
-      if (visitTodayError) {
-        console.error("Errore visite oggi:", visitTodayError);
-      }
-
-      document.getElementById("visiteOggi").textContent = visitTodayCount ?? 0;
-
-      const { data: serate, error: serateError } = await supabaseClient
-        .from("serate")
-        .select("*")
-        .gte("data", today)
-        .order("data", { ascending: true })
-        .limit(1);
-
-      if (serateError) {
-        console.error("Errore prossima serata:", serateError);
-      }
-
-      if (!serate || !serate.length) {
-        document.getElementById("prenotazioniProssima").textContent = "0";
-        document.getElementById("copertiCena").textContent = "0";
-        document.getElementById("copertiDopocena").textContent = "0";
-        document.getElementById("titoloProssima").textContent = "Nessuna prossima serata";
-        document.getElementById("prossimaActions").style.display = "none";
-        return;
-      }
-
-      prossimaSerata = serate[0];
-      document.getElementById("titoloProssima").textContent =
-        `${prossimaSerata.titolo} – ${formatDateItalian(prossimaSerata.data)}`;
-
-      document.getElementById("apriProssimaBtn").href = `evento.html?id=${prossimaSerata.id}`;
-      document.getElementById("prossimaActions").style.display = "flex";
-
-      const { data: prenotazioni, error: prenotazioniError } = await supabaseClient
-        .from("prenotazioni")
-        .select("id")
-        .eq("serata_id", prossimaSerata.id);
-
-      if (prenotazioniError) {
-        console.error("Errore prenotazioni:", prenotazioniError);
-      }
-
-      document.getElementById("prenotazioniProssima").textContent = (prenotazioni || []).length;
-
-      const { data: posti, error: postiError } = await supabaseClient
-        .from("prenotazione_posti")
-        .select("posto_numero, posto_tipo")
-        .eq("serata_id", prossimaSerata.id);
-
-      if (postiError) {
-        console.error("Errore posti:", postiError);
-      }
-
-      let cena = 0;
-      let dopocena = 0;
-
-      (posti || []).forEach(p => {
-        const tipo = p.posto_tipo || getSeatMeta(String(p.posto_numero)).tipo;
-        if (tipo === "tavolo") cena++;
-        if (tipo === "divano" || tipo === "muretto" || tipo === "poltrona") dopocena++;
-      });
-
-      document.getElementById("copertiCena").textContent = cena;
-      document.getElementById("copertiDopocena").textContent = dopocena;
-    }
-
-    document.addEventListener("DOMContentLoaded", async () => {
-      setupMenu();
-      await loadDashboard();
-
-      document.getElementById("shareProssimaBtn").addEventListener("click", shareNextEvent);
-
-      document.getElementById("logoutBtn").addEventListener("click", (e) => {
-        e.preventDefault();
-        localStorage.removeItem("manager_auth_ok");
-        localStorage.removeItem("manager_auth_mode");
-        window.location.href = "login.html";
-      });
-    });
-  </script>
-</body>
-</html>
+<!DOCTYPE html><html lang='it'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'><title>Tavernetta Manager</title><link rel='icon' type='image/png' href='../img/logo.png'><link rel='stylesheet' href='../css/style.css'><style>.dashboard-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-top:24px}.dash-card,.quick-card,.chart-card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:18px}.quick-card{text-align:center}.dash-value{font-size:32px;font-weight:700;color:var(--brown);line-height:1.1;margin:8px 0}.button-row-manager{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.charts-grid{display:grid;gap:18px;margin-top:24px}.chart-wrap{position:relative;width:100%;min-height:320px}.chart-wrap canvas{width:100%!important;height:320px!important}</style></head><body>
+<div class='top-bar'><img src='../img/logo.png' class='logo-top'><button id='hamburger' class='hamburger'>☰</button></div><div id='sidebarBackdrop' class='sidebar-backdrop'></div>
+<aside id='sidebar' class='sidebar'><img src='../img/logo.png' class='side-logo'><nav><a href='index.html'>Dashboard</a><a href='serate.html'>Serate</a><a href='storico.html'>Storico eventi</a><a href='settimana.html'>Programmazione settimana</a><a href='inventario.html'>Inventario</a><a href='../index.html'>Sito pubblico</a><a href='#' id='logoutBtn'>Esci</a></nav></aside>
+<main class='page'><section class='section'><h2>Tavernetta Manager</h2><p class='note'>Gestionale unico della Tavernetta.</p>
+<div class='dashboard-grid'>
+<div class='quick-card'><h3>Serate</h3><p>Crea, modifica e gestisci i posti delle serate.</p><a class='button' href='serate.html'>Apri serate</a></div>
+<div class='quick-card'><h3>Inventario</h3><p>Controlla cucina, bevande e prodotti.</p><a class='button' href='inventario.html'>Apri inventario</a></div>
+<div class='quick-card'><h3>Programmazione settimana</h3><p>Decidi quali serate standard attivare nei prossimi giorni.</p><a class='button' href='settimana.html'>Apri programmazione</a></div>
+<div class='quick-card'><h3>Sito pubblico</h3><p>Apri il sito come lo vedono i clienti.</p><a class='button secondary' href='../index.html'>Apri sito</a></div>
+<div class='dash-card'><h3>Prenotazioni prossima serata</h3><div id='prenotazioniProssima' class='dash-value'>-</div><div id='titoloProssima' class='note'>Nessuna serata</div><div id='prossimaActions' class='button-row-manager' style='display:none;'><a id='apriProssimaBtn' class='button secondary' href='#'>Apri serata</a><button id='shareProssimaBtn' type='button' class='button'>Condividi</button></div></div>
+<div class='dash-card'><h3>Coperti cena</h3><div id='copertiCena' class='dash-value'>-</div><div class='note'>Prossima serata</div></div>
+<div class='dash-card'><h3>Coperti dopocena</h3><div id='copertiDopocena' class='dash-value'>-</div><div class='note'>Prossima serata</div></div>
+<div class='dash-card'><h3>Visite sito</h3><div id='visiteTotali' class='dash-value'>-</div><div class='note'>Totali registrate</div></div>
+<div class='dash-card'><h3>Visite oggi</h3><div id='visiteOggi' class='dash-value'>-</div><div class='note'>Pagine pubbliche</div></div>
+</div>
+<div class='charts-grid'><div class='chart-card'><h3>Coperti per serata</h3><div class='chart-wrap'><canvas id='copertiChart'></canvas></div></div><div class='chart-card'><h3>Incassi per serata</h3><div class='chart-wrap'><canvas id='incassiChart'></canvas></div></div><div class='chart-card'><h3>Visite sito ultimi 14 giorni</h3><div class='chart-wrap'><canvas id='visiteChart'></canvas></div></div></div>
+</section></main>
+<script src='https://cdn.jsdelivr.net/npm/chart.js'></script><script src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'></script><script src='../js/supabase-client.js'></script><script src='../js/manager-guard.js'></script><script src='../js/site.js'></script>
+<script>
+let prossimaSerata=null,copertiChart=null,incassiChart=null,visiteChart=null;
+function getSeatMeta(id){if(/^\d+$/.test(id)||/^E\d+$/.test(id)||/^G\d+$/.test(id)) return {tipo:'tavolo'}; if(/^D\d+$/.test(id)||/^S\d+$/.test(id)||/^M\d+$/.test(id)||/^P\d+$/.test(id)) return {tipo:'dopocena'}; return {tipo:''}}
+function formatDateItalian(d){try{return new Date(d).toLocaleDateString('it-IT',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})}catch{return d}}
+function formatDateShort(d){try{return new Date(d).toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'})}catch{return d}}
+async function shareNextEvent(){if(!prossimaSerata) return; const shareUrl=`${location.origin}/share.html?id=${prossimaSerata.id}`; const text=`${prossimaSerata.titolo}\n${formatDateItalian(prossimaSerata.data)}\n\n${shareUrl}`; if(navigator.share){try{await navigator.share({title:prossimaSerata.titolo,text,url:shareUrl}); return;}catch(e){}} try{await navigator.clipboard.writeText(text); alert('Link copiato');}catch{prompt('Copia:',shareUrl)}}
+async function loadDashboard(){if(!window.supabaseClient) return; const today=new Date().toISOString().slice(0,10);
+const {count:visitCount}=await supabaseClient.from('site_visits').select('*',{count:'exact',head:true}); document.getElementById('visiteTotali').textContent=visitCount??0;
+const {count:visitTodayCount}=await supabaseClient.from('site_visits').select('*',{count:'exact',head:true}).gte('visited_at',`${today}T00:00:00`).lte('visited_at',`${today}T23:59:59`); document.getElementById('visiteOggi').textContent=visitTodayCount??0;
+const {data:serate}=await supabaseClient.from('serate').select('*').gte('data',today).order('data',{ascending:true}).limit(1);
+if(!serate||!serate.length){document.getElementById('prenotazioniProssima').textContent='0';document.getElementById('copertiCena').textContent='0';document.getElementById('copertiDopocena').textContent='0';document.getElementById('titoloProssima').textContent='Nessuna prossima serata';return;}
+prossimaSerata=serate[0]; document.getElementById('titoloProssima').textContent=`${prossimaSerata.titolo} – ${formatDateItalian(prossimaSerata.data)}`; document.getElementById('apriProssimaBtn').href=`evento.html?id=${prossimaSerata.id}`; document.getElementById('prossimaActions').style.display='flex';
+const {data:prenotazioni}=await supabaseClient.from('prenotazioni').select('id').eq('serata_id',prossimaSerata.id); document.getElementById('prenotazioniProssima').textContent=(prenotazioni||[]).length;
+const {data:posti}=await supabaseClient.from('prenotazione_posti').select('posto_numero,posto_tipo').eq('serata_id',prossimaSerata.id); let cena=0,dopo=0; (posti||[]).forEach(p=>{const tipo=p.posto_tipo||getSeatMeta(String(p.posto_numero)).tipo; if(tipo==='tavolo') cena++; else if(tipo) dopo++;}); document.getElementById('copertiCena').textContent=cena; document.getElementById('copertiDopocena').textContent=dopo;}
+async function loadCharts(){if(!window.supabaseClient) return; const {data:serate}=await supabaseClient.from('serate').select(`*, prenotazioni ( id, importo_pagato, prenotazione_posti ( posto_numero, posto_tipo ) )`).order('data',{ascending:true}); const events=(serate||[]).slice(-10); const labels=[], copertiData=[], incassiData=[]; events.forEach(ev=>{labels.push(formatDateShort(ev.data)); let cop=0,inc=0; (ev.prenotazioni||[]).forEach(pr=>{cop += (pr.prenotazione_posti||[]).length; inc += Number(pr.importo_pagato||0)}); copertiData.push(cop); incassiData.push(inc);});
+if(copertiChart) copertiChart.destroy(); if(incassiChart) incassiChart.destroy();
+copertiChart = new Chart(document.getElementById('copertiChart'), {type:'bar', data:{labels,datasets:[{label:'Coperti', data:copertiData}]}, options:{responsive:true, maintainAspectRatio:false}});
+incassiChart = new Chart(document.getElementById('incassiChart'), {type:'bar', data:{labels,datasets:[{label:'Incassato (€)', data:incassiData}]}, options:{responsive:true, maintainAspectRatio:false}});
+const today=new Date(), days=[], counts={}; for(let i=13;i>=0;i--){const d=new Date(today); d.setDate(today.getDate()-i); const y=d.toISOString().slice(0,10); days.push(y); counts[y]=0}
+const {data:visits}=await supabaseClient.from('site_visits').select('visited_at').gte('visited_at', `${days[0]}T00:00:00`).order('visited_at',{ascending:true}); (visits||[]).forEach(r=>{const day=String(r.visited_at).slice(0,10); if(counts[day]!==undefined) counts[day]++});
+if(visiteChart) visiteChart.destroy(); visiteChart = new Chart(document.getElementById('visiteChart'), {type:'line', data:{labels:days.map(formatDateShort), datasets:[{label:'Visite', data:days.map(d=>counts[d]), tension:.25}]}, options:{responsive:true, maintainAspectRatio:false}});}
+document.addEventListener('DOMContentLoaded', async()=>{setupMenu(); await loadDashboard(); await loadCharts(); document.getElementById('shareProssimaBtn').addEventListener('click', shareNextEvent); document.getElementById('logoutBtn').addEventListener('click', e=>{e.preventDefault(); localStorage.removeItem('manager_auth_ok'); location.href='login.html';});});
+</script></body></html>
