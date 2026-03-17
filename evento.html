@@ -4,144 +4,128 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tavernetta da Kevin</title>
-  <meta name="description" content="Scopri la prossima serata della Tavernetta da Kevin e prenota il tuo posto.">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Tavernetta da Kevin">
-  <meta property="og:title" content="Tavernetta da Kevin">
-  <meta property="og:description" content="Scopri la prossima serata della Tavernetta da Kevin.">
-  <meta property="og:image" content="https://tavernettadakevin.it/img/logo.png">
-  <meta property="og:url" content="https://tavernettadakevin.it/evento.html">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Tavernetta da Kevin">
-  <meta name="twitter:description" content="Scopri la prossima serata della Tavernetta da Kevin.">
-  <meta name="twitter:image" content="https://tavernettadakevin.it/img/logo.png">
+  <meta name="description" content="Scopri la serata della Tavernetta da Kevin e prenota il tuo posto.">
   <link rel="icon" type="image/png" href="img/logo.png">
   <link rel="stylesheet" href="css/style.css">
   <style>
-    .event-hero{display:grid;grid-template-columns:320px 1fr;gap:20px;align-items:start}
-    .event-cover{width:100%;border-radius:16px;box-shadow:var(--shadow);object-fit:cover;background:#eee}
-    .event-programma{white-space:pre-line}
-    .event-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
-    .booking-wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:20px}
-    .seat-legend{display:flex;gap:14px;flex-wrap:wrap;margin:10px 0 18px;font-size:14px}
-    .legend-item{display:flex;align-items:center;gap:8px}
-    .legend-dot{width:16px;height:16px;border-radius:50%;display:inline-block}
-    .dot-free{background:#2e9d50}.dot-taken{background:#c43b2f}.dot-selected{background:#d4a017}
+    .event-shell{display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start}
+    .left-panel,.right-panel{display:flex;flex-direction:column;gap:16px;min-width:0}
+    .cover{width:100%;border-radius:16px;box-shadow:var(--shadow);background:#eee}
+    .prog{white-space:pre-line}
     .table-layout{background:var(--card);border-radius:16px;padding:16px;box-shadow:var(--shadow);overflow:hidden;position:relative}
-    .viewport{width:100%;min-height:560px;overflow:hidden;position:relative;touch-action:none;border-radius:12px;background:rgba(255,255,255,.25)}
-    .zoom-surface{transform-origin:0 0;will-change:transform;width:max-content;min-width:100%;padding:10px}
-    .room-layout{min-width:860px;display:flex;flex-direction:column;gap:28px;align-items:center}
-    .plan-block{width:100%;display:flex;justify-content:center}
+    .seat-legend{display:flex;gap:14px;flex-wrap:wrap;margin:4px 0 14px;font-size:14px}.legend-item{display:flex;align-items:center;gap:8px}.legend-dot{width:16px;height:16px;border-radius:50%;display:inline-block}.dot-free{background:#2e9d50}.dot-taken{background:#c43b2f}.dot-selected{background:#d4a017}
+    .zoom-controls{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}.zoom-controls .button{min-width:auto;padding:8px 12px}
+    .viewport{width:100%;min-height:700px;overflow:hidden;position:relative;touch-action:none;border-radius:12px;background:rgba(255,255,255,.25)}
+    .zoom-surface{transform-origin:0 0;will-change:transform;width:max-content;min-width:100%;padding:10px;position:relative}
+    .room-layout{min-width:860px;display:flex;flex-direction:column;gap:28px;align-items:center}.plan-block{width:100%;display:flex;justify-content:center}
     .seat{min-width:42px;height:42px;padding:0 10px;border-radius:50px;border:0;color:#fff;font-weight:bold;cursor:pointer;transition:.2s;font-size:14px}
-    .seat.free{background:#2e9d50}.seat.taken{background:#c43b2f;cursor:not-allowed}.seat.selected{background:#d4a017;color:#111}.seat.free:hover{transform:scale(1.08)}
+    .seat.free{background:#2e9d50}.seat.taken{background:#c43b2f;cursor:not-allowed}.seat.selected{background:#d4a017;color:#111}
+    .seat.free:hover{transform:scale(1.06)}
     .seat-row{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:nowrap}
     .simple-table-wrap{width:fit-content;display:grid;grid-template-columns:48px auto 48px;grid-template-rows:auto 96px auto;gap:8px;align-items:center;justify-items:center}
-    .top-seats,.bottom-seats{display:flex;gap:10px;width:auto;justify-content:center;flex-wrap:nowrap}
-    .left-seat,.right-seat{display:flex;align-items:center;justify-content:center}
+    .top-seats,.bottom-seats{display:flex;gap:10px;width:auto;justify-content:center;flex-wrap:nowrap}.left-seat,.right-seat{display:flex;align-items:center;justify-content:center}
     .rect-table{width:var(--table-width,340px);background:linear-gradient(180deg,#9a6732 0%,#7b4e24 100%);border-radius:22px;height:96px;box-shadow:inset 0 0 0 4px rgba(255,255,255,.14),0 8px 20px rgba(0,0,0,.12)}
-    .internal-wrap{width:100%;display:grid;grid-template-columns:auto 1fr auto;grid-template-rows:auto auto auto auto;column-gap:16px;row-gap:14px;align-items:center;justify-items:center}
-    .top-divans{grid-column:2;grid-row:1;width:100%;display:flex;justify-content:flex-end;padding-right:70px}.right-side{grid-column:3;grid-row:2 / span 2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}.right-side .seat-col{display:flex;flex-direction:column;gap:10px;align-items:center}.bottom-divans{grid-column:2;grid-row:4;width:100%;display:flex;justify-content:flex-end;padding-right:18px}
-    .external-wrap{display:flex;flex-direction:column;gap:12px;align-items:center;width:100%}
-    .garden-wrap{display:grid;grid-template-columns:auto auto;column-gap:18px;align-items:center;justify-items:center;width:fit-content}
-    .garden-table-wrap{display:grid;grid-template-columns:56px 96px 56px;grid-template-rows:auto auto var(--garden-mid,120px) auto auto;column-gap:14px;row-gap:10px;align-items:center;justify-items:center;width:fit-content}
-    .garden-table{grid-column:2;grid-row:2 / span 3;width:96px;height:var(--garden-height,220px);background:linear-gradient(180deg,#9a6732 0%,#7b4e24 100%);border-radius:22px;box-shadow:inset 0 0 0 4px rgba(255,255,255,.14),0 8px 20px rgba(0,0,0,.12)}
-    .g-top{grid-column:2;grid-row:1}.g-bottom{grid-column:2;grid-row:5}.g-left-col,.g-right-col{display:flex;flex-direction:column;justify-content:space-between;align-items:center;height:var(--garden-height,220px)}.g-left-col{grid-column:1;grid-row:2 / span 3}.g-right-col{grid-column:3;grid-row:2 / span 3}
-    .garden-right-poltrone{display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;min-width:56px}
-    .form-box input,.form-box textarea{width:100%;padding:12px;margin-bottom:12px;border-radius:10px;border:1px solid #d6b98a;font-size:16px;font-family:inherit;resize:vertical}.form-box textarea{min-height:84px}
-    .summary-box{background:#fffaf2;border:1px solid #ead6b1;border-radius:12px;padding:12px;margin-bottom:12px;font-size:14px}.summary-box h4{margin:0 0 8px;color:var(--brown)}
-    .selected-box{margin:12px 0;font-size:15px}.zoom-controls{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}.zoom-controls .button{padding:8px 12px;min-width:auto}
-    @media (max-width:900px){.event-hero{grid-template-columns:1fr}.booking-wrap{grid-template-columns:1fr}.room-layout{min-width:760px}.viewport{min-height:480px}}
+    .internal-wrap{width:100%;display:grid;grid-template-columns:auto 1fr auto;grid-template-rows:auto auto auto auto;column-gap:16px;row-gap:14px;align-items:center;justify-items:center}.top-divans{grid-column:2;grid-row:1;width:100%;display:flex;justify-content:flex-end;padding-right:70px}.right-side{grid-column:3;grid-row:2 / span 2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}.right-side .seat-col{display:flex;flex-direction:column;gap:10px;align-items:center}.bottom-divans{grid-column:2;grid-row:4;width:100%;display:flex;justify-content:flex-end;padding-right:18px}.external-wrap{display:flex;flex-direction:column;gap:12px;align-items:center;width:100%}
+    .garden-wrap{display:grid;grid-template-columns:auto auto;column-gap:18px;align-items:center;justify-items:center;width:fit-content}.garden-table-wrap{display:grid;grid-template-columns:56px 96px 56px;grid-template-rows:auto auto var(--garden-mid,120px) auto auto;column-gap:14px;row-gap:10px;align-items:center;justify-items:center;width:fit-content}.garden-table{grid-column:2;grid-row:2 / span 3;width:96px;height:var(--garden-height,220px);background:linear-gradient(180deg,#9a6732 0%,#7b4e24 100%);border-radius:22px;box-shadow:inset 0 0 0 4px rgba(255,255,255,.14),0 8px 20px rgba(0,0,0,.12)}.g-top{grid-column:2;grid-row:1}.g-bottom{grid-column:2;grid-row:5}.g-left-col{grid-column:1;grid-row:2 / span 3;display:flex;flex-direction:column;justify-content:space-between;align-items:center;height:var(--garden-height,220px)}.g-right-col{grid-column:3;grid-row:2 / span 3;display:flex;flex-direction:column;justify-content:space-between;align-items:center;height:var(--garden-height,220px)}.garden-right-poltrone{display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;min-width:56px}
+    .field{margin-top:10px}.field label{display:block;margin-bottom:6px;font-weight:700;color:var(--brown)}.field input,.field textarea{width:100%;padding:10px;border-radius:10px;border:1px solid #d6b98a;font-family:inherit;font-size:15px;background:#fff}.field textarea{min-height:78px;resize:vertical}
+    .summary-box{background:#fffaf2;border:1px solid #ead6b1;border-radius:12px;padding:12px;margin-top:10px;font-size:14px}
+    .mini-note{font-size:13px;opacity:.8}
+    @media (max-width:1100px){.event-shell{grid-template-columns:1fr}.viewport{min-height:540px}.room-layout{min-width:760px}}
   </style>
 </head>
 <body>
-  <div class="top-bar"><img src="img/logo.png" class="logo-top" alt="Tavernetta da Kevin"><button id="hamburger" class="hamburger" aria-label="Apri menu">☰</button></div>
+  <div class="top-bar"><img src="img/logo.png" class="logo-top"><button id="hamburger" class="hamburger">☰</button></div>
   <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
-  <aside id="sidebar" class="sidebar"><img src="img/logo.png" class="side-logo" alt="Logo"><nav><a href="index.html">Home</a><a href="serate.html">Serate</a><a href="calendario.html">Calendario</a><a href="dove.html">Dove siamo</a><a href="contatti.html">Contattaci</a></nav></aside>
+  <aside id="sidebar" class="sidebar"><img src="img/logo.png" class="side-logo"><nav><a href="index.html">Home</a><a href="serate.html">Serate</a></nav></aside>
+
   <main class="page">
-    <section class="section"><div id="eventHero" class="event-hero"></div></section>
+    <section class="section"><div id="eventDetail"></div></section>
     <section class="section">
-      <h2>Prenota i posti</h2>
-      <div class="seat-legend"><div class="legend-item"><span class="legend-dot dot-free"></span> Disponibile</div><div class="legend-item"><span class="legend-dot dot-selected"></span> Selezionato</div><div class="legend-item"><span class="legend-dot dot-taken"></span> Occupato</div></div>
-      <div class="booking-wrap">
-        <div class="table-layout">
-          <div class="zoom-controls"><button id="zoomInBtn" type="button" class="button secondary">+</button><button id="zoomOutBtn" type="button" class="button secondary">−</button><button id="zoomResetBtn" type="button" class="button secondary">Reset</button></div>
-          <div id="viewport" class="viewport"><div id="zoomSurface" class="zoom-surface"><div id="roomLayout" class="room-layout"></div></div></div>
+      <div class="event-shell">
+        <div class="left-panel">
+          <div class="card">
+            <div id="eventInfo"></div>
+          </div>
+          <div class="card">
+            <h3 class="event-title">Prenota il tuo posto</h3>
+            <p id="salaInfoText" class="mini-note"></p>
+            <div id="quotaBox" class="summary-box"></div>
+            <div class="field"><label for="nomeInput">Nome e cognome *</label><input id="nomeInput" type="text"></div>
+            <div class="field"><label for="telefonoInput">Telefono</label><input id="telefonoInput" type="text"></div>
+            <div class="field"><label for="emailInput">Email</label><input id="emailInput" type="email"></div>
+            <div class="field"><label for="allergieInput">Allergie e intolleranze</label><textarea id="allergieInput"></textarea></div>
+            <div class="field"><label for="richiesteInput">Richieste</label><textarea id="richiesteInput"></textarea></div>
+            <div class="summary-box"><div><strong>Posti selezionati:</strong> <span id="selectedSeatsText">nessuno</span></div><div style="margin-top:6px;"><strong>Totale posti:</strong> <span id="selectedCountText">0</span></div></div>
+            <button id="bookBtn" class="button">Prenota</button>
+            <p id="bookingMsg" class="note"></p>
+          </div>
         </div>
-        <div class="card form-box">
-          <h3 class="event-title">Prenotazione</h3>
-          <p id="salaInfoText" class="note"></p>
-          <div id="summaryBox" class="summary-box"></div>
-          <div id="quotaBox" class="summary-box"></div>
-          <input id="nomeInput" type="text" placeholder="Nome e cognome *" required>
-          <input id="telefonoInput" type="text" placeholder="Telefono (opzionale)">
-          <input id="emailInput" type="email" placeholder="Email (opzionale)">
-          <textarea id="allergieInput" placeholder="Allergie e intolleranze (opzionale)"></textarea>
-          <textarea id="richiesteInput" placeholder="Richieste (opzionale)"></textarea>
-          <div class="selected-box"><strong>Posti selezionati:</strong> <span id="selectedSeatsText">nessuno</span></div>
-          <div class="selected-box"><strong>Totale selezionati:</strong> <span id="selectedCountText">0</span></div>
-          <button id="bookBtn" class="button">Prenota</button>
-          <p id="bookingMsg" class="note"></p>
+        <div class="right-panel">
+          <div class="table-layout">
+            <div class="seat-legend">
+              <div class="legend-item"><span class="legend-dot dot-free"></span> Disponibile</div>
+              <div class="legend-item"><span class="legend-dot dot-selected"></span> Selezionato</div>
+              <div class="legend-item"><span class="legend-dot dot-taken"></span> Occupato</div>
+            </div>
+            <div class="zoom-controls"><button id="zoomInBtn" type="button" class="button secondary">+</button><button id="zoomOutBtn" type="button" class="button secondary">−</button><button id="zoomResetBtn" type="button" class="button secondary">Reset</button></div>
+            <div id="viewport" class="viewport"><div id="zoomSurface" class="zoom-surface"><div id="roomLayout" class="room-layout"></div></div></div>
+          </div>
         </div>
       </div>
     </section>
   </main>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
   <script src="js/track-visit.js"></script>
   <script src="js/site.js"></script>
   <script>
-    const params = new URLSearchParams(window.location.search);
-    const serataId = params.get('id');
-    let currentEvent = null, occupiedSeats = [], selectedSeats = [], saleConfig = {};
-    const INTERNAL_EXTRA = ['D1','D2','D3','D4','D5','D6','D7','S1','D8','S2'];
-    const viewport = document.getElementById('viewport');
-    const zoomSurface = document.getElementById('zoomSurface');
-    let scale = 1, translateX = 0, translateY = 0, isDragging = false, dragStartX = 0, dragStartY = 0, lastTouchDistance = null, pinchStartScale = 1;
-    function applyTransform(){ zoomSurface.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`; }
-    function resetTransform(){ scale=1; translateX=0; translateY=0; applyTransform(); }
-    function clampScale(v){ return Math.min(2.5, Math.max(0.6, v)); }
-    document.getElementById('zoomInBtn').addEventListener('click', ()=>{ scale = clampScale(scale+0.15); applyTransform();});
-    document.getElementById('zoomOutBtn').addEventListener('click', ()=>{ scale = clampScale(scale-0.15); applyTransform();});
-    document.getElementById('zoomResetBtn').addEventListener('click', resetTransform);
-    viewport.addEventListener('wheel', e=>{ e.preventDefault(); scale = clampScale(scale + (e.deltaY>0?-0.1:0.1)); applyTransform(); }, {passive:false});
-    viewport.addEventListener('pointerdown', e=>{ if (e.target.closest('.seat')) return; isDragging=true; dragStartX=e.clientX-translateX; dragStartY=e.clientY-translateY; viewport.setPointerCapture(e.pointerId); });
-    viewport.addEventListener('pointermove', e=>{ if(!isDragging) return; translateX=e.clientX-dragStartX; translateY=e.clientY-dragStartY; applyTransform(); });
-    viewport.addEventListener('pointerup', ()=>{ isDragging=false; }); viewport.addEventListener('pointercancel', ()=>{ isDragging=false; });
-    viewport.addEventListener('touchstart', e=>{ if(e.touches.length===2){ const dx=e.touches[0].clientX-e.touches[1].clientX; const dy=e.touches[0].clientY-e.touches[1].clientY; lastTouchDistance=Math.hypot(dx,dy); pinchStartScale=scale; } }, {passive:true});
-    viewport.addEventListener('touchmove', e=>{ if(e.touches.length===2 && lastTouchDistance){ const dx=e.touches[0].clientX-e.touches[1].clientX; const dy=e.touches[0].clientY-e.touches[1].clientY; const dist=Math.hypot(dx,dy); scale=clampScale(pinchStartScale*(dist/lastTouchDistance)); applyTransform(); } }, {passive:true});
-    viewport.addEventListener('touchend', ()=>{ lastTouchDistance=null; });
+    const id = new URLSearchParams(location.search).get('id');
+    let currentEvent=null, occupiedSeats=[], selectedSeats=[], saleConfig={};
+    const INTERNAL_EXTRA=["D1","D2","D3","D4","D5","D6","D7","S1","D8","S2"];
+    const viewport=document.getElementById('viewport');
+    const zoomSurface=document.getElementById('zoomSurface');
+    let scale=1, translateX=0, translateY=0, isDragging=false, dragStartX=0, dragStartY=0, lastTouchDistance=null, pinchStartScale=1;
 
-    function bookingClosedForEvent(dateStr){ return new Date() > new Date(`${dateStr}T23:59:59`); }
-    function seatCategoryRank(id){ if(/^\d+$/.test(id)) return 1; if(/^E\d+$/.test(id)) return 2; if(/^G\d+$/.test(id)) return 3; if(/^D\d+$/.test(id)) return 4; if(/^S\d+$/.test(id)) return 5; if(/^M\d+$/.test(id)) return 6; if(/^P\d+$/.test(id)) return 7; return 99; }
-    function seatNumber(id){ const m=String(id).match(/(\d+)$/); return m?Number(m[1]):0; }
-    function seatSort(a,b){ const ra=seatCategoryRank(a), rb=seatCategoryRank(b); return ra!==rb ? ra-rb : seatNumber(a)-seatNumber(b); }
-    function getSeatMeta(id){ if(/^\d+$/.test(id)) return {sala:'interna', tipo:'tavolo'}; if(/^D\d+$/.test(id)||/^S\d+$/.test(id)) return {sala:'interna', tipo:'divano'}; if(/^E\d+$/.test(id)) return {sala:'esterna', tipo:'tavolo'}; if(/^M\d+$/.test(id)) return {sala:'esterna', tipo:'muretto'}; if(/^G\d+$/.test(id)) return {sala:'giardino', tipo:'tavolo'}; if(/^P\d+$/.test(id)) return {sala:'giardino', tipo:'poltrona'}; return {sala:'', tipo:''}; }
-    function countByType(seats){ const s={tavolo:0,divano:0,muretto:0,poltrona:0}; seats.forEach(id=>{ const t=getSeatMeta(id).tipo; if(s[t]!==undefined) s[t]++; }); return s; }
-    function updateSelectedInfo(){ const ordered=[...selectedSeats].sort(seatSort); document.getElementById('selectedSeatsText').textContent=ordered.length?ordered.join(', '):'nessuno'; document.getElementById('selectedCountText').textContent=ordered.length; updateQuotaInfo(); }
-    function createSeatButton(id){ const isTaken = occupiedSeats.includes(id); const btn=document.createElement('button'); btn.className='seat '+(isTaken?'taken':'free'); btn.textContent=id; btn.type='button'; if(!isTaken){ btn.addEventListener('click', ()=>{ if(selectedSeats.includes(id)){ selectedSeats=selectedSeats.filter(x=>x!==id); btn.classList.remove('selected'); btn.classList.add('free'); } else { selectedSeats.push(id); btn.classList.remove('free'); btn.classList.add('selected'); } updateSelectedInfo(); }); } return btn; }
-    function buildTableSeatMap(totalSeats,prefix=''){ const longSide=(totalSeats-2)/2; const top=[], bottom=[]; for(let i=0;i<longSide;i++) top.push(prefix+String(2+i)); for(let i=0;i<longSide;i++) bottom.push(prefix+String(2+longSide+i)); return {left:prefix+'1', right:prefix+String(totalSeats), top, bottom}; }
-    function buildSimpleTableBlock(totalSeats,prefix=''){ const m=buildTableSeatMap(totalSeats,prefix); const wrap=document.createElement('div'); wrap.className='simple-table-wrap'; const seatWidth=52, tableWidth=Math.max(220,m.top.length*seatWidth); const top=document.createElement('div'); top.className='top-seats'; top.style.gridColumn='2'; top.style.gridRow='1'; m.top.forEach(id=>top.appendChild(createSeatButton(id))); const left=document.createElement('div'); left.className='left-seat'; left.style.gridColumn='1'; left.style.gridRow='2'; left.appendChild(createSeatButton(m.left)); const center=document.createElement('div'); center.className='rect-table'; center.style.gridColumn='2'; center.style.gridRow='2'; center.style.setProperty('--table-width',`${tableWidth}px`); const right=document.createElement('div'); right.className='right-seat'; right.style.gridColumn='3'; right.style.gridRow='2'; right.appendChild(createSeatButton(m.right)); const bottom=document.createElement('div'); bottom.className='bottom-seats'; bottom.style.gridColumn='2'; bottom.style.gridRow='3'; m.bottom.forEach(id=>bottom.appendChild(createSeatButton(id))); wrap.append(top,left,center,right,bottom); return wrap; }
-    function buildGardenBlock(totalSeats,extraSeats){ const wrap=document.createElement('div'); wrap.className='plan-block'; const garden=document.createElement('div'); garden.className='garden-wrap'; const tableWrap=document.createElement('div'); tableWrap.className='garden-table-wrap'; const sideSeatsCount=Math.max(4,totalSeats-2); const perSide=Math.ceil(sideSeatsCount/2); tableWrap.style.setProperty('--garden-height',`${140 + Math.max(0,perSide-2)*44}px`); tableWrap.style.setProperty('--garden-mid',`${70 + Math.max(0,perSide-2)*22}px`); const ids=[]; for(let i=1;i<=totalSeats;i++) ids.push(`G${i}`); const topId=ids[0]||null, bottomId=ids[1]||null; const sideIds=ids.slice(2), leftIds=sideIds.slice(0, Math.ceil(sideIds.length/2)), rightIds=sideIds.slice(Math.ceil(sideIds.length/2)); const gTop=topId?createSeatButton(topId):document.createElement('div'); gTop.classList.add('g-top'); if(!topId) gTop.style.visibility='hidden'; const gBottom=bottomId?createSeatButton(bottomId):document.createElement('div'); gBottom.classList.add('g-bottom'); if(!bottomId) gBottom.style.visibility='hidden'; const leftCol=document.createElement('div'); leftCol.className='g-left-col'; leftIds.forEach(id=>leftCol.appendChild(createSeatButton(id))); const rightCol=document.createElement('div'); rightCol.className='g-right-col'; rightIds.forEach(id=>rightCol.appendChild(createSeatButton(id))); const table=document.createElement('div'); table.className='garden-table'; tableWrap.append(gTop,gBottom,leftCol,rightCol,table); const poltrone=document.createElement('div'); poltrone.className='garden-right-poltrone'; for(let i=1;i<=extraSeats;i++) poltrone.appendChild(createSeatButton(`P${i}`)); garden.append(tableWrap,poltrone); wrap.appendChild(garden); return wrap; }
-    function buildExternalBlock(totalSeats,extraSeats){ const wrap=document.createElement('div'); wrap.className='plan-block'; const ext=document.createElement('div'); ext.className='external-wrap'; const topExtras=document.createElement('div'); topExtras.className='seat-row'; for(let i=1;i<=extraSeats;i++) topExtras.appendChild(createSeatButton(`M${i}`)); ext.append(topExtras, buildSimpleTableBlock(totalSeats,'E')); wrap.appendChild(ext); return wrap; }
-    function buildInternalBlock(totalSeats){ const container=document.createElement('div'); container.className='plan-block'; const internal=document.createElement('div'); internal.className='internal-wrap'; const topDivans=document.createElement('div'); topDivans.className='top-divans'; const topRow=document.createElement('div'); topRow.className='seat-row'; ['D1','D2','D3','D4','D5'].forEach(id=>topRow.appendChild(createSeatButton(id))); topDivans.appendChild(topRow); const tableWrap=buildSimpleTableBlock(totalSeats,''); tableWrap.style.gridColumn='2'; tableWrap.style.gridRow='2 / span 2'; const rightSide=document.createElement('div'); rightSide.className='right-side'; const rightCol=document.createElement('div'); rightCol.className='seat-col'; ['D6','D7','S1'].forEach(id=>rightCol.appendChild(createSeatButton(id))); rightSide.appendChild(rightCol); const bottomDivans=document.createElement('div'); bottomDivans.className='bottom-divans'; const bottomRow=document.createElement('div'); bottomRow.className='seat-row'; ['D8','S2'].forEach(id=>bottomRow.appendChild(createSeatButton(id))); bottomDivans.appendChild(bottomRow); internal.append(topDivans,tableWrap,rightSide,bottomDivans); container.appendChild(internal); return container; }
-    function renderRoom(){ const room=document.getElementById('roomLayout'); room.innerHTML=''; if(saleConfig.giardino?.attiva) room.appendChild(buildGardenBlock(saleConfig.giardino.posti_totali, saleConfig.giardino.posti_extra)); if(saleConfig.esterna?.attiva) room.appendChild(buildExternalBlock(saleConfig.esterna.posti_totali, saleConfig.esterna.posti_extra)); if(saleConfig.interna?.attiva) room.appendChild(buildInternalBlock(saleConfig.interna.posti_totali)); }
-    function updateAvailabilityInfo(){ const counts = countByType(occupiedSeats); const cenaTot=(saleConfig.interna?.attiva?saleConfig.interna.posti_totali:0)+(saleConfig.esterna?.attiva?saleConfig.esterna.posti_totali:0)+(saleConfig.giardino?.attiva?saleConfig.giardino.posti_totali:0); const dopTot=(saleConfig.interna?.attiva?INTERNAL_EXTRA.length:0)+(saleConfig.esterna?.attiva?saleConfig.esterna.posti_extra:0)+(saleConfig.giardino?.attiva?saleConfig.giardino.posti_extra:0); const cenaOcc=counts.tavolo, dopOcc=counts.divano+counts.muretto+counts.poltrona; document.getElementById('summaryBox').innerHTML=`<h4>Disponibilità</h4><div><strong>Posti disponibili cena:</strong> ${cenaTot-cenaOcc}</div><div><strong>Posti occupati cena:</strong> ${cenaOcc}</div><div style="margin-top:6px;"><strong>Posti disponibili dopocena:</strong> ${dopTot-dopOcc}</div><div><strong>Posti occupati dopocena:</strong> ${dopOcc}</div>`; }
-    function updateQuotaInfo(){ const box=document.getElementById('quotaBox'); if(!currentEvent){ box.innerHTML=''; return;} const qt=Number(currentEvent.quota_tavolo||0), qd=Number(currentEvent.quota_dopocena||0); let tav=0, dop=0; selectedSeats.forEach(id=>{ if(getSeatMeta(id).tipo==='tavolo') tav++; else dop++; }); const totale = tav*qt + dop*qd; box.innerHTML=`<h4>Quota serata</h4><div><strong>Quota tavolo:</strong> € ${qt.toFixed(2)}</div><div><strong>Quota dopocena:</strong> € ${qd.toFixed(2)}</div><div style="margin-top:6px;"><strong>Posti tavolo selezionati:</strong> ${tav}</div><div><strong>Posti dopocena selezionati:</strong> ${dop}</div><div style="margin-top:8px;font-size:18px;"><strong>Totale:</strong> € ${totale.toFixed(2)}</div>`; }
-    function setSalaInfoText(){ const names=[]; if(saleConfig.interna?.attiva) names.push('all’interno'); if(saleConfig.esterna?.attiva) names.push('all’esterno'); if(saleConfig.giardino?.attiva) names.push('in giardino'); const box=document.getElementById('salaInfoText'); if(names.length===1) box.textContent=`La serata si svolgerà ${names[0]}.`; else if(names.length===2) box.textContent=`La serata si svolgerà ${names[0]} e ${names[1]}.`; else if(names.length===3) box.textContent='La serata si svolgerà all’interno, all’esterno e in giardino.'; else box.textContent=''; }
-    function renderEventHero(ev){ const hero=document.getElementById('eventHero'); const closed=bookingClosedForEvent(ev.data); hero.innerHTML=`<img class="event-cover" src="${ev.locandina||'img/logo.png'}" alt="${ev.titolo}"><div class="event-meta"><h2>${ev.titolo}</h2><p><strong>Data:</strong> ${formatDateIT(ev.data)}</p><p><strong>Quote:</strong><br>Quota tavolo € ${Number(ev.quota_tavolo||0).toFixed(2)}<br>Quota dopocena € ${Number(ev.quota_dopocena||0).toFixed(2)}</p>${ev.menu?`<div style="margin-top:14px;"><strong>Menù</strong><div class="event-programma">${ev.menu}</div></div>`:''}${ev.programma?`<div style="margin-top:14px;"><strong>Programma</strong><div class="event-programma">${ev.programma}</div></div>`:''}${closed?`<p class="note" style="margin-top:12px;">Le prenotazioni sono chiuse per questa serata.</p>`:''}<div class="event-actions"><button id="shareEventBtn" type="button" class="button">Condividi</button></div></div>`; document.getElementById('shareEventBtn').addEventListener('click', ()=>shareEvent(ev)); }
-    async function shareEvent(ev){ const url=`${window.location.origin}/share.html?id=${ev.id}`; const text=`${ev.titolo}\n${formatDateIT(ev.data)}\n\n${url}`; if(navigator.share){ try{ await navigator.share({title:ev.titolo,text,url}); return;}catch(err){ if(err?.name==='AbortError') return; } } try{ await navigator.clipboard.writeText(text); alert('Link della serata copiato negli appunti.'); }catch{ prompt('Copia questo link:', url); } }
-    async function loadSaleConfig(){ const {data,error}=await supabaseClient.from('serata_sale').select('sala_codice, attiva, posti_totali, posti_extra').eq('serata_id', serataId); if(error){ console.error(error); return false; } saleConfig={}; (data||[]).forEach(row=>{ saleConfig[row.sala_codice]={attiva:!!row.attiva, posti_totali:Number(row.posti_totali||0), posti_extra:Number(row.posti_extra||0)};}); return true; }
-    async function loadEventAndSeats(){ if(!serataId){ document.getElementById('eventHero').innerHTML='<div class="card note">Serata non trovata.</div>'; return; }
-      const {data:eventData,error:eventError}=await supabaseClient.from('serate').select('*').eq('id',serataId).single(); if(eventError||!eventData){ console.error(eventError); document.getElementById('eventHero').innerHTML='<div class="card note">Errore nel caricamento della serata.</div>'; return; }
-      currentEvent=eventData; renderEventHero(currentEvent); const salesOk=await loadSaleConfig(); if(!salesOk){ document.getElementById('bookingMsg').textContent='Errore nel caricamento sale.'; return; } setSalaInfoText();
-      if(bookingClosedForEvent(currentEvent.data)){ ['nomeInput','telefonoInput','emailInput','allergieInput','richiesteInput','bookBtn'].forEach(id=>document.getElementById(id).disabled=true); document.getElementById('bookingMsg').textContent='Le prenotazioni per questa serata sono chiuse.'; }
-      const {data:seatRows,error:seatError}=await supabaseClient.from('prenotazione_posti').select('posto_numero, posto_tipo').eq('serata_id', serataId); if(seatError){ console.error(seatError); document.getElementById('bookingMsg').textContent='Errore nel caricamento posti.'; return; }
-      occupiedSeats=(seatRows||[]).map(r=>String(r.posto_numero)).sort(seatSort); renderRoom(); updateAvailabilityInfo(); updateSelectedInfo(); updateQuotaInfo(); resetTransform(); }
-    async function saveBooking(){ const nome=document.getElementById('nomeInput').value.trim(); const telefono=document.getElementById('telefonoInput').value.trim(); const email=document.getElementById('emailInput').value.trim(); const allergie=document.getElementById('allergieInput').value.trim(); const richieste=document.getElementById('richiesteInput').value.trim(); const msg=document.getElementById('bookingMsg'); msg.textContent=''; if(bookingClosedForEvent(currentEvent.data)){ msg.textContent='Le prenotazioni per questa serata sono chiuse.'; return; } if(!nome){ msg.textContent='Inserisci il nome e cognome.'; return; } if(!selectedSeats.length){ msg.textContent='Seleziona almeno un posto.'; return; } if(selectedSeats.some(seat=>occupiedSeats.includes(seat))){ msg.textContent='Uno dei posti selezionati non è più disponibile.'; await loadEventAndSeats(); selectedSeats=[]; updateSelectedInfo(); return; }
-      const bookedSeats=[...selectedSeats].sort(seatSort); const {data:prenotazione,error:prenError}=await supabaseClient.from('prenotazioni').insert([{serata_id:serataId,nome,telefono:telefono||null,email:email||null,allergie:allergie||null,richieste:richieste||null,importo_pagato:0}]).select().single(); if(prenError||!prenotazione){ console.error(prenError); msg.textContent='Errore nel salvataggio prenotazione.'; return; }
-      const postiRows=bookedSeats.map(seatId=>({prenotazione_id:prenotazione.id,serata_id:serataId,posto_numero:seatId,posto_tipo:getSeatMeta(seatId).tipo})); const {error:postiError}=await supabaseClient.from('prenotazione_posti').insert(postiRows); if(postiError){ console.error(postiError); msg.textContent='Errore nel salvataggio posti.'; return; }
-      msg.textContent=`Prenotazione salvata! Posti: ${bookedSeats.join(', ')}`; ['nomeInput','telefonoInput','emailInput','allergieInput','richiesteInput'].forEach(id=>document.getElementById(id).value=''); selectedSeats=[]; await loadEventAndSeats(); }
-    document.addEventListener('DOMContentLoaded', async()=>{ await loadEventAndSeats(); document.getElementById('bookBtn').addEventListener('click', saveBooking); });
+    function applyTransform(){zoomSurface.style.transform=`translate(${translateX}px, ${translateY}px) scale(${scale})`;}
+    function resetTransform(){scale=1;translateX=0;translateY=0;applyTransform();}
+    function clampScale(v){return Math.min(2.5, Math.max(0.6, v));}
+    document.getElementById('zoomInBtn').addEventListener('click',()=>{scale=clampScale(scale+.15);applyTransform()});
+    document.getElementById('zoomOutBtn').addEventListener('click',()=>{scale=clampScale(scale-.15);applyTransform()});
+    document.getElementById('zoomResetBtn').addEventListener('click',resetTransform);
+    viewport.addEventListener('wheel',e=>{e.preventDefault(); scale=clampScale(scale + (e.deltaY>0?-0.1:0.1)); applyTransform();},{passive:false});
+    viewport.addEventListener('pointerdown',e=>{if(e.target.closest('.seat')) return; isDragging=true; dragStartX=e.clientX-translateX; dragStartY=e.clientY-translateY; viewport.setPointerCapture(e.pointerId)});
+    viewport.addEventListener('pointermove',e=>{if(!isDragging) return; translateX=e.clientX-dragStartX; translateY=e.clientY-dragStartY; applyTransform()});
+    function stopDrag(){isDragging=false} viewport.addEventListener('pointerup',stopDrag); viewport.addEventListener('pointercancel',stopDrag);
+    viewport.addEventListener('touchstart',e=>{if(e.touches.length===2){const dx=e.touches[0].clientX-e.touches[1].clientX; const dy=e.touches[0].clientY-e.touches[1].clientY; lastTouchDistance=Math.hypot(dx,dy); pinchStartScale=scale;}},{passive:true});
+    viewport.addEventListener('touchmove',e=>{if(e.touches.length===2&&lastTouchDistance){const dx=e.touches[0].clientX-e.touches[1].clientX; const dy=e.touches[0].clientY-e.touches[1].clientY; const dist=Math.hypot(dx,dy); scale=clampScale(pinchStartScale*(dist/lastTouchDistance)); applyTransform();}},{passive:true});
+    viewport.addEventListener('touchend',()=>{lastTouchDistance=null});
+
+    function formatDateItalian(dateStr){try{return new Date(dateStr).toLocaleDateString('it-IT',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})}catch{return dateStr}}
+    function bookingClosedForEvent(dateStr){return new Date() > new Date(`${dateStr}T23:59:59`)}
+    function getSeatMeta(id){if(/^\d+$/.test(id)) return {sala:'interna',tipo:'tavolo'}; if(/^D\d+$/.test(id)||/^S\d+$/.test(id)) return {sala:'interna',tipo:'divano'}; if(/^E\d+$/.test(id)) return {sala:'esterna',tipo:'tavolo'}; if(/^M\d+$/.test(id)) return {sala:'esterna',tipo:'muretto'}; if(/^G\d+$/.test(id)) return {sala:'giardino',tipo:'tavolo'}; if(/^P\d+$/.test(id)) return {sala:'giardino',tipo:'poltrona'}; return {sala:'',tipo:''}}
+    function seatCategoryRank(id){if(/^\d+$/.test(id)) return 1; if(/^E\d+$/.test(id)) return 2; if(/^G\d+$/.test(id)) return 3; if(/^D\d+$/.test(id)) return 4; if(/^S\d+$/.test(id)) return 5; if(/^M\d+$/.test(id)) return 6; if(/^P\d+$/.test(id)) return 7; return 99}
+    function seatNumber(id){const m=String(id).match(/(\d+)$/); return m?Number(m[1]):0}
+    function seatSort(a,b){const ra=seatCategoryRank(a), rb=seatCategoryRank(b); return ra!==rb ? ra-rb : seatNumber(a)-seatNumber(b)}
+    function countSeatsForPayment(seats){let tavolo=0,dopocena=0; seats.forEach(id=>{if(getSeatMeta(id).tipo==='tavolo') tavolo++; else dopocena++}); return {tavolo,dopocena}}
+    function calculateBookingAmounts(seats){const {tavolo,dopocena}=countSeatsForPayment(seats); return {tavolo,dopocena,totale:(tavolo*Number(currentEvent?.quota_tavolo||0))+(dopocena*Number(currentEvent?.quota_dopocena||0))}}
+    function updateSelectedInfo(){const ordered=[...selectedSeats].sort(seatSort); selectedSeatsText.textContent=ordered.length?ordered.join(', '):'nessuno'; selectedCountText.textContent=ordered.length; updateQuotaInfo(ordered)}
+    function updateQuotaInfo(seats=[]){const {tavolo,dopocena,totale}=calculateBookingAmounts(seats); quotaBox.innerHTML=`<h4>Quota prenotazione</h4><div><strong>Quota tavolo:</strong> € ${Number(currentEvent?.quota_tavolo||0).toFixed(2)}</div><div><strong>Quota dopocena:</strong> € ${Number(currentEvent?.quota_dopocena||0).toFixed(2)}</div><div style="margin-top:8px;"><strong>Posti tavolo selezionati:</strong> ${tavolo}</div><div><strong>Posti dopocena selezionati:</strong> ${dopocena}</div><div style="margin-top:8px;"><strong>Totale da pagare:</strong> € ${totale.toFixed(2)}</div>`}
+
+    function createSeatButton(id){const isTaken=occupiedSeats.includes(id); const btn=document.createElement('button'); btn.className='seat '+(isTaken?'taken':'free'); btn.textContent=id; btn.type='button'; if(!isTaken){btn.addEventListener('click',()=>{if(selectedSeats.includes(id)){selectedSeats=selectedSeats.filter(x=>x!==id); btn.classList.remove('selected'); btn.classList.add('free')}else{selectedSeats.push(id); btn.classList.remove('free'); btn.classList.add('selected')} updateSelectedInfo()})} return btn}
+    function buildTableSeatMap(totalSeats,prefix=''){const longSide=(totalSeats-2)/2, top=[], bottom=[]; for(let i=0;i<longSide;i++) top.push(prefix+String(2+i)); for(let i=0;i<longSide;i++) bottom.push(prefix+String(2+longSide+i)); return {left:prefix+'1', right:prefix+String(totalSeats), top, bottom}}
+    function buildSimpleTableBlock(totalSeats,prefix=''){const tableMap=buildTableSeatMap(totalSeats,prefix), seatWidth=52, tableWidth=Math.max(220, tableMap.top.length*seatWidth); const wrap=document.createElement('div'); wrap.className='simple-table-wrap'; const top=document.createElement('div'); top.className='top-seats'; top.style.gridColumn='2'; top.style.gridRow='1'; tableMap.top.forEach(id=>top.appendChild(createSeatButton(id))); const left=document.createElement('div'); left.className='left-seat'; left.style.gridColumn='1'; left.style.gridRow='2'; left.appendChild(createSeatButton(tableMap.left)); const center=document.createElement('div'); center.className='rect-table'; center.style.gridColumn='2'; center.style.gridRow='2'; center.style.setProperty('--table-width', `${tableWidth}px`); const right=document.createElement('div'); right.className='right-seat'; right.style.gridColumn='3'; right.style.gridRow='2'; right.appendChild(createSeatButton(tableMap.right)); const bottom=document.createElement('div'); bottom.className='bottom-seats'; bottom.style.gridColumn='2'; bottom.style.gridRow='3'; tableMap.bottom.forEach(id=>bottom.appendChild(createSeatButton(id))); wrap.append(top,left,center,right,bottom); return wrap}
+    function buildGardenBlock(totalSeats,extraSeats){const wrap=document.createElement('div'); wrap.className='plan-block'; const garden=document.createElement('div'); garden.className='garden-wrap'; const tableWrap=document.createElement('div'); tableWrap.className='garden-table-wrap'; const sideSeatsCount=Math.max(4,totalSeats-2); const perSide=Math.ceil(sideSeatsCount/2); const tableHeight=140+Math.max(0,perSide-2)*44; const midHeight=70+Math.max(0,perSide-2)*22; tableWrap.style.setProperty('--garden-height', `${tableHeight}px`); tableWrap.style.setProperty('--garden-mid', `${midHeight}px`); const gIds=[]; for(let i=1;i<=totalSeats;i++) gIds.push(`G${i}`); const topId=gIds[0]||null,bottomId=gIds[1]||null,sideIds=gIds.slice(2),leftIds=sideIds.slice(0,Math.ceil(sideIds.length/2)),rightIds=sideIds.slice(Math.ceil(sideIds.length/2)); const gTop=topId?createSeatButton(topId):document.createElement('div'); gTop.classList.add('g-top'); if(!topId) gTop.style.visibility='hidden'; const gBottom=bottomId?createSeatButton(bottomId):document.createElement('div'); gBottom.classList.add('g-bottom'); if(!bottomId) gBottom.style.visibility='hidden'; const leftCol=document.createElement('div'); leftCol.className='g-left-col'; leftIds.forEach(id=>leftCol.appendChild(createSeatButton(id))); const rightCol=document.createElement('div'); rightCol.className='g-right-col'; rightIds.forEach(id=>rightCol.appendChild(createSeatButton(id))); const table=document.createElement('div'); table.className='garden-table'; tableWrap.append(gTop,gBottom,leftCol,rightCol,table); const poltrone=document.createElement('div'); poltrone.className='garden-right-poltrone'; for(let i=1;i<=extraSeats;i++) poltrone.appendChild(createSeatButton(`P${i}`)); garden.append(tableWrap, poltrone); wrap.appendChild(garden); return wrap}
+    function buildExternalBlock(totalSeats,extraSeats){const wrap=document.createElement('div'); wrap.className='plan-block'; const external=document.createElement('div'); external.className='external-wrap'; const topExtras=document.createElement('div'); topExtras.className='seat-row'; for(let i=1;i<=extraSeats;i++) topExtras.appendChild(createSeatButton(`M${i}`)); external.append(topExtras, buildSimpleTableBlock(totalSeats,'E')); wrap.appendChild(external); return wrap}
+    function buildInternalBlock(totalSeats){const container=document.createElement('div'); container.className='plan-block'; const internal=document.createElement('div'); internal.className='internal-wrap'; const topDivans=document.createElement('div'); topDivans.className='top-divans'; const topDivanRow=document.createElement('div'); topDivanRow.className='seat-row'; ['D1','D2','D3','D4','D5'].forEach(id=>topDivanRow.appendChild(createSeatButton(id))); topDivans.appendChild(topDivanRow); const tableWrap=buildSimpleTableBlock(totalSeats,''); tableWrap.style.gridColumn='2'; tableWrap.style.gridRow='2 / span 2'; const rightSide=document.createElement('div'); rightSide.className='right-side'; const rightCol=document.createElement('div'); rightCol.className='seat-col'; ['D6','D7','S1'].forEach(id=>rightCol.appendChild(createSeatButton(id))); rightSide.appendChild(rightCol); const bottomDivans=document.createElement('div'); bottomDivans.className='bottom-divans'; const bottomRow=document.createElement('div'); bottomRow.className='seat-row'; ['D8','S2'].forEach(id=>bottomRow.appendChild(createSeatButton(id))); bottomDivans.appendChild(bottomRow); internal.append(topDivans,tableWrap,rightSide,bottomDivans); container.appendChild(internal); return container}
+    function renderRoom(){roomLayout.innerHTML=''; if(saleConfig.giardino?.attiva) roomLayout.appendChild(buildGardenBlock(saleConfig.giardino.posti_totali,saleConfig.giardino.posti_extra)); if(saleConfig.esterna?.attiva) roomLayout.appendChild(buildExternalBlock(saleConfig.esterna.posti_totali,saleConfig.esterna.posti_extra)); if(saleConfig.interna?.attiva) roomLayout.appendChild(buildInternalBlock(saleConfig.interna.posti_totali))}
+    function setSalaInfoText(){const names=[]; if(saleConfig.interna?.attiva) names.push('all’interno'); if(saleConfig.esterna?.attiva) names.push('all’esterno'); if(saleConfig.giardino?.attiva) names.push('in giardino'); salaInfoText.textContent = names.length===1?`La serata si svolgerà ${names[0]}.`: names.length===2?`La serata si svolgerà ${names[0]} e ${names[1]}.`: names.length===3?'La serata si svolgerà all’interno, all’esterno e in giardino.':''}
+
+    async function loadSaleConfig(){const {data,error}=await supabaseClient.from('serata_sale').select('sala_codice,attiva,posti_totali,posti_extra').eq('serata_id', id); if(error) return false; saleConfig={}; (data||[]).forEach(row=>saleConfig[row.sala_codice]={attiva:!!row.attiva,posti_totali:Number(row.posti_totali||0),posti_extra:Number(row.posti_extra||0)}); return true}
+    async function loadEvent(){if(!window.supabaseClient||!id) return; const {data,error}=await supabaseClient.from('serate').select('*').eq('id',id).single(); if(error||!data){eventDetail.innerHTML='<div class="card note">Serata non trovata.</div>'; return;} currentEvent=data; eventDetail.innerHTML=''; eventInfo.innerHTML=`<img class="cover" src="${data.locandina||'img/logo.png'}"><h2 class="event-title" style="margin-top:14px;">${data.titolo}</h2><p><strong>Data:</strong> ${formatDateItalian(data.data)}</p>${data.menu?`<p><strong>Menù</strong></p><div class="prog">${data.menu}</div>`:''}${data.programma?`<p><strong>Programma</strong></p><div class="prog">${data.programma}</div>`:''}`; const ok=await loadSaleConfig(); if(!ok){bookingMsg.textContent='Errore nel caricamento sale.'; return;} setSalaInfoText(); const {data:posti,error:postiError}=await supabaseClient.from('prenotazione_posti').select('posto_numero').eq('serata_id', id); if(postiError){bookingMsg.textContent='Errore nel caricamento posti.'; return;} occupiedSeats=(posti||[]).map(r=>String(r.posto_numero)).sort(seatSort); renderRoom(); updateSelectedInfo(); resetTransform(); if(bookingClosedForEvent(data.data)){bookBtn.disabled=true; bookingMsg.textContent='Le prenotazioni per questa serata sono chiuse.';}}
+    async function saveBooking(){const nome=nomeInput.value.trim(), telefono=telefonoInput.value.trim(), email=emailInput.value.trim(), allergie=allergieInput.value.trim(), richieste=richiesteInput.value.trim(); bookingMsg.textContent=''; if(bookingClosedForEvent(currentEvent.data)){bookingMsg.textContent='Le prenotazioni per questa serata sono chiuse.'; return;} if(!nome){bookingMsg.textContent='Inserisci nome e cognome.'; return;} if(!selectedSeats.length){bookingMsg.textContent='Seleziona almeno un posto.'; return;} if(selectedSeats.some(seat=>occupiedSeats.includes(seat))){bookingMsg.textContent='Uno dei posti selezionati non è più disponibile.'; await loadEvent(); selectedSeats=[]; updateSelectedInfo(); return;} const booked=[...selectedSeats].sort(seatSort); const {data:prenotazione,error:prenError}=await supabaseClient.from('prenotazioni').insert([{serata_id:id,nome,telefono:telefono||null,email:email||null,allergie:allergie||null,richieste:richieste||null}]).select().single(); if(prenError||!prenotazione){bookingMsg.textContent='Errore nel salvataggio prenotazione.'; return;} const rows=booked.map(seatId=>({prenotazione_id:prenotazione.id, serata_id:id, posto_numero:seatId, posto_tipo:getSeatMeta(seatId).tipo})); const {error:postiError}=await supabaseClient.from('prenotazione_posti').insert(rows); if(postiError){bookingMsg.textContent='Errore nel salvataggio posti.'; return;} bookingMsg.textContent=`Prenotazione salvata! Posti: ${booked.join(', ')}`; [nomeInput,telefonoInput,emailInput,allergieInput,richiesteInput].forEach(el=>el.value=''); selectedSeats=[]; await loadEvent();}
+    document.getElementById('bookBtn').addEventListener('click', saveBooking);
+    document.addEventListener('DOMContentLoaded', async()=>{setupMenu(); await loadEvent();});
   </script>
 </body>
 </html>
