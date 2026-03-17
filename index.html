@@ -1,299 +1,38 @@
 <!DOCTYPE html>
-<html lang="it">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tavernetta da Kevin</title>
-  <meta name="description" content="Scopri la prossima serata della Tavernetta da Kevin e tutti gli eventi della settimana.">
-
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Tavernetta da Kevin">
-  <meta property="og:title" content="Tavernetta da Kevin">
-  <meta property="og:description" content="Scopri la prossima serata della Tavernetta da Kevin.">
-  <meta property="og:image" content="https://tavernettadakevin.it/img/logo.png">
-  <meta property="og:url" content="https://tavernettadakevin.it/">
-
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Tavernetta da Kevin">
-  <meta name="twitter:description" content="Scopri la prossima serata della Tavernetta da Kevin.">
-  <meta name="twitter:image" content="https://tavernettadakevin.it/img/logo.png">
-
-  <link rel="icon" type="image/png" href="img/logo.png">
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="canonical" href="https://tavernettadakevin.it/">
-
-  <style>
-    .hero-card{
-      display:grid;
-      grid-template-columns:320px 1fr;
-      gap:20px;
-      background:var(--card);
-      border-radius:18px;
-      box-shadow:var(--shadow);
-      overflow:hidden;
-      margin-top:18px;
-    }
-
-    .hero-img{
-      width:100%;
-      height:100%;
-      min-height:320px;
-      object-fit:cover;
-      background:#eee;
-    }
-
-    .hero-body{
-      padding:18px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-
-    .hero-body h3{
-      margin:0;
-      color:var(--brown);
-      font-size:1.6rem;
-    }
-
-    .hero-programma{
-      white-space:pre-line;
-    }
-
-    .event-grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-      gap:18px;
-      margin-top:18px;
-    }
-
-    .event-card{
-      background:var(--card);
-      border-radius:16px;
-      overflow:hidden;
-      box-shadow:var(--shadow);
-      display:flex;
-      flex-direction:column;
-    }
-
-    .event-card img{
-      width:100%;
-      aspect-ratio:4/5;
-      object-fit:cover;
-      background:#eee;
-    }
-
-    .event-card-body{
-      padding:14px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      flex:1;
-    }
-
-    .event-card-body h4{
-      margin:0;
-      color:var(--brown);
-    }
-
-    .event-card-body .program{
-      white-space:pre-line;
-      font-size:14px;
-    }
-
-    .event-actions{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      margin-top:auto;
-    }
-
-    @media (max-width: 900px){
-      .hero-card{
-        grid-template-columns:1fr;
-      }
-
-      .hero-img{
-        min-height:260px;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="top-bar">
-    <img src="img/logo.png" alt="Tavernetta da Kevin" class="logo-top">
-    <button id="hamburger" class="hamburger" aria-label="Apri menu">☰</button>
-  </div>
-
-  <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
-
-  <aside id="sidebar" class="sidebar">
-    <img src="img/logo.png" alt="Logo" class="side-logo">
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="serate.html">Serate</a>
-      <a href="calendario.html">Calendario</a>
-      <a href="dove.html">Dove siamo</a>
-      <a href="contatti.html">Contattaci</a>
-    </nav>
-  </aside>
-
-  <main class="page">
-    <section class="section">
-      <h2>Prossima serata</h2>
-      <div id="nextEventBox"></div>
-    </section>
-
-    <section class="section">
-      <h2>Eventi della settimana</h2>
-      <div id="weekEventsBox" class="event-grid"></div>
-      <p id="weekMsg" class="note"></p>
-    </section>
-  </main>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase-client.js"></script>
-  <script src="js/track-visit.js"></script>
-  <script src="js/site.js"></script>
-
-  <script>
-    function formatDateItalian(dateStr){
-      try {
-        return new Date(dateStr).toLocaleDateString("it-IT", {
-          weekday: "long",
-          day: "2-digit",
-          month: "long",
-          year: "numeric"
-        });
-      } catch {
-        return dateStr;
-      }
-    }
-
-    function truncateText(text, max = 140){
-      const t = (text || "").trim();
-      if (!t) return "";
-      return t.length > max ? t.slice(0, max).trim() + "..." : t;
-    }
-
-    async function shareEvent(ev){
-      const url = `${window.location.origin}/evento.html?id=${ev.id}`;
-      const text = `${ev.titolo}
-${formatDateItalian(ev.data)}
-
-${url}`;
-
-      if (navigator.share) {
-        try {
-          await navigator.share({
-            title: ev.titolo,
-            text,
-            url
-          });
-          return;
-        } catch (err) {
-          if (err && err.name === "AbortError") return;
-        }
-      }
-
-      try {
-        await navigator.clipboard.writeText(text);
-        alert("Link della serata copiato negli appunti.");
-      } catch {
-        prompt("Copia questo link:", url);
-      }
-    }
-
-    function renderNextEvent(ev){
-      const box = document.getElementById("nextEventBox");
-
-      if (!ev) {
-        box.innerHTML = `<div class="card note">Nessuna serata programmata al momento.</div>`;
-        return;
-      }
-
-      box.innerHTML = `
-        <article class="hero-card">
-          <img class="hero-img" src="${ev.locandina || 'img/logo.png'}" alt="${ev.titolo}">
-          <div class="hero-body">
-            <h3>${ev.titolo}</h3>
-            <div><strong>Data:</strong> ${formatDateItalian(ev.data)}</div>
-            <div class="hero-programma">${ev.programma || ""}</div>
-            <div class="event-actions">
-              <a class="button" href="evento.html?id=${ev.id}">Apri serata</a>
-              <button class="button secondary" type="button" id="shareNextBtn">Condividi</button>
-            </div>
-          </div>
-        </article>
-      `;
-
-      document.getElementById("shareNextBtn").addEventListener("click", () => shareEvent(ev));
-    }
-
-    function renderWeekEvents(events){
-      const box = document.getElementById("weekEventsBox");
-      const msg = document.getElementById("weekMsg");
-
-      box.innerHTML = "";
-      msg.textContent = "";
-
-      if (!events.length) {
-        msg.textContent = "Nessun evento nei prossimi 7 giorni.";
-        return;
-      }
-
-      events.forEach(ev => {
-        const card = document.createElement("article");
-        card.className = "event-card";
-
-        card.innerHTML = `
-          <img src="${ev.locandina || 'img/logo.png'}" alt="${ev.titolo}">
-          <div class="event-card-body">
-            <h4>${ev.titolo}</h4>
-            <div><strong>${formatDateItalian(ev.data)}</strong></div>
-            <div class="program">${truncateText(ev.programma, 120)}</div>
-            <div class="event-actions">
-              <a class="button secondary" href="evento.html?id=${ev.id}">Apri</a>
-              <button class="button secondary share-btn" type="button">Condividi</button>
-            </div>
-          </div>
-        `;
-
-        card.querySelector(".share-btn").addEventListener("click", () => shareEvent(ev));
-        box.appendChild(card);
-      });
-    }
-
-    async function loadHomeEvents(){
-      const today = new Date();
-      const start = today.toISOString().slice(0, 10);
-
-      const endDate = new Date(today);
-      endDate.setDate(today.getDate() + 7);
-      const end = endDate.toISOString().slice(0, 10);
-
-      const { data, error } = await supabaseClient
-        .from("serate")
-        .select("*")
-        .gte("data", start)
-        .lte("data", end)
-        .order("data", { ascending: true });
-
-      if (error) {
-        console.error(error);
-        document.getElementById("nextEventBox").innerHTML = `<div class="card note">Errore nel caricamento eventi.</div>`;
-        document.getElementById("weekMsg").textContent = "Errore nel caricamento eventi settimanali.";
-        return;
-      }
-
-      const events = data || [];
-      renderNextEvent(events[0] || null);
-      renderWeekEvents(events);
-    }
-
-    document.addEventListener("DOMContentLoaded", async () => {
-      setupMenu();
-      await loadHomeEvents();
-    });
-  </script>
-</body>
-</html>
+<html lang="it"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tavernetta da Kevin</title>
+<link rel="icon" type="image/png" href="img/logo.png">
+<link rel="stylesheet" href="css/style.css">
+<style>
+.hero-card{display:grid;grid-template-columns:320px 1fr;gap:20px;background:var(--card);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;margin-top:18px}
+.hero-img{width:100%;height:100%;min-height:320px;object-fit:cover;background:#eee}
+.hero-body{padding:18px;display:flex;flex-direction:column;gap:10px}
+.event-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin-top:18px}
+.event-card{background:var(--card);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
+.event-card img{width:100%;aspect-ratio:4/5;object-fit:cover;background:#eee}
+.event-card-body{padding:14px;display:flex;flex-direction:column;gap:8px;flex:1}
+.event-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto}
+@media (max-width: 900px){.hero-card{grid-template-columns:1fr}.hero-img{min-height:260px}}
+</style></head><body>
+<div class="top-bar"><img src="img/logo.png" alt="Tavernetta da Kevin" class="logo-top"><button id="hamburger" class="hamburger">☰</button></div>
+<div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+<aside id="sidebar" class="sidebar"><img src="img/logo.png" class="side-logo"><nav><a href="index.html">Home</a><a href="serate.html">Serate</a><a href="calendario.html">Calendario</a><a href="dove.html">Dove siamo</a><a href="contatti.html">Contattaci</a></nav></aside>
+<main class="page"><section class="section"><h2>Prossima serata</h2><div id="nextEventBox"></div></section><section class="section"><h2>Eventi della settimana</h2><div id="weekEventsBox" class="event-grid"></div><p id="weekMsg" class="note"></p></section></main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="js/supabase-client.js"></script><script src="js/track-visit.js"></script><script src="js/site.js"></script>
+<script>
+function formatDateItalian(dateStr){try{return new Date(dateStr).toLocaleDateString("it-IT",{weekday:"long",day:"2-digit",month:"long",year:"numeric"})}catch{return dateStr}}
+function truncateText(text,max=140){const t=(text||"").trim(); return t.length>max?t.slice(0,max).trim()+"...":t;}
+async function shareEvent(ev){const url=`${location.origin}/share.html?id=${ev.id}`; const text=`${ev.titolo}\n${formatDateItalian(ev.data)}\n\n${url}`; if(navigator.share){try{await navigator.share({title:ev.titolo,text,url}); return;}catch(e){}} try{await navigator.clipboard.writeText(text); alert("Link copiato");}catch{prompt("Copia:", url)}}
+function renderNextEvent(ev){const box=document.getElementById("nextEventBox"); if(!ev){box.innerHTML=`<div class="card note">Nessuna serata programmata al momento.</div>`; return;}
+box.innerHTML=`<article class="hero-card"><img class="hero-img" src="${ev.locandina||'img/logo.png'}"><div class="hero-body"><h3 class="event-title">${ev.titolo}</h3><div><strong>Data:</strong> ${formatDateItalian(ev.data)}</div><div style="white-space:pre-line">${ev.programma||""}</div><div class="event-actions"><a class="button" href="evento.html?id=${ev.id}">Apri serata</a><button class="button secondary" id="shareNextBtn">Condividi</button></div></div></article>`;
+document.getElementById("shareNextBtn").addEventListener("click",()=>shareEvent(ev));}
+function renderWeekEvents(events){const box=document.getElementById("weekEventsBox"), msg=document.getElementById("weekMsg"); box.innerHTML=""; msg.textContent=""; if(!events.length){msg.textContent="Nessun evento nei prossimi 7 giorni."; return;}
+events.forEach(ev=>{const card=document.createElement("article"); card.className="event-card"; card.innerHTML=`<img src="${ev.locandina||'img/logo.png'}"><div class="event-card-body"><h4 class="event-title">${ev.titolo}</h4><div><strong>${formatDateItalian(ev.data)}</strong></div><div>${truncateText(ev.programma,120)}</div><div class="event-actions"><a class="button secondary" href="evento.html?id=${ev.id}">Apri</a><button class="button secondary share-btn">Condividi</button></div></div>`; card.querySelector(".share-btn").addEventListener("click",()=>shareEvent(ev)); box.appendChild(card);});}
+async function loadHomeEvents(){ if(!window.supabaseClient) return;
+const today=new Date(), start=today.toISOString().slice(0,10); const endDate=new Date(today); endDate.setDate(today.getDate()+7); const end=endDate.toISOString().slice(0,10);
+const {data,error}=await supabaseClient.from("serate").select("*").gte("data",start).lte("data",end).order("data",{ascending:true});
+if(error){document.getElementById("nextEventBox").innerHTML=`<div class="card note">Errore nel caricamento eventi.</div>`; return;}
+const events=data||[]; renderNextEvent(events[0]||null); renderWeekEvents(events);}
+document.addEventListener("DOMContentLoaded", async()=>{setupMenu(); await loadHomeEvents();});
+</script></body></html>
