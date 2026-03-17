@@ -1,1 +1,58 @@
-<!DOCTYPE html><html><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'><link rel='stylesheet' href='../css/style.css'><title>Login manager</title></head><body><main class='page'><section class='section'><div class='card'><h2 class='event-title'>Login manager</h2><p class='note'>Pagina placeholder. Se vuoi usare il guard semplice, apri la console e fai localStorage.setItem("manager_auth_ok","true").</p><button class='button' onclick='localStorage.setItem("manager_auth_ok","true"); location.href="index.html"'>Entra</button></div></section></main></body></html>
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login manager</title>
+  <link rel="icon" type="image/png" href="../img/logoapp.png">
+  <link rel="apple-touch-icon" href="../img/logoapp.png">
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .login-wrap{width:min(460px,calc(100% - 24px));margin:40px auto}
+    .login-card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:22px}
+    .login-brand{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+    .login-brand img{height:56px;width:auto;object-fit:contain}
+    .login-card h2{margin:0;color:var(--brown)}
+    .login-card p{margin:6px 0 0;opacity:.8}
+    .login-field{margin-top:16px}
+    .login-field label{display:block;margin-bottom:6px;font-weight:700;color:var(--brown)}
+    .login-field input{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(107,62,38,.18);background:#fffaf2;font-size:16px}
+    .login-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+  </style>
+</head>
+<body>
+  <main class="login-wrap">
+    <div class="login-card">
+      <div class="login-brand">
+        <img src="../img/logoapp.png" alt="Tavernetta Manager">
+        <div>
+          <h2>Tavernetta Manager</h2>
+          <p>Inserisci la password per entrare.</p>
+        </div>
+      </div>
+      <div class="login-field">
+        <label for="passwordInput">Password</label>
+        <input id="passwordInput" type="password" autocomplete="current-password">
+      </div>
+      <div class="login-actions">
+        <button id="loginBtn" class="button" type="button">Entra</button>
+        <a class="button secondary" href="../index.html">Torna al sito</a>
+      </div>
+      <p id="msg" class="note"></p>
+    </div>
+  </main>
+  <script>
+    const MANAGER_PASSWORD = 'Kevdsant';
+    function doLogin(){
+      const value = document.getElementById('passwordInput').value.trim();
+      const msg = document.getElementById('msg');
+      if (!value) { msg.textContent = 'Inserisci la password.'; return; }
+      if (value !== MANAGER_PASSWORD) { msg.textContent = 'Password errata.'; return; }
+      localStorage.setItem('manager_auth_ok','true');
+      location.href = 'index.html';
+    }
+    document.getElementById('loginBtn').addEventListener('click', doLogin);
+    document.getElementById('passwordInput').addEventListener('keydown', (e)=>{ if (e.key === 'Enter') doLogin(); });
+  </script>
+</body>
+</html>
