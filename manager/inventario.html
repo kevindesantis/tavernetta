@@ -1,1 +1,171 @@
-<!DOCTYPE html><html><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'><link rel='stylesheet' href='../css/style.css'><title>Inventario</title></head><body><div class='top-bar'><img src='../img/logo.png' class='logo-top'><button id='hamburger' class='hamburger'>☰</button></div><div id='sidebarBackdrop' class='sidebar-backdrop'></div><aside id='sidebar' class='sidebar'><img src='../img/logo.png' class='side-logo'><nav><a href='index.html'>Dashboard</a><a href='serate.html'>Serate</a><a href='storico.html'>Storico eventi</a><a href='settimana.html'>Programmazione settimana</a><a href='inventario.html'>Inventario</a></nav></aside><main class='page'><section class='section'><div class='card'><h2 class='event-title'>Inventario</h2><p class='note'>Placeholder inventario.</p></div></section></main><script src='../js/site.js'></script><script>setupMenu()</script></body></html>
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventario – Tavernetta Manager</title>
+  <link rel="icon" type="image/png" href="../img/logo.png">
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .inv-grid{display:grid;grid-template-columns:360px 1fr;gap:18px}
+    .inv-list{display:grid;gap:10px}
+    .inv-item{background:var(--card);box-shadow:var(--shadow);border-radius:14px;padding:12px;display:flex;justify-content:space-between;gap:10px;align-items:start}
+    .inv-item h4{margin:0 0 4px;color:var(--brown)}
+    .inv-meta{font-size:13px;opacity:.85}
+    .inv-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+    .toolbar input,.toolbar select,.inv-form input,.inv-form textarea{width:100%;padding:10px;border-radius:10px;border:1px solid #d6b98a;font-family:inherit;background:#fff}
+    .inv-form label{display:block;margin:10px 0 6px;font-weight:700;color:var(--brown)}
+    .inv-form textarea{min-height:80px;resize:vertical}
+    .pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#fffaf2;border:1px solid #ead6b1;font-size:12px}
+    @media (max-width: 900px){.inv-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <img src="../img/logo.png" alt="Tavernetta da Kevin" class="logo-top">
+    <button id="hamburger" class="hamburger" aria-label="Apri menu">☰</button>
+  </div>
+  <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+  <aside id="sidebar" class="sidebar">
+    <img src="../img/logo.png" alt="Logo" class="side-logo">
+    <nav>
+      <a href="index.html">Dashboard</a>
+      <a href="serate.html">Serate</a>
+      <a href="storico.html">Storico eventi</a>
+      <a href="settimana.html">Programmazione settimana</a>
+      <a href="inventario.html">Inventario</a>
+      <a href="../index.html">Sito pubblico</a>
+      <a href="#" id="logoutBtn">Esci</a>
+    </nav>
+  </aside>
+  <main class="page">
+    <section class="section">
+      <h2>Inventario</h2>
+      <p class="note">Versione pronta all'uso. I dati vengono salvati nel browser del dispositivo.</p>
+      <div class="inv-grid">
+        <div class="card">
+          <h3 class="event-title">Aggiungi / modifica articolo</h3>
+          <form id="invForm" class="inv-form">
+            <input type="hidden" id="itemId">
+            <label for="nome">Nome</label>
+            <input id="nome" required>
+            <label for="categoria">Categoria</label>
+            <input id="categoria" placeholder="bevande, cucina, pulizie...">
+            <label for="quantita">Quantità</label>
+            <input id="quantita" type="number" min="0" step="0.01" value="0">
+            <label for="unita">Unità</label>
+            <input id="unita" placeholder="pz, bottiglie, kg...">
+            <label for="soglia">Soglia minima</label>
+            <input id="soglia" type="number" min="0" step="0.01" value="0">
+            <label for="noteItem">Note</label>
+            <textarea id="noteItem"></textarea>
+            <div class="button-row" style="margin-top:14px">
+              <button type="submit" class="button">Salva articolo</button>
+              <button type="button" id="resetBtn" class="button secondary">Nuovo</button>
+            </div>
+            <p id="msg" class="note"></p>
+          </form>
+        </div>
+        <div class="card">
+          <div class="toolbar">
+            <input id="searchInput" placeholder="Cerca articolo...">
+            <select id="filterStock">
+              <option value="all">Tutti</option>
+              <option value="low">Sotto soglia</option>
+            </select>
+          </div>
+          <div id="invList" class="inv-list"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="../js/manager-guard.js"></script>
+  <script src="../js/site.js"></script>
+  <script>
+    const KEY = 'tavernetta_inventory_v1';
+    const form = document.getElementById('invForm');
+    const msg = document.getElementById('msg');
+    const invList = document.getElementById('invList');
+    const searchInput = document.getElementById('searchInput');
+    const filterStock = document.getElementById('filterStock');
+
+    function loadItems(){
+      try{return JSON.parse(localStorage.getItem(KEY) || '[]')}catch{return []}
+    }
+    function saveItems(items){localStorage.setItem(KEY, JSON.stringify(items))}
+    function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+    function clearForm(){['itemId','nome','categoria','unita','noteItem'].forEach(id=>document.getElementById(id).value=''); document.getElementById('quantita').value='0'; document.getElementById('soglia').value='0'; msg.textContent='';}
+    function itemMatches(item){
+      const q = searchInput.value.trim().toLowerCase();
+      if(q && !(`${item.nome} ${item.categoria} ${item.note}`.toLowerCase().includes(q))) return false;
+      if(filterStock.value === 'low' && Number(item.quantita||0) > Number(item.soglia||0)) return false;
+      return true;
+    }
+    function render(){
+      const items = loadItems().sort((a,b)=>a.nome.localeCompare(b.nome,'it'));
+      const filtered = items.filter(itemMatches);
+      invList.innerHTML = '';
+      if(!filtered.length){invList.innerHTML = '<div class="note">Nessun articolo trovato.</div>'; return;}
+      filtered.forEach(item=>{
+        const low = Number(item.quantita||0) <= Number(item.soglia||0);
+        const div = document.createElement('div');
+        div.className = 'inv-item';
+        div.innerHTML = `
+          <div>
+            <h4>${item.nome}</h4>
+            <div class="inv-meta">${item.categoria || '-'} · ${item.quantita} ${item.unita || ''}</div>
+            <div style="margin-top:6px">${low ? '<span class="pill">Sotto soglia</span>' : ''}</div>
+            ${item.note ? `<div class="inv-meta" style="margin-top:6px">${item.note}</div>` : ''}
+          </div>
+          <div class="inv-actions">
+            <button class="button secondary edit-btn" type="button">Modifica</button>
+            <button class="button danger del-btn" type="button">Elimina</button>
+          </div>`;
+        div.querySelector('.edit-btn').addEventListener('click',()=>{
+          document.getElementById('itemId').value = item.id;
+          document.getElementById('nome').value = item.nome || '';
+          document.getElementById('categoria').value = item.categoria || '';
+          document.getElementById('quantita').value = item.quantita ?? 0;
+          document.getElementById('unita').value = item.unita || '';
+          document.getElementById('soglia').value = item.soglia ?? 0;
+          document.getElementById('noteItem').value = item.note || '';
+          window.scrollTo({top:0, behavior:'smooth'});
+        });
+        div.querySelector('.del-btn').addEventListener('click',()=>{
+          if(!confirm(`Eliminare ${item.nome}?`)) return;
+          saveItems(loadItems().filter(x=>x.id!==item.id));
+          render();
+        });
+        invList.appendChild(div);
+      })
+    }
+    form.addEventListener('submit',(e)=>{
+      e.preventDefault();
+      const items = loadItems();
+      const id = document.getElementById('itemId').value || uid();
+      const payload = {
+        id,
+        nome: document.getElementById('nome').value.trim(),
+        categoria: document.getElementById('categoria').value.trim(),
+        quantita: Number(document.getElementById('quantita').value || 0),
+        unita: document.getElementById('unita').value.trim(),
+        soglia: Number(document.getElementById('soglia').value || 0),
+        note: document.getElementById('noteItem').value.trim()
+      };
+      if(!payload.nome){msg.textContent='Inserisci almeno il nome.'; return;}
+      const idx = items.findIndex(x=>x.id===id);
+      if(idx>=0) items[idx] = payload; else items.push(payload);
+      saveItems(items);
+      msg.textContent='Articolo salvato.';
+      clearForm();
+      render();
+    });
+    document.getElementById('resetBtn').addEventListener('click', clearForm);
+    searchInput.addEventListener('input', render);
+    filterStock.addEventListener('change', render);
+    document.getElementById('logoutBtn').addEventListener('click',(e)=>{e.preventDefault(); localStorage.removeItem('manager_auth_ok'); localStorage.removeItem('manager_auth_mode'); window.location.href='login.html';});
+    document.addEventListener('DOMContentLoaded',()=>{setupMenu(); render();});
+  </script>
+</body>
+</html>
