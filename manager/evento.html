@@ -24,7 +24,7 @@
 </div>
 <div class="right-panel"><div class="table-layout"><div class="seat-legend"><div class="legend-item"><span class="legend-dot dot-free"></span> Disponibile</div><div class="legend-item"><span class="legend-dot dot-selected"></span> Selezionato</div><div class="legend-item"><span class="legend-dot dot-taken"></span> Occupato</div></div><div class="zoom-controls"><button id="zoomInBtn" type="button" class="button secondary">+</button><button id="zoomOutBtn" type="button" class="button secondary">−</button><button id="zoomResetBtn" type="button" class="button secondary">Reset</button></div><div id="viewport" class="viewport"><div id="zoomSurface" class="zoom-surface"><div id="roomLayout" class="room-layout"></div><div id="seatPopup" class="seat-popup" style="display:none;"></div></div></div></div></div>
 </div></section></main>
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="../js/supabase-client.js"></script><script src="../js/manager-guard.js"></script><script src="../js/site.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="../js/supabase-client.js"></script><script src="../js/manager-guard.js"></script><script src="../js/site.js"></script>
 <script>
 const params=new URLSearchParams(location.search); const serataId=params.get("id");
 let currentEvent=null, occupiedSeats=[], selectedSeats=[], saleConfig={}, prenotazioniData=[], seatBookingMap={}, openedBookingId=null;
@@ -185,147 +185,112 @@ function getPdfBookingSummary() {
   return {prenotazioni: prenotazioniData.length, coperti, dovuto: totaleDovuto, incassato: totaleIncassato, saldo: Math.max(0, totaleDovuto - totaleIncassato)};
 }
 
-function exportPdf(){
-  const sheet = document.createElement("div");
-  sheet.style.position = "fixed";
-  sheet.style.left = "-10000px";
-  sheet.style.top = "0";
-  sheet.style.width = "794px";
-  sheet.style.background = "#fffaf2";
-  sheet.style.padding = "26px";
-  sheet.style.boxSizing = "border-box";
-  sheet.style.fontFamily = "Arial, Helvetica, sans-serif";
-  sheet.style.color = "#2b2118";
+async function exportPdf(){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({orientation:'portrait', unit:'mm', format:'a4'});
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const margin = 10;
 
-  const title = document.createElement("div");
-  title.style.fontSize = "28px";
-  title.style.fontWeight = "700";
-  title.style.color = "#6b3e26";
-  title.textContent = currentEvent?.titolo || "Serata";
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(16);
+  doc.setTextColor(90,60,35);
+  doc.text(currentEvent?.titolo || 'Serata', margin, 14);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(10);
+  doc.setTextColor(50,50,50);
+  doc.text(formatDateItalian(currentEvent?.data || ''), margin, 20);
 
-  const date = document.createElement("div");
-  date.style.fontSize = "16px";
-  date.style.marginTop = "6px";
-  date.textContent = formatDateItalian(currentEvent?.data || "");
+  const mapBox = {x: margin, y: 26, w: pageW - margin*2, h: 95};
+  const listBoxX = margin;
+  const listBoxY = mapBox.y + mapBox.h + 6;
+  const listBoxW = pageW - margin*2 - 54;
+  const listBoxH = pageH - listBoxY - 12;
+  const summaryBoxX = listBoxX + listBoxW + 4;
+  const summaryBoxY = listBoxY;
+  const summaryBoxW = 50;
+  const summaryBoxH = 44;
 
-  const mapBox = document.createElement("div");
-  mapBox.style.marginTop = "16px";
-  mapBox.style.background = "#fff";
-  mapBox.style.border = "1px solid #ead6b1";
-  mapBox.style.borderRadius = "18px";
-  mapBox.style.padding = "16px";
-  mapBox.style.height = "420px";
-  mapBox.style.display = "flex";
-  mapBox.style.alignItems = "center";
-  mapBox.style.justifyContent = "center";
-  mapBox.style.overflow = "hidden";
+  doc.setDrawColor(210,185,140);
+  doc.setFillColor(255,250,242);
+  doc.roundedRect(mapBox.x, mapBox.y, mapBox.w, mapBox.h, 4, 4, 'FD');
 
-  const mapInner = document.createElement("div");
-  mapInner.style.transformOrigin = "top center";
+  const room = document.getElementById('roomLayout');
+  const seatEls = [...room.querySelectorAll('.seat')];
+  const originalLabels = seatEls.map(el => el.textContent);
 
-  const roomClone = document.getElementById("roomLayout").cloneNode(true);
-  roomClone.style.minWidth = roomLayout.scrollWidth + "px";
-  roomClone.style.width = roomLayout.scrollWidth + "px";
-  roomClone.querySelectorAll('.seat').forEach(btn => {
-    const id = btn.textContent.trim();
-    const pr = getBookingBySeat(id);
-    if (pr) {
-      btn.textContent = getPdfSeatLabel(pr.nome || "");
-      btn.style.fontSize = "10px";
-      btn.style.padding = "0 4px";
-    } else {
-      btn.style.fontSize = "10px";
-    }
-  });
+  try {
+    seatEls.forEach(el => {
+      const id = String(el.textContent).trim();
+      const booking = getBookingBySeat(id);
+      if (booking) {
+        el.textContent = shortLabelFromName(booking.nome);
+        el.style.fontSize = '10px';
+        el.style.lineHeight = '1';
+      }
+    });
 
-  mapInner.appendChild(roomClone);
-  mapBox.appendChild(mapInner);
+    const canvas = await html2canvas(room, {
+      backgroundColor: '#fffaf2',
+      scale: 2,
+      useCORS: true,
+      logging: false
+    });
 
-  const lower = document.createElement("div");
-  lower.style.display = "grid";
-  lower.style.gridTemplateColumns = "1fr 190px";
-  lower.style.gap = "12px";
-  lower.style.marginTop = "14px";
+    const imgData = canvas.toDataURL('image/png');
+    const ratio = Math.min(mapBox.w / canvas.width, mapBox.h / canvas.height);
+    const drawW = canvas.width * ratio;
+    const drawH = canvas.height * ratio;
+    const drawX = mapBox.x + (mapBox.w - drawW) / 2;
+    const drawY = mapBox.y + (mapBox.h - drawH) / 2;
+    doc.addImage(imgData, 'PNG', drawX, drawY, drawW, drawH);
+  } finally {
+    seatEls.forEach((el, i) => {
+      el.textContent = originalLabels[i];
+      el.style.fontSize = '';
+      el.style.lineHeight = '';
+    });
+  }
 
-  const listBox = document.createElement("div");
-  listBox.style.background = "#fff";
-  listBox.style.border = "1px solid #ead6b1";
-  listBox.style.borderRadius = "16px";
-  listBox.style.padding = "12px 14px";
-  const listTitle = document.createElement("div");
-  listTitle.textContent = "Prenotazioni";
-  listTitle.style.fontSize = "16px";
-  listTitle.style.fontWeight = "700";
-  listTitle.style.color = "#6b3e26";
-  listTitle.style.marginBottom = "8px";
-  listBox.appendChild(listTitle);
-  buildCompactBookingLines().forEach(line => {
-    const row = document.createElement("div");
-    row.textContent = line;
-    row.style.fontSize = "13px";
-    row.style.lineHeight = "1.35";
-    row.style.marginBottom = "4px";
-    listBox.appendChild(row);
+  doc.setDrawColor(210,185,140);
+  doc.setFillColor(255,250,242);
+  doc.roundedRect(listBoxX, listBoxY, listBoxW, listBoxH, 4, 4, 'FD');
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(10);
+  doc.setTextColor(90,60,35);
+  doc.text('Prenotazioni', listBoxX + 4, listBoxY + 6);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(8.3);
+  doc.setTextColor(30,30,30);
+  let y = listBoxY + 12;
+  const lines = buildCompactBookingLines();
+  lines.forEach(line => {
+    const wrapped = doc.splitTextToSize(line, listBoxW - 8);
+    wrapped.forEach(w => {
+      if(y <= listBoxY + listBoxH - 4){ doc.text(w, listBoxX + 4, y); y += 4.2; }
+    });
   });
 
   const summary = getPdfBookingSummary();
-  const summaryBox = document.createElement("div");
-  summaryBox.style.background = "#fff";
-  summaryBox.style.border = "1px solid #ead6b1";
-  summaryBox.style.borderRadius = "16px";
-  summaryBox.style.padding = "12px";
-  const sumTitle = document.createElement("div");
-  sumTitle.textContent = "Riepilogo";
-  sumTitle.style.fontSize = "16px";
-  sumTitle.style.fontWeight = "700";
-  sumTitle.style.color = "#6b3e26";
-  sumTitle.style.marginBottom = "8px";
-  summaryBox.appendChild(sumTitle);
+  doc.setDrawColor(210,185,140);
+  doc.setFillColor(255,250,242);
+  doc.roundedRect(summaryBoxX, summaryBoxY, summaryBoxW, summaryBoxH, 4, 4, 'FD');
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(9);
+  doc.setTextColor(90,60,35);
+  doc.text('Riepilogo', summaryBoxX + 4, summaryBoxY + 7);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(8);
+  doc.setTextColor(30,30,30);
   [
-    `Prenotazioni: ${summary.prenotazioni}`,
+    `Pren.: ${summary.prenotazioni}`,
     `Coperti: ${summary.coperti}`,
     `Dovuto: ${formatCurrency(summary.dovuto)}`,
-    `Incassato: ${formatCurrency(summary.incassato)}`,
+    `Incass.: ${formatCurrency(summary.incassato)}`,
     `Saldo: ${formatCurrency(summary.saldo)}`
-  ].forEach(line => {
-    const row = document.createElement("div");
-    row.textContent = line;
-    row.style.fontSize = "13px";
-    row.style.lineHeight = "1.45";
-    row.style.marginBottom = "4px";
-    summaryBox.appendChild(row);
-  });
+  ].forEach((line, idx) => doc.text(line, summaryBoxX + 4, summaryBoxY + 13 + idx*6));
 
-  lower.append(listBox, summaryBox);
-  sheet.append(title, date, mapBox, lower);
-  document.body.appendChild(sheet);
-
-  requestAnimationFrame(async () => {
-    const baseW = roomClone.scrollWidth || 860;
-    const baseH = roomClone.scrollHeight || 700;
-    const scale = Math.min((mapBox.clientWidth - 12) / baseW, (mapBox.clientHeight - 12) / baseH, 1);
-    mapInner.style.transform = `scale(${scale})`;
-    mapInner.style.width = baseW + "px";
-    mapInner.style.height = baseH + "px";
-
-    await new Promise(r => setTimeout(r, 80));
-
-    const canvas = await html2canvas(sheet, {
-      backgroundColor: '#fffaf2',
-      scale: 2,
-      useCORS: true
-    });
-
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    const pageW = doc.internal.pageSize.getWidth();
-    const pageH = doc.internal.pageSize.getHeight();
-    const imgW = pageW;
-    const imgH = canvas.height * imgW / canvas.width;
-    doc.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, imgW, Math.min(imgH, pageH));
-    doc.save(`serata_${(currentEvent?.titolo || 'evento').replace(/[^\w]+/g,'_')}.pdf`);
-    sheet.remove();
-  });
+  doc.save(`serata_${(currentEvent?.titolo || 'evento').replace(/[^\w]+/g,'_')}.pdf`);
 }
 document.getElementById("exportPdfBtn").addEventListener("click", exportPdf);
 document.getElementById("bookBtn").addEventListener("click", saveBooking);
