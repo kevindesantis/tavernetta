@@ -75,24 +75,170 @@ async function loadSaleConfig(){const {data,error}=await supabaseClient.from("se
 async function loadPrenotazioniList(){const {data,error}=await supabaseClient.from("prenotazioni").select(`id,nome,telefono,email,allergie,richieste,creato_il,importo_pagato,prenotazione_posti ( posto_numero, posto_tipo )`).eq("serata_id", serataId).order("creato_il",{ascending:false}); if(error){compactPrenList.innerHTML='<div class="mini-note">Errore nel caricamento prenotazioni.</div>'; return;} prenotazioniData=data||[]; seatBookingMap={}; occupiedSeats=[]; prenotazioniData.forEach(pr=>{const seats=(pr.prenotazione_posti||[]).map(p=>String(p.posto_numero)); seats.forEach(seat=>{seatBookingMap[seat]=pr; occupiedSeats.push(seat)})}); occupiedSeats=occupiedSeats.sort(seatSort); renderCompactPrenList(); renderSummaryCards(); renderRoom(); if(openedBookingId) openBookingDetail(openedBookingId)}
 async function loadEventAndSeats(){if(!serataId) return; const {data,error}=await supabaseClient.from("serate").select("*").eq("id", serataId).single(); if(error||!data){eventDetail.innerHTML='<div class="card note">Serata non trovata.</div>'; return;} currentEvent=data; renderEventCard(eventDetail, currentEvent); const ok=await loadSaleConfig(); if(!ok){bookingMsg.textContent="Errore nel caricamento sale."; return;} setSalaInfoText(); updateSelectedInfo(); renderSummaryCards()}
 async function saveBooking(){const nome=nomeInput.value.trim(), telefono=telefonoInput.value.trim(), email=emailInput.value.trim(), allergie=allergieInput.value.trim(), richieste=richiesteInput.value.trim(); bookingMsg.textContent=''; if(!nome){bookingMsg.textContent='Inserisci almeno il nome.'; return;} if(!selectedSeats.length){bookingMsg.textContent='Seleziona almeno un posto.'; return;} if(selectedSeats.some(seat=>occupiedSeats.includes(seat))){bookingMsg.textContent='Uno dei posti selezionati non è più disponibile.'; await loadPrenotazioniList(); selectedSeats=[]; updateSelectedInfo(); return;} const booked=[...selectedSeats].sort(seatSort); const {data:prenotazione,error:prenError}=await supabaseClient.from("prenotazioni").insert([{serata_id:serataId,nome,telefono:telefono||null,email:email||null,allergie:allergie||null,richieste:richieste||null,importo_pagato:0}]).select().single(); if(prenError||!prenotazione){bookingMsg.textContent='Errore nel salvataggio prenotazione.'; return;} const postiRows=booked.map(seatId=>({prenotazione_id:prenotazione.id, serata_id:serataId, posto_numero:seatId, posto_tipo:getSeatMeta(seatId).tipo})); const {error:postiError}=await supabaseClient.from("prenotazione_posti").insert(postiRows); if(postiError){bookingMsg.textContent='Errore nel salvataggio posti.'; return;} bookingMsg.textContent=`Prenotazione salvata. Totale dovuto: ${formatCurrency(calculateBookingAmounts(booked).totale)}`; [nomeInput,telefonoInput,emailInput,allergieInput,richiesteInput].forEach(el=>el.value=''); selectedSeats=[]; hideSeatPopup(); await loadPrenotazioniList(); updateSelectedInfo()}
-function drawPdfSeat(doc, x, y, r, seatId, booking){doc.setFillColor(booking ? 196 : 46, booking ? 59 : 157, booking ? 47 : 80); doc.circle(x,y,r,'F'); doc.setTextColor(255,255,255); doc.setFontSize(8); doc.text(booking ? shortLabelFromName(booking.nome) : seatId, x, y+2, {align:'center'})}
-function seatCoordsForPdf(){const coords={}; const push=(id,x,y)=>coords[id]={x,y}; let startX=70, startY=55;
-if(saleConfig.interna?.attiva){const total=saleConfig.interna.posti_totali; const map=buildTableSeatMap(total,""); const spacing=20; map.top.forEach((id,i)=>push(id,startX+40+i*spacing,startY)); push(map.left,startX+15,startY+22); push(map.right,startX+40+(map.top.length-1)*spacing+25,startY+22); map.bottom.forEach((id,i)=>push(id,startX+40+i*spacing,startY+45)); [["D1",startX+95,startY-18],["D2",startX+115,startY-18],["D3",startX+135,startY-18],["D4",startX+155,startY-18],["D5",startX+175,startY-18],["D6",startX+235,startY+4],["D7",startX+235,startY+24],["S1",startX+235,startY+44],["D8",startX+175,startY+70],["S2",startX+200,startY+70]].forEach(v=>push(v[0],v[1],v[2]));}
-if(saleConfig.esterna?.attiva){const total=saleConfig.esterna.posti_totali, map=buildTableSeatMap(total,"E"), spacing=20, x0=30, y0=110; for(let i=1;i<=saleConfig.esterna.posti_extra;i++) push(`M${i}`, x0+20+(i-1)*18, y0-22); map.top.forEach((id,i)=>push(id,x0+40+i*spacing,y0)); push(map.left,x0+15,y0+22); push(map.right,x0+40+(map.top.length-1)*spacing+25,y0+22); map.bottom.forEach((id,i)=>push(id,x0+40+i*spacing,y0+45));}
-if(saleConfig.giardino?.attiva){const total=saleConfig.giardino.posti_totali, x0=185, y0=110; const ids=[]; for(let i=1;i<=total;i++) ids.push(`G${i}`); if(ids[0]) push(ids[0],x0+45,y0-20); if(ids[1]) push(ids[1],x0+45,y0+98); const side=ids.slice(2), left=side.slice(0,Math.ceil(side.length/2)), right=side.slice(Math.ceil(side.length/2)); left.forEach((id,i)=>push(id,x0,y0+8+i*22)); right.forEach((id,i)=>push(id,x0+90,y0+8+i*22)); for(let i=1;i<=saleConfig.giardino.posti_extra;i++) push(`P${i}`, x0+135, y0+6+(i-1)*18);}
-return coords}
-async function exportPdf(){const { jsPDF } = window.jspdf; const doc=new jsPDF({orientation:'landscape', unit:'mm', format:'a4'}); doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.text(currentEvent?.titolo || 'Serata', 14, 16); doc.setFontSize(11); doc.setFont('helvetica','normal'); doc.text(formatDateItalian(currentEvent?.data || ''), 14, 23);
-doc.setDrawColor(140); doc.setLineWidth(.5); doc.roundedRect(10, 28, 180, 130, 4, 4); doc.setFontSize(10); doc.text('Pianta posti', 14, 34);
-if(saleConfig.interna?.attiva){doc.setFillColor(123,78,36); doc.roundedRect(90, 67, 70, 18, 4,4,'F'); doc.text('Tavolo interno', 108, 77);}
-if(saleConfig.esterna?.attiva){doc.setFillColor(123,78,36); doc.roundedRect(50, 122, 70, 18, 4,4,'F'); doc.text('Tavolo esterno', 68, 132);}
-if(saleConfig.giardino?.attiva){doc.setFillColor(123,78,36); doc.roundedRect(230, 118, 18, 70, 4,4,'F'); doc.text('Tavolo', 227, 112);}
-const coords=seatCoordsForPdf(); Object.entries(coords).forEach(([seatId,pos])=>{drawPdfSeat(doc, pos.x, pos.y, 6, seatId, getBookingBySeat(seatId));});
-const lines=[]; prenotazioniData.slice().sort((a,b)=>{const as=(a.prenotazione_posti||[]).map(p=>String(p.posto_numero)).sort(seatSort); const bs=(b.prenotazione_posti||[]).map(p=>String(p.posto_numero)).sort(seatSort); return !as.length?1:!bs.length?-1:seatSort(as[0],bs[0])}).forEach(pr=>{const posti=(pr.prenotazione_posti||[]).map(p=>String(p.posto_numero)).sort(seatSort); lines.push(`${pr.nome} — ${posti.join(', ')}`)});
-doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.text('Prenotazioni', 14, 168); doc.setFont('helvetica','normal'); doc.setFontSize(9);
-let y=174; lines.forEach(line=>{doc.text(line, 14, y); y += 5; if(y>188){/* stop */}});
-let dov=0, inc=0; prenotazioniData.forEach(pr=>{const seats=(pr.prenotazione_posti||[]).map(p=>String(p.posto_numero)); dov += calculateBookingAmounts(seats).totale; inc += Number(pr.importo_pagato||0)}); const saldo=Math.max(0,dov-inc);
-doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.text('Riepilogo', 170, 168); doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.text(`Prenotazioni: ${prenotazioniData.length}`, 170, 174); doc.text(`Coperti: ${occupiedSeats.length}`, 170, 180); doc.text(`Totale dovuto: ${formatCurrency(dov)}`, 170, 186); doc.text(`Incassato: ${formatCurrency(inc)}`, 245, 174); doc.text(`Saldo: ${formatCurrency(saldo)}`, 245, 180);
-doc.save(`serata_${(currentEvent?.titolo || 'evento').replace(/[^\w]+/g,'_')}.pdf`)}
+
+function drawPdfSeat(doc, x, y, r, seatId, booking){
+  if(booking){ doc.setFillColor(196,59,47); }
+  else { doc.setFillColor(46,157,80); }
+  doc.circle(x,y,r,'F');
+  doc.setTextColor(255,255,255);
+  const label = booking ? shortLabelFromName(booking.nome) : seatId;
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(label.length > 3 ? 6.5 : 7.5);
+  doc.text(String(label), x, y+2, {align:'center'});
+}
+function seatCoordsForPdf(){
+  const coords={};
+  const tables=[];
+  const labels=[];
+  const push=(id,x,y)=>coords[id]={x,y};
+
+  if(saleConfig.interna?.attiva){
+    let startX=80, startY=55;
+    const total=saleConfig.interna.posti_totali;
+    const map=buildTableSeatMap(total,"");
+    const spacing=18;
+    map.top.forEach((id,i)=>push(id,startX+32+i*spacing,startY));
+    push(map.left,startX+10,startY+20);
+    push(map.right,startX+32+(map.top.length-1)*spacing+22,startY+20);
+    map.bottom.forEach((id,i)=>push(id,startX+32+i*spacing,startY+40));
+    [["D1",startX+78,startY-18],["D2",startX+96,startY-18],["D3",startX+114,startY-18],["D4",startX+132,startY-18],["D5",startX+150,startY-18],["D6",startX+202,startY+2],["D7",startX+202,startY+20],["S1",startX+202,startY+38],["D8",startX+150,startY+60],["S2",startX+172,startY+60]].forEach(v=>push(v[0],v[1],v[2]));
+    tables.push({x:startX+28,y:startY+12,w:map.top.length*spacing+10,h:16,label:'Sala interna'});
+  }
+  if(saleConfig.esterna?.attiva){
+    const total=saleConfig.esterna.posti_totali, map=buildTableSeatMap(total,"E"), spacing=18, x0=35, y0=118;
+    for(let i=1;i<=saleConfig.esterna.posti_extra;i++) push(`M${i}`, x0+18+(i-1)*16, y0-18);
+    map.top.forEach((id,i)=>push(id,x0+32+i*spacing,y0));
+    push(map.left,x0+10,y0+20);
+    push(map.right,x0+32+(map.top.length-1)*spacing+22,y0+20);
+    map.bottom.forEach((id,i)=>push(id,x0+32+i*spacing,y0+40));
+    tables.push({x:x0+28,y:y0+12,w:map.top.length*spacing+10,h:16,label:'Sala esterna'});
+  }
+  if(saleConfig.giardino?.attiva){
+    const total=saleConfig.giardino.posti_totali, x0=185, y0=114;
+    const ids=[]; for(let i=1;i<=total;i++) ids.push(`G${i}`);
+    if(ids[0]) push(ids[0],x0+42,y0-18);
+    if(ids[1]) push(ids[1],x0+42,y0+88);
+    const side=ids.slice(2), left=side.slice(0,Math.ceil(side.length/2)), right=side.slice(Math.ceil(side.length/2));
+    left.forEach((id,i)=>push(id,x0,y0+4+i*20));
+    right.forEach((id,i)=>push(id,x0+84,y0+4+i*20));
+    for(let i=1;i<=saleConfig.giardino.posti_extra;i++) push(`P${i}`, x0+124, y0+4+(i-1)*16);
+    tables.push({x:x0+34,y:y0-2,w:16,h:72,label:'Giardino'});
+  }
+  return {coords,tables,labels};
+}
+function getFinancialSummary(){
+  let dov=0, inc=0;
+  prenotazioniData.forEach(pr=>{
+    const seats=(pr.prenotazione_posti||[]).map(p=>String(p.posto_numero));
+    dov += calculateBookingAmounts(seats).totale;
+    inc += Number(pr.importo_pagato||0);
+  });
+  return {dov, inc, saldo: Math.max(0,dov-inc)};
+}
+async function exportPdf(){
+  const { jsPDF } = window.jspdf;
+  const doc=new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(18);
+  doc.text(currentEvent?.titolo || 'Serata', 12, 14);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(10);
+  doc.text(formatDateItalian(currentEvent?.data || ''), 12, 20);
+
+  const mapX=10, mapY=26, mapW=pageW-20, mapH=108;
+  doc.setDrawColor(210,185,138);
+  doc.setFillColor(255,250,242);
+  doc.roundedRect(mapX,mapY,mapW,mapH,4,4,'FD');
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(11);
+  doc.setTextColor(107,62,38);
+  doc.text('Pianta posti', mapX+4, mapY+6);
+
+  const data = seatCoordsForPdf();
+  const coords = data.coords;
+  const tables = data.tables;
+  const points = Object.values(coords);
+  if(points.length){
+    const xs = points.map(p=>p.x), ys = points.map(p=>p.y);
+    const minX = Math.min(...xs)-12, maxX = Math.max(...xs)+12;
+    const minY = Math.min(...ys)-12, maxY = Math.max(...ys)+12;
+    const contentW = maxX-minX, contentH = maxY-minY;
+    const innerX = mapX+6, innerY = mapY+10, innerW = mapW-12, innerH = mapH-16;
+    const scale = Math.min(innerW/contentW, innerH/contentH);
+    const offX = innerX + (innerW - contentW*scale)/2;
+    const offY = innerY + (innerH - contentH*scale)/2;
+    const tx = x => offX + (x-minX)*scale;
+    const ty = y => offY + (y-minY)*scale;
+
+    tables.forEach(t=>{
+      doc.setFillColor(123,78,36);
+      doc.roundedRect(tx(t.x), ty(t.y), t.w*scale, t.h*scale, 3,3,'F');
+      doc.setTextColor(255,255,255);
+      doc.setFontSize(8);
+      doc.text(t.label, tx(t.x)+t.w*scale/2, ty(t.y)+t.h*scale/2+2, {align:'center'});
+    });
+
+    Object.entries(coords).forEach(([seatId,pos])=>{
+      drawPdfSeat(doc, tx(pos.x), ty(pos.y), Math.max(4.3, 5.5*scale), seatId, getBookingBySeat(seatId));
+    });
+  }
+
+  const listY = 142;
+  const listH = 54;
+  const listW = 190;
+  doc.setFillColor(255,250,242);
+  doc.setDrawColor(210,185,138);
+  doc.roundedRect(10, listY, listW, listH, 4,4, 'FD');
+  doc.setFont('helvetica','bold');
+  doc.setTextColor(107,62,38);
+  doc.setFontSize(11);
+  doc.text('Prenotazioni', 14, listY+6);
+
+  const lines=[];
+  prenotazioniData.slice().sort((a,b)=>{
+    const as=(a.prenotazione_posti||[]).map(p=>String(p.posto_numero)).sort(seatSort);
+    const bs=(b.prenotazione_posti||[]).map(p=>String(p.posto_numero)).sort(seatSort);
+    return !as.length?1:!bs.length?-1:seatSort(as[0],bs[0]);
+  }).forEach(pr=>{
+    const posti=(pr.prenotazione_posti||[]).map(p=>String(p.posto_numero)).sort(seatSort);
+    lines.push(`${pr.nome} — ${posti.join(', ')}`);
+  });
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(8.5);
+  const col1X=14, col2X=106, startY=listY+12, lineH=4.6;
+  const maxRows = 9;
+  lines.slice(0, maxRows*2).forEach((line, idx)=>{
+    const x = idx < maxRows ? col1X : col2X;
+    const y = startY + (idx % maxRows) * lineH;
+    doc.text(line, x, y, {maxWidth: 84});
+  });
+  if(lines.length > maxRows*2){
+    doc.setFont('helvetica','italic');
+    doc.text(`+ altre ${lines.length - maxRows*2} prenotazioni`, col2X, listY+49);
+  }
+
+  const summaryX = 206, summaryY = 142, summaryW = pageW-216, summaryH = 54;
+  doc.setFillColor(255,250,242);
+  doc.setDrawColor(210,185,138);
+  doc.roundedRect(summaryX, summaryY, summaryW, summaryH, 4,4, 'FD');
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(11);
+  doc.setTextColor(107,62,38);
+  doc.text('Riepilogo', summaryX+4, summaryY+6);
+  const fin = getFinancialSummary();
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(10);
+  doc.text(`Prenotazioni: ${prenotazioniData.length}`, summaryX+4, summaryY+15);
+  doc.text(`Coperti: ${occupiedSeats.length}`, summaryX+4, summaryY+23);
+  doc.text(`Totale dovuto: ${formatCurrency(fin.dov)}`, summaryX+4, summaryY+31);
+  doc.text(`Incassato: ${formatCurrency(fin.inc)}`, summaryX+4, summaryY+39);
+  doc.text(`Saldo residuo: ${formatCurrency(fin.saldo)}`, summaryX+4, summaryY+47);
+
+  doc.save(`serata_${(currentEvent?.titolo || 'evento').replace(/[^\w]+/g,'_')}.pdf`);
+}
 document.getElementById("exportPdfBtn").addEventListener("click", exportPdf);
 document.getElementById("bookBtn").addEventListener("click", saveBooking);
 document.getElementById("logoutBtn").addEventListener("click",e=>{e.preventDefault(); localStorage.removeItem("manager_auth_ok"); location.href="login.html";});
