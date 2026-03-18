@@ -1,12 +1,94 @@
-<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Serate – Tavernetta da Kevin</title><link rel="icon" type="image/png" href="img/logo.png"><link rel="stylesheet" href="css/style.css"><style>.serate-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-top:20px}.serata-card{background:var(--card);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}.serata-img{width:100%;aspect-ratio:4/5;object-fit:cover;background:#eee}.serata-body{padding:16px;display:flex;flex-direction:column;gap:10px;flex:1}.serata-title{margin:0;color:var(--brown);font-size:1.2rem}.serata-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:auto}</style></head><body>
-<div class="top-bar"><img src="img/logo.png" class="logo-top"><button id="hamburger" class="hamburger">☰</button></div><div id="sidebarBackdrop" class="sidebar-backdrop"></div>
-<aside id="sidebar" class="sidebar"><img src="img/logo.png" class="side-logo"><nav><a href="index.html">Home</a><a href="serate.html">Serate</a><a href="calendario.html">Calendario</a><a href="dove.html">Dove siamo</a><a href="contatti.html">Contattaci</a></nav></aside>
-<main class="page"><section class="section"><h2>Le nostre serate</h2><p class="note">Scopri le prossime serate e prenota il tuo posto.</p><div id="serateGrid" class="serate-grid"></div><p id="msg" class="note"></p></section></main>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="js/supabase-client.js"></script><script src="js/track-visit.js"></script><script src="js/site.js"></script>
-<script>
-function formatDateItalian(dateStr){try{return new Date(dateStr).toLocaleDateString("it-IT",{weekday:"long",day:"2-digit",month:"long",year:"numeric"})}catch{return dateStr}}
-async function shareEvent(ev){const url=`${location.origin}/share.html?id=${ev.id}`; const text=`${ev.titolo}\n${formatDateItalian(ev.data)}\n\n${url}`; if(navigator.share){try{await navigator.share({title:ev.titolo,text,url}); return;}catch(e){}} try{await navigator.clipboard.writeText(text); alert("Link copiato");}catch{prompt("Copia:", url)}}
-function createSerataCard(ev){const card=document.createElement("article"); card.className="serata-card"; card.innerHTML=`<img class="serata-img" src="${ev.locandina||'img/logo.png'}"><div class="serata-body"><h3 class="serata-title">${ev.titolo}</h3><div><strong>${formatDateItalian(ev.data)}</strong></div><div style="white-space:pre-line">${ev.programma||'Serata alla Tavernetta.'}</div><div class="serata-actions"><a class="button secondary" href="evento.html?id=${ev.id}">Apri serata</a><button class="button secondary share-btn">Condividi</button></div></div>`; card.querySelector(".share-btn").addEventListener("click",()=>shareEvent(ev)); return card;}
-async function loadSerate(){if(!window.supabaseClient) return; const msg=document.getElementById("msg"), grid=document.getElementById("serateGrid"); const today=new Date().toISOString().slice(0,10); const {data,error}=await supabaseClient.from("serate").select("*").gte("data",today).order("data",{ascending:true}); if(error){msg.textContent="Errore nel caricamento delle serate."; return;} if(!data||!data.length){msg.textContent="Nessuna serata disponibile al momento."; return;} data.forEach(ev=>grid.appendChild(createSerataCard(ev)));}
-document.addEventListener("DOMContentLoaded", async()=>{setupMenu(); await loadSerate();});
-</script></body></html>
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Serate – Tavernetta da Kevin</title>
+  <link rel="icon" type="image/png" href="img/logo.png">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .serate-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-top:20px}
+    .serata-card{background:var(--card);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
+    .serata-img-wrap{background:#f6f1e8;padding:12px;display:flex;align-items:center;justify-content:center;min-height:320px}
+    .serata-img{width:100%;height:100%;max-height:380px;object-fit:contain;background:#f6f1e8}
+    .serata-body{padding:16px;display:flex;flex-direction:column;gap:10px;flex:1}
+    .serata-title{margin:0;color:var(--brown);font-size:1.2rem}
+    .serata-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:auto}
+    .serata-badge{display:inline-block;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:700;background:#fff3db;color:#8a5600;width:max-content}
+    .serata-badge.past{background:#f1ebe3;color:#6b3e26}
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <img src="img/logo.png" alt="Tavernetta da Kevin" class="logo-top">
+    <button id="hamburger" class="hamburger" aria-label="Apri menu">☰</button>
+  </div>
+
+  <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+
+  <aside id="sidebar" class="sidebar">
+    <img src="img/logo.png" alt="Logo" class="side-logo">
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="serate.html">Serate</a>
+      <a href="calendario.html">Calendario</a>
+      <a href="dove.html">Dove siamo</a>
+      <a href="contatti.html">Contattaci</a>
+    </nav>
+  </aside>
+
+  <main class="page">
+    <section class="section">
+      <h2>Le nostre serate</h2>
+      <p class="note">Qui trovi sia le prossime serate sia quelle già passate. Le prenotazioni restano disponibili solo per le serate aperte.</p>
+      <div id="serateGrid" class="serate-grid"></div>
+      <p id="msg" class="note"></p>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/track-visit.js"></script>
+  <script src="js/site.js"></script>
+  <script>
+    function formatDateItalian(dateStr){ try{return new Date(dateStr+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})}catch{return dateStr} }
+    function isPastEvent(dateStr){
+      const end=new Date(dateStr+'T23:59:59');
+      return Date.now() > end.getTime();
+    }
+    async function shareEvent(ev){
+      const url=`${location.origin}/share.html?id=${ev.id}`;
+      const text=`${ev.titolo}\n${formatDateItalian(ev.data)}\n\n${url}`;
+      if(navigator.share){try{await navigator.share({title:ev.titolo,text,url});return;}catch(e){if(e&&e.name==='AbortError')return;}}
+      try{await navigator.clipboard.writeText(text);alert('Link della serata copiato negli appunti.');}catch{prompt('Copia questo link:',url)}
+    }
+    function createSerataCard(ev){
+      const past=isPastEvent(ev.data);
+      const card=document.createElement('article');
+      card.className='serata-card';
+      card.innerHTML=`<div class="serata-img-wrap"><img class="serata-img" src="${ev.locandina||'img/logo.png'}" alt="${ev.titolo}"></div><div class="serata-body"><div class="serata-badge ${past?'past':''}">${past?'Serata passata':'Prenotazioni aperte'}</div><h3 class="serata-title">${ev.titolo}</h3><div><strong>${formatDateItalian(ev.data)}</strong></div><div style="white-space:pre-line">${ev.programma||'Serata alla Tavernetta.'}</div><div class="serata-actions"><a class="button secondary" href="evento.html?id=${ev.id}">Apri serata</a><button class="button secondary share-btn" type="button">Condividi</button></div></div>`;
+      card.querySelector('.share-btn').addEventListener('click',()=>shareEvent(ev));
+      return card;
+    }
+    function sortEvents(events){
+      const now = Date.now();
+      return [...events].sort((a,b)=>{
+        const aPast = now > new Date(a.data+'T23:59:59').getTime();
+        const bPast = now > new Date(b.data+'T23:59:59').getTime();
+        if (aPast !== bPast) return aPast ? 1 : -1;
+        return aPast ? b.data.localeCompare(a.data) : a.data.localeCompare(b.data);
+      });
+    }
+    async function loadSerate(){
+      if(!window.supabaseClient) return;
+      const msg=document.getElementById('msg'), grid=document.getElementById('serateGrid');
+      const {data,error}=await supabaseClient.from('serate').select('*').order('data',{ascending:true});
+      if(error){console.error(error);msg.textContent='Errore nel caricamento delle serate.';return;}
+      const rows=sortEvents(data||[]);
+      if(!rows.length){msg.textContent='Nessuna serata disponibile al momento.';return;}
+      rows.forEach(ev=>grid.appendChild(createSerataCard(ev)));
+    }
+    document.addEventListener('DOMContentLoaded', async()=>{setupMenu(); await loadSerate();});
+  </script>
+</body>
+</html>
