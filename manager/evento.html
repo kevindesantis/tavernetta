@@ -89,113 +89,73 @@ function drawPdfSeat(doc, x, y, r, seatId, booking, scale=1){
   doc.setTextColor(20,20,20);
 }
 
-function measureInternalBlock(){
-  const total = Number(saleConfig.interna?.posti_totali || 14);
-  const longSide = (total - 2) / 2;
-  const tableWidth = Math.max(220, longSide * 52);
-  return { w: tableWidth + 170, h: 250, tableWidth, total };
-}
-function measureExternalBlock(){
-  const total = Number(saleConfig.esterna?.posti_totali || 8);
-  const extra = Number(saleConfig.esterna?.posti_extra || 0);
-  const longSide = (total - 2) / 2;
-  const tableWidth = Math.max(220, longSide * 52);
-  return { w: Math.max(tableWidth + 120, extra * 28 + 40), h: 190, tableWidth, total, extra };
-}
-function measureGardenBlock(){
-  const total = Number(saleConfig.giardino?.posti_totali || 6);
-  const extra = Number(saleConfig.giardino?.posti_extra || 0);
-  const sideSeatsCount = Math.max(4, total - 2);
-  const perSide = Math.ceil(sideSeatsCount / 2);
-  const tableHeight = 140 + Math.max(0, perSide - 2) * 44;
-  return { w: 210 + (extra>0?50:0), h: Math.max(tableHeight + 40, extra * 18 + 40), total, extra, tableHeight };
-}
+function measureInternalBlock(){ return { w: 420, h: 200, total: Number(saleConfig.interna?.posti_totali || 14) }; }
+function measureExternalBlock(){ return { w: 420, h: 160, total: Number(saleConfig.esterna?.posti_totali || 12), extra: Number(saleConfig.esterna?.posti_extra || 0) }; }
+function measureGardenBlock(){ return { w: 260, h: 190, total: Number(saleConfig.giardino?.posti_totali || 6), extra: Number(saleConfig.giardino?.posti_extra || 0) }; }
 
 function renderInternalBlock(doc, ox, oy, scale){
-  const m = measureInternalBlock();
-  const total = m.total;
-  const longSide = (total - 2)/2;
-  const seatGap = 26 * scale;
+  const total = Number(saleConfig.interna?.posti_totali || 14);
   const seatR = 8 * scale;
-  const tableX = ox + 62 * scale;
-  const tableY = oy + 72 * scale;
-  const tableW = m.tableWidth * scale;
-  const tableH = 48 * scale;
-  const topY = oy + 24 * scale;
-  const bottomY = oy + 152 * scale;
-  const leftX = ox + 20 * scale;
-  const rightX = tableX + tableW + 20 * scale;
+  const px = v => ox + v * scale;
+  const py = v => oy + v * scale;
 
   doc.setFillColor(145,98,48);
-  doc.roundedRect(tableX, tableY, tableW, tableH, 10*scale, 10*scale, 'F');
+  doc.roundedRect(px(70), py(80), 280*scale, 42*scale, 10*scale, 10*scale, 'F');
 
-  for(let i=0;i<longSide;i++) drawPdfSeat(doc, tableX + 14*scale + i*seatGap, topY, seatR, String(2+i), getBookingBySeat(String(2+i)), scale);
-  for(let i=0;i<longSide;i++) drawPdfSeat(doc, tableX + 14*scale + i*seatGap, bottomY, seatR, String(2+longSide+i), getBookingBySeat(String(2+longSide+i)), scale);
-  drawPdfSeat(doc, leftX, tableY + tableH/2, seatR, '1', getBookingBySeat('1'), scale);
-  drawPdfSeat(doc, rightX, tableY + tableH/2, seatR, String(total), getBookingBySeat(String(total)), scale);
+  const topIds = Array.from({length:(total-2)/2}, (_,i)=> String(2+i));
+  const bottomIds = Array.from({length:(total-2)/2}, (_,i)=> String(2 + (total-2)/2 + i));
+  topIds.forEach((id, i) => drawPdfSeat(doc, px(120 + i*36), py(50), seatR, id, getBookingBySeat(id), scale));
+  bottomIds.forEach((id, i) => drawPdfSeat(doc, px(120 + i*36), py(145), seatR, id, getBookingBySeat(id), scale));
+  drawPdfSeat(doc, px(25), py(101), seatR, '1', getBookingBySeat('1'), scale);
+  drawPdfSeat(doc, px(395), py(101), seatR, String(total), getBookingBySeat(String(total)), scale);
 
-  const topDivanStartX = tableX + tableW - 72*scale;
-  const topDivanY = oy + 4*scale;
-  ['D1','D2','D3','D4','D5'].forEach((id,idx)=>drawPdfSeat(doc, topDivanStartX + idx*18*scale, topDivanY, 6.5*scale, id, getBookingBySeat(id), scale));
-  ['D6','D7','S1'].forEach((id,idx)=>drawPdfSeat(doc, rightX + 30*scale, tableY + 8*scale + idx*20*scale, 6.5*scale, id, getBookingBySeat(id), scale));
-  ['D8','S2'].forEach((id,idx)=>drawPdfSeat(doc, tableX + tableW - 20*scale + idx*18*scale, bottomY + 24*scale, 6.5*scale, id, getBookingBySeat(id), scale));
+  ['D1','D2','D3','D4','D5'].forEach((id,idx)=>drawPdfSeat(doc, px(238 + idx*20), py(24), 6.5*scale, id, getBookingBySeat(id), scale));
+  ['D6','D7','S1'].forEach((id,idx)=>drawPdfSeat(doc, px(382), py(68 + idx*28), 6.5*scale, id, getBookingBySeat(id), scale));
+  ['D8','S2'].forEach((id,idx)=>drawPdfSeat(doc, px(356 + idx*24), py(172), 6.5*scale, id, getBookingBySeat(id), scale));
 }
 
 function renderExternalBlock(doc, ox, oy, scale){
-  const m = measureExternalBlock();
-  const total = m.total;
-  const longSide = (total - 2)/2;
-  const seatGap = 26 * scale;
+  const total = Number(saleConfig.esterna?.posti_totali || 12);
+  const extra = Number(saleConfig.esterna?.posti_extra || 10);
   const seatR = 8 * scale;
-  const tableX = ox + 34 * scale;
-  const tableY = oy + 62 * scale;
-  const tableW = m.tableWidth * scale;
-  const tableH = 48 * scale;
-  const topY = oy + 24 * scale;
-  const bottomY = oy + 142 * scale;
-  const leftX = ox + 0 * scale;
-  const rightX = tableX + tableW + 20 * scale;
+  const px = v => ox + v * scale;
+  const py = v => oy + v * scale;
 
-  for(let i=1;i<=m.extra;i++) drawPdfSeat(doc, ox + 20*scale + (i-1)*18*scale, oy + 4*scale, 6.5*scale, `M${i}`, getBookingBySeat(`M${i}`), scale);
+  const extraCount = Math.min(extra, 10);
+  for(let i=1;i<=extraCount;i++) drawPdfSeat(doc, px(25 + (i-1)*39), py(20), 6.5*scale, `M${i}`, getBookingBySeat(`M${i}`), scale);
 
   doc.setFillColor(145,98,48);
-  doc.roundedRect(tableX, tableY, tableW, tableH, 10*scale, 10*scale, 'F');
+  doc.roundedRect(px(95), py(70), 240*scale, 38*scale, 10*scale, 10*scale, 'F');
 
-  for(let i=0;i<longSide;i++) drawPdfSeat(doc, tableX + 14*scale + i*seatGap, topY, seatR, `E${2+i}`, getBookingBySeat(`E${2+i}`), scale);
-  for(let i=0;i<longSide;i++) drawPdfSeat(doc, tableX + 14*scale + i*seatGap, bottomY, seatR, `E${2+longSide+i}`, getBookingBySeat(`E${2+longSide+i}`), scale);
-  drawPdfSeat(doc, leftX, tableY + tableH/2, seatR, 'E1', getBookingBySeat('E1'), scale);
-  drawPdfSeat(doc, rightX, tableY + tableH/2, seatR, `E${total}`, getBookingBySeat(`E${total}`), scale);
+  const topIds = Array.from({length:(total-2)/2}, (_,i)=> `E${2+i}`);
+  const bottomIds = Array.from({length:(total-2)/2}, (_,i)=> `E${2 + (total-2)/2 + i}`);
+  topIds.forEach((id, i) => drawPdfSeat(doc, px(140 + i*38), py(46), seatR, id, getBookingBySeat(id), scale));
+  bottomIds.forEach((id, i) => drawPdfSeat(doc, px(140 + i*38), py(132), seatR, id, getBookingBySeat(id), scale));
+  drawPdfSeat(doc, px(55), py(89), seatR, 'E1', getBookingBySeat('E1'), scale);
+  drawPdfSeat(doc, px(375), py(89), seatR, `E${total}`, getBookingBySeat(`E${total}`), scale);
 }
 
 function renderGardenBlock(doc, ox, oy, scale){
-  const m = measureGardenBlock();
-  const total = m.total;
-  const extra = m.extra;
+  const total = Number(saleConfig.giardino?.posti_totali || 6);
+  const extra = Number(saleConfig.giardino?.posti_extra || 10);
   const seatR = 8 * scale;
-  const sideSeatsCount = Math.max(4, total - 2);
-  const perSide = Math.ceil(sideSeatsCount / 2);
-  const tableX = ox + 54 * scale;
-  const tableY = oy + 30 * scale;
-  const tableW = 32 * scale;
-  const tableH = m.tableHeight * scale;
-  const centerX = tableX + tableW/2;
+  const px = v => ox + v * scale;
+  const py = v => oy + v * scale;
 
   doc.setFillColor(145,98,48);
-  doc.roundedRect(tableX, tableY, tableW, tableH, 10*scale, 10*scale, 'F');
+  doc.roundedRect(px(105), py(45), 40*scale, 70*scale, 10*scale, 10*scale, 'F');
 
-  drawPdfSeat(doc, centerX, oy + 8*scale, seatR, 'G1', getBookingBySeat('G1'), scale);
-  drawPdfSeat(doc, centerX, tableY + tableH + 22*scale, seatR, 'G2', getBookingBySeat('G2'), scale);
+  drawPdfSeat(doc, px(125), py(20), seatR, 'G1', getBookingBySeat('G1'), scale);
+  drawPdfSeat(doc, px(125), py(140), seatR, 'G2', getBookingBySeat('G2'), scale);
 
   const sideIds=[]; for(let i=3;i<=total;i++) sideIds.push(`G${i}`);
   const leftIds=sideIds.slice(0, Math.ceil(sideIds.length/2));
   const rightIds=sideIds.slice(Math.ceil(sideIds.length/2));
-  const leftX = ox + 8 * scale;
-  const rightX = tableX + tableW + 22*scale;
-  const spread = leftIds.length>1 ? (tableH - 16*scale)/(leftIds.length-1) : 0;
-  leftIds.forEach((id,idx)=>drawPdfSeat(doc, leftX, tableY + 8*scale + idx*spread, 7*scale, id, getBookingBySeat(id), scale));
-  const spreadR = rightIds.length>1 ? (tableH - 16*scale)/(rightIds.length-1) : 0;
-  rightIds.forEach((id,idx)=>drawPdfSeat(doc, rightX, tableY + 8*scale + idx*spreadR, 7*scale, id, getBookingBySeat(id), scale));
-  for(let i=1;i<=extra;i++) drawPdfSeat(doc, rightX + 34*scale, tableY + 8*scale + (i-1)*18*scale, 6*scale, `P${i}`, getBookingBySeat(`P${i}`), scale);
+  leftIds.forEach((id,idx)=>drawPdfSeat(doc, px(70), py(55 + idx*50), 7*scale, id, getBookingBySeat(id), scale));
+  rightIds.forEach((id,idx)=>drawPdfSeat(doc, px(180), py(55 + idx*50), 7*scale, id, getBookingBySeat(id), scale));
+
+  const extraCount = Math.min(extra, 10);
+  for(let i=1;i<=extraCount;i++) drawPdfSeat(doc, px(225), py(10 + (i-1)*15), 6*scale, `P${i}`, getBookingBySeat(`P${i}`), scale);
 }
 
 function buildCompactBookingLines() {
@@ -252,8 +212,9 @@ function exportPdf(){
   if(saleConfig.interna?.attiva) blocks.push({type:'interna', ...measureInternalBlock()});
 
   const contentW = blocks.length ? Math.max(...blocks.map(b=>b.w)) : 100;
-  const contentH = blocks.reduce((sum,b)=>sum+b.h,0) + Math.max(0, blocks.length-1)*26;
-  const scale = Math.min((mapBox.w - 16)/contentW, (mapBox.h - 16)/contentH, 0.33);
+  const blockGap = 18;
+  const contentH = blocks.reduce((sum,b)=>sum+b.h,0) + Math.max(0, blocks.length-1)*blockGap;
+  const scale = Math.min((mapBox.w - 18)/contentW, (mapBox.h - 18)/contentH, 0.34);
   const totalScaledH = contentH * scale;
   let cursorY = mapBox.y + (mapBox.h - totalScaledH)/2;
 
@@ -263,7 +224,7 @@ function exportPdf(){
     if(b.type === 'giardino') renderGardenBlock(doc, ox, cursorY, scale);
     if(b.type === 'esterna') renderExternalBlock(doc, ox, cursorY, scale);
     if(b.type === 'interna') renderInternalBlock(doc, ox, cursorY, scale);
-    cursorY += b.h * scale + 26*scale;
+    cursorY += b.h * scale + blockGap*scale;
   });
 
   const listBoxX = margin;
