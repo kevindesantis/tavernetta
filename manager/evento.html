@@ -116,80 +116,121 @@ function drawPdfSeat(doc, x, y, r, seatId, ownerMap){
   doc.text(String(label), x, y+1.8, {align:'center'});
   doc.setTextColor(20,20,20);
 }
-function drawPdfInternalMap(doc, startX, startY, ownerMap, totalSeats){
-  const seatR=4.8, seatGap=13.5, topY=startY, tableY=startY+12, bottomY=startY+36;
+function drawPdfInternalMap(doc, startX, startY, ownerMap, totalSeats, scale=1){
+  const S=v=>v*scale;
+  const seatR=S(4.8), seatGap=S(13.5), topY=startY, tableY=startY+S(12), bottomY=startY+S(36);
   const topSeats=[], bottomSeats=[];
   const longSide=(totalSeats-2)/2;
   for(let i=0;i<longSide;i++) topSeats.push(String(2+i));
   for(let i=0;i<longSide;i++) bottomSeats.push(String(2+longSide+i));
-  const tableWidth=Math.max(58, (topSeats.length-1)*seatGap+22);
-  const tableHeight=18;
-  const tableX=startX+20;
+  const tableWidth=Math.max(S(58), (topSeats.length-1)*seatGap+S(22));
+  const tableHeight=S(18);
+  const tableX=startX+S(20);
   const tableRight=tableX+tableWidth;
+
   doc.setFillColor(145,98,48);
-  doc.roundedRect(tableX, tableY, tableWidth, tableHeight, 5,5,'F');
-  topSeats.forEach((id,i)=>drawPdfSeat(doc, tableX+11+i*seatGap, topY, seatR, id, ownerMap));
-  bottomSeats.forEach((id,i)=>drawPdfSeat(doc, tableX+11+i*seatGap, bottomY, seatR, id, ownerMap));
-  drawPdfSeat(doc, tableX-11, tableY+tableHeight/2, seatR, '1', ownerMap);
-  drawPdfSeat(doc, tableRight+11, tableY+tableHeight/2, seatR, String(totalSeats), ownerMap);
-  const topDivanStartX=tableX+tableWidth-48;
-  ['D1','D2','D3','D4','D5'].forEach((id,idx)=>drawPdfSeat(doc, topDivanStartX+idx*10.5, startY-10, 4, id, ownerMap));
-  ['D6','D7','S1'].forEach((id,idx)=>drawPdfSeat(doc, tableRight+24, tableY+3+idx*8.5, 4, id, ownerMap));
-  ['D8','S2'].forEach((id,idx)=>drawPdfSeat(doc, tableRight-8+idx*11, bottomY+11, 4, id, ownerMap));
-  doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(90,60,35);
-  doc.text('Sala interna', tableX+tableWidth/2, bottomY+20, {align:'center'});
-  return { width: tableRight+35-startX, height: bottomY+24-startY };
+  doc.roundedRect(tableX, tableY, tableWidth, tableHeight, S(5), S(5), 'F');
+
+  topSeats.forEach((id,i)=>drawPdfSeat(doc, tableX+S(11)+i*seatGap, topY, seatR, id, ownerMap));
+  bottomSeats.forEach((id,i)=>drawPdfSeat(doc, tableX+S(11)+i*seatGap, bottomY, seatR, id, ownerMap));
+
+  drawPdfSeat(doc, tableX-S(13), tableY+tableHeight/2, seatR, '1', ownerMap);
+  drawPdfSeat(doc, tableRight+S(13), tableY+tableHeight/2, seatR, String(totalSeats), ownerMap);
+
+  const topDivanStartX=tableX+tableWidth-S(48);
+  ['D1','D2','D3','D4','D5'].forEach((id,idx)=>drawPdfSeat(doc, topDivanStartX+idx*S(10.5), startY-S(10), S(4), id, ownerMap));
+  ['D6','D7','S1'].forEach((id,idx)=>drawPdfSeat(doc, tableRight+S(24), tableY+S(3)+idx*S(8.5), S(4), id, ownerMap));
+  ['D8','S2'].forEach((id,idx)=>drawPdfSeat(doc, tableRight-S(8)+idx*S(11), bottomY+S(11), S(4), id, ownerMap));
+
+  doc.setFont('helvetica','normal'); doc.setFontSize(Math.max(6.5, 7.5*scale)); doc.setTextColor(90,60,35);
+  doc.text('Sala interna', tableX+tableWidth/2, bottomY+S(20), {align:'center'});
+  return { width: tableRight+S(35)-startX, height: bottomY+S(24)-startY };
 }
-function drawPdfExternalMap(doc, startX, startY, ownerMap, totalSeats, extraSeats){
-  const seatR=4.6, seatGap=13.5, topY=startY+6, tableY=startY+18, bottomY=startY+42;
+
+function drawPdfExternalMap(doc, startX, startY, ownerMap, totalSeats, extraSeats, scale=1){
+  const S=v=>v*scale;
+  const seatR=S(4.6), seatGap=S(13.5), topY=startY+S(6), tableY=startY+S(18), bottomY=startY+S(42);
   const topSeats=[], bottomSeats=[];
   const longSide=(totalSeats-2)/2;
   for(let i=0;i<longSide;i++) topSeats.push(`E${2+i}`);
   for(let i=0;i<longSide;i++) bottomSeats.push(`E${2+longSide+i}`);
-  const tableWidth=Math.max(58, (topSeats.length-1)*seatGap+22);
-  const tableHeight=18;
-  const tableX=startX+20;
+  const tableWidth=Math.max(S(58), (topSeats.length-1)*seatGap+S(22));
+  const tableHeight=S(18);
+  const tableX=startX+S(20);
   const tableRight=tableX+tableWidth;
-  for(let i=1;i<=extraSeats;i++) drawPdfSeat(doc, tableX+8+(i-1)*10.5, startY-3, 3.8, `M${i}`, ownerMap);
+
+  for(let i=1;i<=extraSeats;i++) drawPdfSeat(doc, tableX+S(8)+(i-1)*S(10.5), startY-S(3), S(3.8), `M${i}`, ownerMap);
+
   doc.setFillColor(145,98,48);
-  doc.roundedRect(tableX, tableY, tableWidth, tableHeight, 5,5,'F');
-  topSeats.forEach((id,i)=>drawPdfSeat(doc, tableX+11+i*seatGap, topY, seatR, id, ownerMap));
-  bottomSeats.forEach((id,i)=>drawPdfSeat(doc, tableX+11+i*seatGap, bottomY, seatR, id, ownerMap));
-  drawPdfSeat(doc, tableX-11, tableY+tableHeight/2, seatR, 'E1', ownerMap);
-  drawPdfSeat(doc, tableRight+11, tableY+tableHeight/2, seatR, `E${totalSeats}`, ownerMap);
-  doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(90,60,35);
-  doc.text('Sala esterna', tableX+tableWidth/2, bottomY+18, {align:'center'});
-  return { width: tableRight+22-startX, height: bottomY+22-startY };
+  doc.roundedRect(tableX, tableY, tableWidth, tableHeight, S(5), S(5), 'F');
+
+  topSeats.forEach((id,i)=>drawPdfSeat(doc, tableX+S(11)+i*seatGap, topY, seatR, id, ownerMap));
+  bottomSeats.forEach((id,i)=>drawPdfSeat(doc, tableX+S(11)+i*seatGap, bottomY, seatR, id, ownerMap));
+
+  drawPdfSeat(doc, tableX-S(13), tableY+tableHeight/2, seatR, 'E1', ownerMap);
+  drawPdfSeat(doc, tableRight+S(13), tableY+tableHeight/2, seatR, `E${totalSeats}`, ownerMap);
+
+  doc.setFont('helvetica','normal'); doc.setFontSize(Math.max(6.5, 7.5*scale)); doc.setTextColor(90,60,35);
+  doc.text('Sala esterna', tableX+tableWidth/2, bottomY+S(18), {align:'center'});
+  return { width: tableRight+S(26)-startX, height: bottomY+S(22)-startY };
 }
-function drawPdfGardenMap(doc, startX, startY, ownerMap, totalSeats, extraSeats){
-  const tableX=startX+18, tableY=startY+16, tableW=18, tableH=44;
+
+function drawPdfGardenMap(doc, startX, startY, ownerMap, totalSeats, extraSeats, scale=1){
+  const S=v=>v*scale;
+  const tableX=startX+S(18), tableY=startY+S(16), tableW=S(18), tableH=S(44);
   const centerX=tableX+tableW/2;
   doc.setFillColor(145,98,48);
-  doc.roundedRect(tableX, tableY, tableW, tableH, 5,5,'F');
-  drawPdfSeat(doc, centerX, tableY-9, 4.5, 'G1', ownerMap);
-  drawPdfSeat(doc, centerX, tableY+tableH+9, 4.5, 'G2', ownerMap);
+  doc.roundedRect(tableX, tableY, tableW, tableH, S(5), S(5), 'F');
+
+  drawPdfSeat(doc, centerX, tableY-S(9), S(4.5), 'G1', ownerMap);
+  drawPdfSeat(doc, centerX, tableY+tableH+S(9), S(4.5), 'G2', ownerMap);
+
   const ids=[]; for(let i=3;i<=totalSeats;i++) ids.push(`G${i}`);
   const left=ids.slice(0, Math.ceil(ids.length/2)), right=ids.slice(Math.ceil(ids.length/2));
-  left.forEach((id,idx)=>drawPdfSeat(doc, tableX-10, tableY+7+idx*10.5, 4.1, id, ownerMap));
-  right.forEach((id,idx)=>drawPdfSeat(doc, tableX+tableW+10, tableY+7+idx*10.5, 4.1, id, ownerMap));
-  for(let i=1;i<=extraSeats;i++) drawPdfSeat(doc, tableX+tableW+26, tableY+2+(i-1)*8.5, 3.6, `P${i}`, ownerMap);
-  doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(90,60,35);
-  doc.text('Giardino', tableX+14, tableY+tableH+20, {align:'center'});
-  return { width: 60, height: tableH+24 };
+  left.forEach((id,idx)=>drawPdfSeat(doc, tableX-S(10), tableY+S(7)+idx*S(10.5), S(4.1), id, ownerMap));
+  right.forEach((id,idx)=>drawPdfSeat(doc, tableX+tableW+S(10), tableY+S(7)+idx*S(10.5), S(4.1), id, ownerMap));
+  for(let i=1;i<=extraSeats;i++) drawPdfSeat(doc, tableX+tableW+S(26), tableY+S(2)+(i-1)*S(8.5), S(3.6), `P${i}`, ownerMap);
+
+  doc.setFont('helvetica','normal'); doc.setFontSize(Math.max(6.5, 7.5*scale)); doc.setTextColor(90,60,35);
+  doc.text('Giardino', tableX+S(14), tableY+tableH+S(20), {align:'center'});
+  return { width: S(60), height: tableH+S(24) };
 }
+
 function buildCompactBookingLines(){
   const sorted=[...prenotazioniData].sort((a,b)=>{
     const as=(a.prenotazione_posti||[]).map(p=>String(p.posto_numero)).sort(seatSort);
     const bs=(b.prenotazione_posti||[]).map(p=>String(p.posto_numero)).sort(seatSort);
     if(!as.length && !bs.length) return 0; if(!as.length) return 1; if(!bs.length) return -1; return seatSort(as[0], bs[0]);
   });
-  return sorted.map(pr=>{ const seats=(pr.prenotazione_posti||[]).map(p=>String(p.posto_numero)).sort(seatSort); const paid=Number(pr.importo_pagato||0); return `${pr.nome||'-'}  ${seats.join(', ')}  pagato ${formatCurrency(paid)}`; });
+  return sorted.map(pr=>{
+    const seats=(pr.prenotazione_posti||[]).map(p=>String(p.posto_numero)).sort(seatSort);
+    const paid=Number(pr.importo_pagato||0);
+    return `${pr.nome||'-'}  ${seats.join(', ')}  pagato ${formatCurrency(paid)}`;
+  });
 }
+
+function getMapSections(){
+  const sections=[];
+  if(saleConfig.interna?.attiva){
+    const tot=Number(saleConfig.interna.posti_totali||14);
+    const width=Math.max(58, (((tot-2)/2)-1)*13.5+22)+55;
+    sections.push({type:'interna', width, height:60});
+  }
+  if(saleConfig.esterna?.attiva){
+    const tot=Number(saleConfig.esterna.posti_totali||0);
+    const width=Math.max(58, (((tot-2)/2)-1)*13.5+22)+46;
+    sections.push({type:'esterna', width, height:64});
+  }
+  if(saleConfig.giardino?.attiva) sections.push({type:'giardino', width:60, height:68});
+  return sections;
+}
+
 async function exportPdf(){
   const { jsPDF } = window.jspdf;
   const doc=new jsPDF({orientation:'portrait', unit:'mm', format:'a4'});
   const pageW=doc.internal.pageSize.getWidth(), pageH=doc.internal.pageSize.getHeight();
   const margin=10, ownerMap=getSeatOwnerMap(), summary=getPdfBookingSummary(), lines=buildCompactBookingLines();
+
   doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.setTextColor(90,60,35);
   doc.text(currentEvent?.titolo || 'Serata', margin, 14);
   doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(50,50,50);
@@ -197,13 +238,32 @@ async function exportPdf(){
 
   const mapBoxX=margin, mapBoxY=28, mapBoxW=pageW-margin*2, mapBoxH=92;
   doc.setDrawColor(210,185,140); doc.setFillColor(255,250,242); doc.roundedRect(mapBoxX, mapBoxY, mapBoxW, mapBoxH, 4,4,'FD');
-  let cursorX=mapBoxX+8, cursorY=mapBoxY+16;
-  if(saleConfig.interna?.attiva){ const dim=drawPdfInternalMap(doc, cursorX, cursorY, ownerMap, Number(saleConfig.interna.posti_totali||14)); cursorX += dim.width + 8; }
-  if(saleConfig.esterna?.attiva){ const dim=drawPdfExternalMap(doc, cursorX, cursorY+3, ownerMap, Number(saleConfig.esterna.posti_totali||0), Number(saleConfig.esterna.posti_extra||0)); cursorX += dim.width + 8; }
-  if(saleConfig.giardino?.attiva){ drawPdfGardenMap(doc, cursorX, cursorY+2, ownerMap, Number(saleConfig.giardino.posti_totali||0), Number(saleConfig.giardino.posti_extra||0)); }
+
+  const sections=getMapSections();
+  const rawGap=8;
+  const rawWidth=sections.reduce((sum,s)=>sum+s.width,0) + rawGap*Math.max(0, sections.length-1);
+  const rawHeight=Math.max(68, ...sections.map(s=>s.height));
+  const scale=Math.min(1, (mapBoxW-16)/rawWidth, (mapBoxH-16)/rawHeight);
+  const gap=rawGap*scale;
+  const totalScaledWidth=sections.reduce((sum,s)=>sum+s.width*scale,0) + gap*Math.max(0, sections.length-1);
+  let cursorX=mapBoxX + (mapBoxW-totalScaledWidth)/2;
+  const cursorY=mapBoxY + (mapBoxH-rawHeight*scale)/2 + 6;
+
+  for(const s of sections){
+    let dim={width:0,height:0};
+    if(s.type==='interna'){
+      dim=drawPdfInternalMap(doc, cursorX, cursorY, ownerMap, Number(saleConfig.interna.posti_totali||14), scale);
+    } else if(s.type==='esterna'){
+      dim=drawPdfExternalMap(doc, cursorX, cursorY+3*scale, ownerMap, Number(saleConfig.esterna.posti_totali||0), Number(saleConfig.esterna.posti_extra||0), scale);
+    } else if(s.type==='giardino'){
+      dim=drawPdfGardenMap(doc, cursorX, cursorY+2*scale, ownerMap, Number(saleConfig.giardino.posti_totali||0), Number(saleConfig.giardino.posti_extra||0), scale);
+    }
+    cursorX += dim.width + gap;
+  }
 
   const listBoxX=margin, listBoxY=mapBoxY+mapBoxH+6, listBoxW=pageW-margin*2-54, listBoxH=pageH-listBoxY-12;
   const summaryBoxX=listBoxX+listBoxW+4, summaryBoxY=listBoxY, summaryBoxW=50, summaryBoxH=44;
+
   doc.setDrawColor(210,185,140); doc.setFillColor(255,250,242); doc.roundedRect(listBoxX, listBoxY, listBoxW, listBoxH, 4,4,'FD');
   doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(90,60,35); doc.text('Prenotazioni', listBoxX+4, listBoxY+6);
   doc.setFont('helvetica','normal'); doc.setFontSize(8.2); doc.setTextColor(20,20,20);
