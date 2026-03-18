@@ -78,7 +78,8 @@
   <script>
     const categoriesOrder = ["Birra","Vino","Superalcolici","Bibite","Acqua","Pasta","Cucina","Detersivi","Materiale","Altro"];
     function buildSelectOptions(){let html=""; for(let i=1;i<=100;i++) html += `<option value="${i}">${i}</option>`; return html;}
-    async function loadInventory(){
+    async function loadInventory(keepScroll=false){
+      const prevScroll = keepScroll ? window.scrollY : 0;
       const mount=document.getElementById('inventoryMount'); mount.innerHTML='Caricamento...';
       const {data,error}=await supabaseClient.from('inventario').select('*').order('nome',{ascending:true});
       if(error){console.error(error); mount.innerHTML = `<div class="category-box"><p>Errore nel caricamento inventario.</p></div>`; return;}
@@ -106,10 +107,11 @@
         });
         section.appendChild(list); mount.appendChild(section);
       });
+      if(keepScroll){ requestAnimationFrame(()=> window.scrollTo({top: prevScroll, behavior:'auto'})); }
     }
-    async function updateQuantity(id, quantity){ const {error}=await supabaseClient.from('inventario').update({quantita: quantity}).eq('id', id); if(error){console.error(error); return;} await loadInventory(); }
-    async function deleteItem(id){ const {error}=await supabaseClient.from('inventario').delete().eq('id', id); if(error){console.error(error); return;} await loadInventory(); }
-    async function addItem(){ const msg=document.getElementById('inventoryMsg'); msg.textContent=''; const nome=document.getElementById('newNome').value.trim(); const categoria=document.getElementById('newCategoria').value.trim(); if(!nome){msg.textContent="Inserisci il nome dell'articolo."; return;} const {error}=await supabaseClient.from('inventario').insert([{nome,categoria,quantita:0,unita:'',ordine:0}]); if(error){console.error(error); msg.textContent="Errore nell'aggiunta dell'articolo."; return;} document.getElementById('newNome').value=''; document.getElementById('newCategoria').value='Birra'; msg.textContent='Articolo aggiunto correttamente.'; await loadInventory(); }
+    async function updateQuantity(id, quantity){ const {error}=await supabaseClient.from('inventario').update({quantita: quantity}).eq('id', id); if(error){console.error(error); return;} await loadInventory(true); }
+    async function deleteItem(id){ const {error}=await supabaseClient.from('inventario').delete().eq('id', id); if(error){console.error(error); return;} await loadInventory(true); }
+    async function addItem(){ const msg=document.getElementById('inventoryMsg'); msg.textContent=''; const nome=document.getElementById('newNome').value.trim(); const categoria=document.getElementById('newCategoria').value.trim(); if(!nome){msg.textContent="Inserisci il nome dell'articolo."; return;} const {error}=await supabaseClient.from('inventario').insert([{nome,categoria,quantita:0,unita:'',ordine:0}]); if(error){console.error(error); msg.textContent="Errore nell'aggiunta dell'articolo."; return;} document.getElementById('newNome').value=''; document.getElementById('newCategoria').value='Birra'; msg.textContent='Articolo aggiunto correttamente.'; await loadInventory(true); }
     document.getElementById('addItemBtn').addEventListener('click', addItem);
     document.addEventListener('DOMContentLoaded', loadInventory);
   </script>
