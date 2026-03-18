@@ -83,48 +83,49 @@ function drawPdfSeat(doc, x, y, r, seatId, booking){
   doc.setTextColor(255,255,255);
   const label = booking ? shortLabelFromName(booking.nome) : seatId;
   doc.setFont('helvetica','bold');
-  doc.setFontSize(label.length > 3 ? 6.5 : 7.5);
-  doc.text(String(label), x, y+2, {align:'center'});
+  doc.setFontSize(label.length > 4 ? 5.5 : (label.length > 2 ? 6.4 : 7.4));
+  doc.text(String(label), x, y+1.8, {align:'center'});
 }
 function seatCoordsForPdf(){
   const coords={};
   const tables=[];
-  const labels=[];
   const push=(id,x,y)=>coords[id]={x,y};
 
   if(saleConfig.interna?.attiva){
-    let startX=80, startY=55;
     const total=saleConfig.interna.posti_totali;
     const map=buildTableSeatMap(total,"");
-    const spacing=18;
-    map.top.forEach((id,i)=>push(id,startX+32+i*spacing,startY));
-    push(map.left,startX+10,startY+20);
-    push(map.right,startX+32+(map.top.length-1)*spacing+22,startY+20);
-    map.bottom.forEach((id,i)=>push(id,startX+32+i*spacing,startY+40));
-    [["D1",startX+78,startY-18],["D2",startX+96,startY-18],["D3",startX+114,startY-18],["D4",startX+132,startY-18],["D5",startX+150,startY-18],["D6",startX+202,startY+2],["D7",startX+202,startY+20],["S1",startX+202,startY+38],["D8",startX+150,startY+60],["S2",startX+172,startY+60]].forEach(v=>push(v[0],v[1],v[2]));
-    tables.push({x:startX+28,y:startY+12,w:map.top.length*spacing+10,h:16,label:'Sala interna'});
+    const startX=92, startY=52, spacing=22;
+    map.top.forEach((id,i)=>push(id,startX+28+i*spacing,startY));
+    push(map.left,startX,startY+24);
+    push(map.right,startX+28+(map.top.length-1)*spacing+28,startY+24);
+    map.bottom.forEach((id,i)=>push(id,startX+28+i*spacing,startY+48));
+    [["D1",startX+66,startY-20],["D2",startX+88,startY-20],["D3",startX+110,startY-20],["D4",startX+132,startY-20],["D5",startX+154,startY-20],["D6",startX+224,startY+4],["D7",startX+224,startY+24],["S1",startX+224,startY+44],["D8",startX+154,startY+68],["S2",startX+180,startY+68]].forEach(v=>push(v[0],v[1],v[2]));
+    tables.push({shape:'h',x:startX+24,y:startY+14,w:map.top.length*spacing+16,h:20,label:'Sala interna'});
   }
+
   if(saleConfig.esterna?.attiva){
-    const total=saleConfig.esterna.posti_totali, map=buildTableSeatMap(total,"E"), spacing=18, x0=35, y0=118;
-    for(let i=1;i<=saleConfig.esterna.posti_extra;i++) push(`M${i}`, x0+18+(i-1)*16, y0-18);
-    map.top.forEach((id,i)=>push(id,x0+32+i*spacing,y0));
-    push(map.left,x0+10,y0+20);
-    push(map.right,x0+32+(map.top.length-1)*spacing+22,y0+20);
-    map.bottom.forEach((id,i)=>push(id,x0+32+i*spacing,y0+40));
-    tables.push({x:x0+28,y:y0+12,w:map.top.length*spacing+10,h:16,label:'Sala esterna'});
+    const total=saleConfig.esterna.posti_totali, map=buildTableSeatMap(total,"E"), spacing=22, x0=36, y0=168;
+    for(let i=1;i<=saleConfig.esterna.posti_extra;i++) push(`M${i}`, x0+18+(i-1)*18, y0-20);
+    map.top.forEach((id,i)=>push(id,x0+28+i*spacing,y0));
+    push(map.left,x0,y0+24);
+    push(map.right,x0+28+(map.top.length-1)*spacing+28,y0+24);
+    map.bottom.forEach((id,i)=>push(id,x0+28+i*spacing,y0+48));
+    tables.push({shape:'h',x:x0+24,y:y0+14,w:map.top.length*spacing+16,h:20,label:'Sala esterna'});
   }
+
   if(saleConfig.giardino?.attiva){
-    const total=saleConfig.giardino.posti_totali, x0=185, y0=114;
+    const total=saleConfig.giardino.posti_totali, x0=180, y0=160;
     const ids=[]; for(let i=1;i<=total;i++) ids.push(`G${i}`);
-    if(ids[0]) push(ids[0],x0+42,y0-18);
-    if(ids[1]) push(ids[1],x0+42,y0+88);
+    if(ids[0]) push(ids[0],x0+42,y0-22);
+    if(ids[1]) push(ids[1],x0+42,y0+100);
     const side=ids.slice(2), left=side.slice(0,Math.ceil(side.length/2)), right=side.slice(Math.ceil(side.length/2));
-    left.forEach((id,i)=>push(id,x0,y0+4+i*20));
-    right.forEach((id,i)=>push(id,x0+84,y0+4+i*20));
-    for(let i=1;i<=saleConfig.giardino.posti_extra;i++) push(`P${i}`, x0+124, y0+4+(i-1)*16);
-    tables.push({x:x0+34,y:y0-2,w:16,h:72,label:'Giardino'});
+    left.forEach((id,i)=>push(id,x0,y0+6+i*24));
+    right.forEach((id,i)=>push(id,x0+84,y0+6+i*24));
+    for(let i=1;i<=saleConfig.giardino.posti_extra;i++) push(`P${i}`, x0+126, y0+6+(i-1)*18);
+    tables.push({shape:'v',x:x0+32,y:y0-4,w:20,h:86,label:'Giardino'});
   }
-  return {coords,tables,labels};
+
+  return {coords,tables};
 }
 function getFinancialSummary(){
   let dov=0, inc=0;
@@ -137,18 +138,18 @@ function getFinancialSummary(){
 }
 async function exportPdf(){
   const { jsPDF } = window.jspdf;
-  const doc=new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
+  const doc=new jsPDF({orientation:'portrait', unit:'mm', format:'a4'});
   const pageW = doc.internal.pageSize.getWidth();
-  const pageH = doc.internal.pageSize.getHeight();
 
   doc.setFont('helvetica','bold');
   doc.setFontSize(18);
+  doc.setTextColor(107,62,38);
   doc.text(currentEvent?.titolo || 'Serata', 12, 14);
   doc.setFont('helvetica','normal');
   doc.setFontSize(10);
   doc.text(formatDateItalian(currentEvent?.data || ''), 12, 20);
 
-  const mapX=10, mapY=26, mapW=pageW-20, mapH=108;
+  const mapX=8, mapY=26, mapW=pageW-16, mapH=130;
   doc.setDrawColor(210,185,138);
   doc.setFillColor(255,250,242);
   doc.roundedRect(mapX,mapY,mapW,mapH,4,4,'FD');
@@ -163,8 +164,8 @@ async function exportPdf(){
   const points = Object.values(coords);
   if(points.length){
     const xs = points.map(p=>p.x), ys = points.map(p=>p.y);
-    const minX = Math.min(...xs)-12, maxX = Math.max(...xs)+12;
-    const minY = Math.min(...ys)-12, maxY = Math.max(...ys)+12;
+    const minX = Math.min(...xs)-16, maxX = Math.max(...xs)+16;
+    const minY = Math.min(...ys)-18, maxY = Math.max(...ys)+18;
     const contentW = maxX-minX, contentH = maxY-minY;
     const innerX = mapX+6, innerY = mapY+10, innerW = mapW-12, innerH = mapH-16;
     const scale = Math.min(innerW/contentW, innerH/contentH);
@@ -175,67 +176,78 @@ async function exportPdf(){
 
     tables.forEach(t=>{
       doc.setFillColor(123,78,36);
-      doc.roundedRect(tx(t.x), ty(t.y), t.w*scale, t.h*scale, 3,3,'F');
       doc.setTextColor(255,255,255);
+      doc.roundedRect(tx(t.x), ty(t.y), t.w*scale, t.h*scale, 3,3,'F');
+      doc.setFont('helvetica','bold');
       doc.setFontSize(8);
-      doc.text(t.label, tx(t.x)+t.w*scale/2, ty(t.y)+t.h*scale/2+2, {align:'center'});
+      doc.text(t.label, tx(t.x)+(t.w*scale/2), ty(t.y)+(t.h*scale/2)+2, {align:'center'});
     });
 
     Object.entries(coords).forEach(([seatId,pos])=>{
-      drawPdfSeat(doc, tx(pos.x), ty(pos.y), Math.max(4.3, 5.5*scale), seatId, getBookingBySeat(seatId));
+      drawPdfSeat(doc, tx(pos.x), ty(pos.y), Math.max(4.7, 6.2*scale), seatId, getBookingBySeat(seatId));
     });
   }
 
-  const listY = 142;
-  const listH = 54;
-  const listW = 190;
+  const listY = 162;
+  const listH = 94;
   doc.setFillColor(255,250,242);
   doc.setDrawColor(210,185,138);
-  doc.roundedRect(10, listY, listW, listH, 4,4, 'FD');
+  doc.roundedRect(8, listY, pageW-16, listH, 4,4, 'FD');
   doc.setFont('helvetica','bold');
   doc.setTextColor(107,62,38);
   doc.setFontSize(11);
-  doc.text('Prenotazioni', 14, listY+6);
+  doc.text('Prenotazioni', 12, listY+6);
 
-  const lines=[];
+  const rows=[];
   prenotazioniData.slice().sort((a,b)=>{
     const as=(a.prenotazione_posti||[]).map(p=>String(p.posto_numero)).sort(seatSort);
     const bs=(b.prenotazione_posti||[]).map(p=>String(p.posto_numero)).sort(seatSort);
     return !as.length?1:!bs.length?-1:seatSort(as[0],bs[0]);
   }).forEach(pr=>{
     const posti=(pr.prenotazione_posti||[]).map(p=>String(p.posto_numero)).sort(seatSort);
-    lines.push(`${pr.nome} — ${posti.join(', ')}`);
+    rows.push({
+      nome: pr.nome || '-',
+      posti: posti.join(', '),
+      pagato: formatCurrency(pr.importo_pagato || 0)
+    });
   });
-  doc.setFont('helvetica','normal');
+
+  doc.setFont('helvetica','bold');
   doc.setFontSize(8.5);
-  const col1X=14, col2X=106, startY=listY+12, lineH=4.6;
-  const maxRows = 9;
-  lines.slice(0, maxRows*2).forEach((line, idx)=>{
-    const x = idx < maxRows ? col1X : col2X;
-    const y = startY + (idx % maxRows) * lineH;
-    doc.text(line, x, y, {maxWidth: 84});
+  doc.text('Nome', 12, listY+13);
+  doc.text('Posti', 104, listY+13);
+  doc.text('Pagato', 170, listY+13);
+  doc.setLineWidth(0.2);
+  doc.line(12, listY+15, pageW-12, listY+15);
+
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(8.2);
+  let y = listY + 21;
+  const lineH = 5.2;
+  const maxRows = 11;
+  rows.slice(0, maxRows).forEach(r=>{
+    doc.text(String(r.nome), 12, y, {maxWidth: 86});
+    doc.text(String(r.posti), 104, y, {maxWidth: 58});
+    doc.text(String(r.pagato), 170, y);
+    y += lineH;
   });
-  if(lines.length > maxRows*2){
+  if(rows.length > maxRows){
     doc.setFont('helvetica','italic');
-    doc.text(`+ altre ${lines.length - maxRows*2} prenotazioni`, col2X, listY+49);
+    doc.text(`+ altre ${rows.length - maxRows} prenotazioni`, 12, listY+82);
   }
 
-  const summaryX = 206, summaryY = 142, summaryW = pageW-216, summaryH = 54;
-  doc.setFillColor(255,250,242);
-  doc.setDrawColor(210,185,138);
-  doc.roundedRect(summaryX, summaryY, summaryW, summaryH, 4,4, 'FD');
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(11);
-  doc.setTextColor(107,62,38);
-  doc.text('Riepilogo', summaryX+4, summaryY+6);
   const fin = getFinancialSummary();
-  doc.setFont('helvetica','normal');
+  doc.setFont('helvetica','bold');
   doc.setFontSize(10);
-  doc.text(`Prenotazioni: ${prenotazioniData.length}`, summaryX+4, summaryY+15);
-  doc.text(`Coperti: ${occupiedSeats.length}`, summaryX+4, summaryY+23);
-  doc.text(`Totale dovuto: ${formatCurrency(fin.dov)}`, summaryX+4, summaryY+31);
-  doc.text(`Incassato: ${formatCurrency(fin.inc)}`, summaryX+4, summaryY+39);
-  doc.text(`Saldo residuo: ${formatCurrency(fin.saldo)}`, summaryX+4, summaryY+47);
+  doc.setTextColor(107,62,38);
+  doc.text('Riepilogo', 12, listY+88);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(9);
+  doc.text(`Prenotazioni: ${prenotazioniData.length}`, 12, listY+94);
+  doc.text(`Coperti: ${occupiedSeats.length}`, 58, listY+94);
+  doc.text(`Totale dovuto: ${formatCurrency(fin.dov)}`, 92, listY+94);
+  doc.text(`Incassato: ${formatCurrency(fin.inc)}`, 144, listY+94);
+  doc.text(`Saldo residuo: ${formatCurrency(fin.saldo)}`, 12, listY+100);
 
   doc.save(`serata_${(currentEvent?.titolo || 'evento').replace(/[^\w]+/g,'_')}.pdf`);
 }
