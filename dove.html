@@ -1,1 +1,53 @@
-<!DOCTYPE html><html><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'><link rel='stylesheet' href='css/style.css'><title>Dove siamo</title></head><body><div class='top-bar'><img src='img/logo.png' class='logo-top'><button id='hamburger' class='hamburger'>☰</button></div><div id='sidebarBackdrop' class='sidebar-backdrop'></div><aside id='sidebar' class='sidebar'><img src='img/logo.png' class='side-logo'><nav><a href='index.html'>Home</a><a href='serate.html'>Serate</a></nav></aside><main class='page'><section class='section'><div class='card'><h2 class='event-title'>Dove siamo</h2><p class='note'>Pagina placeholder.</p></div></section></main><script src='js/site.js'></script><script>setupMenu()</script></body></html>
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dove siamo - Tavernetta da Kevin</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="top-bar">
+    <img src="img/logo.png" alt="Tavernetta da Kevin" class="logo-top">
+    <button id="hamburger" class="hamburger" aria-label="Apri menu">☰</button>
+  </div>
+
+  <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+
+  <aside id="sidebar" class="sidebar">
+    <img src="img/logo.png" alt="Logo" class="side-logo">
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="serate.html">Serate</a>
+      <a href="calendario.html">Calendario</a>
+      <a href="dove.html">Dove siamo</a>
+      <a href="contatti.html">Contattaci</a>
+    </nav>
+  </aside>
+
+  <main class="page">
+  <section class="section">
+    <h2>Dove siamo</h2>
+    <div class="card map-wrap">
+      <p>Via La Petrizia 6, Sellia Marina, Catanzaro, Calabria</p>
+
+      <iframe
+        src="https://www.google.com/maps?q=38.8860204,16.7144589&z=18&output=embed"
+        loading="lazy"
+        allowfullscreen>
+      </iframe>
+
+      <div class="button-row">
+        <a class="button" href="https://www.google.com/maps/place//@38.8860204,16.7144589,163m/data=!3m2!1e3!4b1?entry=ttu&g_ep=EgoyMDI2MDMwOC4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener noreferrer">
+          Apri su Google Maps
+        </a>
+      </div>
+    </div>
+  </section>
+</main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/site.js"></script>
+</body>
+</html>
