@@ -4,7 +4,185 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Calendario - Tavernetta da Kevin</title>
+  <link rel="icon" type="image/png" href="img/logo.png">
   <link rel="stylesheet" href="css/style.css">
+
+  <style>
+    .calendar-toolbar{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:14px;
+      margin-bottom:18px;
+    }
+
+    .calendar-title{
+      margin:0;
+      min-width:220px;
+      text-align:center;
+      color:var(--brown);
+    }
+
+    .calendar-arrow{
+      min-width:48px;
+      height:48px;
+      border:none;
+      border-radius:12px;
+      background:var(--brown);
+      color:#fff;
+      font-size:22px;
+      cursor:pointer;
+    }
+
+    .calendar-wrapper{
+      background:var(--card);
+      border-radius:18px;
+      box-shadow:var(--shadow);
+      padding:16px;
+      overflow:hidden;
+    }
+
+    .calendar-grid{
+      display:grid;
+      grid-template-columns:repeat(7,1fr);
+      gap:8px;
+    }
+
+    .calendar-head{
+      font-weight:700;
+      text-align:center;
+      color:var(--brown);
+      padding:8px 4px;
+      font-size:14px;
+    }
+
+    .calendar-day{
+      min-height:92px;
+      background:#fffaf2;
+      border:1px solid rgba(107,62,38,.12);
+      border-radius:14px;
+      padding:8px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      cursor:pointer;
+      transition:.15s;
+    }
+
+    .calendar-day:hover{
+      transform:translateY(-1px);
+      border-color:#d6b98a;
+    }
+
+    .calendar-day.empty{
+      background:transparent;
+      border:none;
+      cursor:default;
+    }
+
+    .calendar-day.today{
+      outline:2px solid #b7834b;
+    }
+
+    .calendar-day.has-event{
+      background:#fff3db;
+      border-color:#d6b98a;
+    }
+
+    .calendar-num{
+      font-weight:700;
+      color:var(--brown);
+      font-size:15px;
+    }
+
+    .calendar-badge{
+      font-size:11px;
+      background:var(--brown);
+      color:#fff;
+      border-radius:999px;
+      padding:4px 8px;
+      width:max-content;
+    }
+
+    .calendar-event-mini{
+      font-size:11px;
+      line-height:1.2;
+      color:#6b3e26;
+      opacity:.9;
+      overflow:hidden;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+    }
+
+    .calendar-detail-card{
+      margin-top:18px;
+      background:var(--card);
+      border-radius:18px;
+      box-shadow:var(--shadow);
+      padding:16px;
+    }
+
+    .calendar-detail-card h3{
+      margin:0 0 12px;
+      color:var(--brown);
+    }
+
+    .calendar-detail-list{
+      display:grid;
+      gap:12px;
+    }
+
+    .calendar-detail-item{
+      background:#fffaf2;
+      border:1px solid rgba(107,62,38,.12);
+      border-radius:12px;
+      padding:12px;
+    }
+
+    .calendar-detail-item h4{
+      margin:0 0 6px;
+      color:var(--brown);
+    }
+
+    .calendar-detail-item .program{
+      white-space:pre-line;
+      font-size:14px;
+      margin-top:6px;
+    }
+
+    .calendar-empty-note{
+      background:var(--card);
+      border-radius:18px;
+      box-shadow:var(--shadow);
+      padding:16px;
+      margin-top:18px;
+    }
+
+    @media (max-width: 700px){
+      .calendar-grid{
+        gap:6px;
+      }
+
+      .calendar-day{
+        min-height:78px;
+        padding:6px;
+      }
+
+      .calendar-title{
+        min-width:160px;
+        font-size:20px;
+      }
+
+      .calendar-head{
+        font-size:12px;
+      }
+
+      .calendar-event-mini{
+        font-size:10px;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="top-bar">
@@ -37,12 +215,172 @@
         <div id="calendarMount" class="calendar-grid"></div>
       </div>
 
-      <div id="calendarDetail" class="section"></div>
+      <div id="calendarDetail"></div>
     </section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-client.js"></script>
   <script src="js/site.js"></script>
+
+  <script>
+    let currentMonthDate = new Date();
+    let allEvents = [];
+
+    const DAYS = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
+    const MONTHS = [
+      "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
+      "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"
+    ];
+
+    function ymdLocal(date){
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const d = String(date.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function formatDateItalian(dateStr){
+      try {
+        return new Date(dateStr + "T12:00:00").toLocaleDateString("it-IT", {
+          weekday: "long",
+          day: "2-digit",
+          month: "long",
+          year: "numeric"
+        });
+      } catch {
+        return dateStr;
+      }
+    }
+
+    function sameDay(a, b){
+      return a.getFullYear() === b.getFullYear()
+        && a.getMonth() === b.getMonth()
+        && a.getDate() === b.getDate();
+    }
+
+    function renderDetail(dateStr){
+      const detail = document.getElementById("calendarDetail");
+      const events = allEvents.filter(ev => ev.data === dateStr);
+
+      if (!events.length) {
+        detail.innerHTML = `
+          <div class="calendar-empty-note">
+            <strong>${formatDateItalian(dateStr)}</strong><br>
+            Nessuna serata programmata.
+          </div>
+        `;
+        return;
+      }
+
+      detail.innerHTML = `
+        <div class="calendar-detail-card">
+          <h3>${formatDateItalian(dateStr)}</h3>
+          <div class="calendar-detail-list">
+            ${events.map(ev => `
+              <div class="calendar-detail-item">
+                <h4>${ev.titolo || "Serata"}</h4>
+                ${ev.menu ? `<div><strong>Menù</strong><br>${ev.menu}</div>` : ""}
+                ${ev.programma ? `<div class="program"><strong>Programma</strong><br>${ev.programma}</div>` : ""}
+                <div style="margin-top:10px;">
+                  <a class="button secondary" href="evento.html?id=${ev.id}">Apri serata</a>
+                </div>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCalendar(){
+      const mount = document.getElementById("calendarMount");
+      const title = document.getElementById("calendarTitle");
+
+      const year = currentMonthDate.getFullYear();
+      const month = currentMonthDate.getMonth();
+
+      title.textContent = `${MONTHS[month]} ${year}`;
+      mount.innerHTML = "";
+
+      DAYS.forEach(day => {
+        const head = document.createElement("div");
+        head.className = "calendar-head";
+        head.textContent = day;
+        mount.appendChild(head);
+      });
+
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+
+      let startOffset = firstDay.getDay() - 1;
+      if (startOffset < 0) startOffset = 6;
+
+      for (let i = 0; i < startOffset; i++) {
+        const empty = document.createElement("div");
+        empty.className = "calendar-day empty";
+        mount.appendChild(empty);
+      }
+
+      const today = new Date();
+
+      for (let dayNum = 1; dayNum <= lastDay.getDate(); dayNum++) {
+        const date = new Date(year, month, dayNum);
+        const dateStr = ymdLocal(date);
+        const events = allEvents.filter(ev => ev.data === dateStr);
+
+        const day = document.createElement("div");
+        day.className = "calendar-day";
+        if (sameDay(date, today)) day.classList.add("today");
+        if (events.length) day.classList.add("has-event");
+
+        day.innerHTML = `
+          <div class="calendar-num">${dayNum}</div>
+          ${events.length ? `<div class="calendar-badge">${events.length} serata${events.length > 1 ? "e" : ""}</div>` : ""}
+          ${events.length ? `<div class="calendar-event-mini">${events[0].titolo || "Serata"}</div>` : ""}
+        `;
+
+        day.addEventListener("click", () => renderDetail(dateStr));
+        mount.appendChild(day);
+      }
+
+      const firstVisibleDay = new Date(year, month, 1);
+      renderDetail(ymdLocal(firstVisibleDay));
+    }
+
+    async function loadEvents(){
+      const { data, error } = await supabaseClient
+        .from("serate")
+        .select("id, titolo, data, menu, programma")
+        .order("data", { ascending: true });
+
+      if (error) {
+        console.error(error);
+        document.getElementById("calendarDetail").innerHTML = `
+          <div class="calendar-empty-note">
+            Errore nel caricamento del calendario.
+          </div>
+        `;
+        return;
+      }
+
+      allEvents = data || [];
+      renderCalendar();
+    }
+
+    document.getElementById("prevMonthBtn").addEventListener("click", () => {
+      currentMonthDate = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() - 1, 1);
+      renderCalendar();
+    });
+
+    document.getElementById("nextMonthBtn").addEventListener("click", () => {
+      currentMonthDate = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() + 1, 1);
+      renderCalendar();
+    });
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      if (typeof setupMenu === "function") setupMenu();
+      await loadEvents();
+    });
+  </script>
 </body>
 </html>
